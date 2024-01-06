@@ -1,9 +1,7 @@
 import {useState} from "react";
-import { useNavigate } from "react-router-dom";
 
 const ColorPicker = ()=>
 {
-    const navigate = useNavigate();
     const [color,setColor] = useState("#FFFFFF");
 
     const handleColorChange = (e)=>
@@ -21,7 +19,6 @@ const ColorPicker = ()=>
                 <label>Select a Color: </label>
                 <input type="color" value={color} onChange={handleColorChange}/>
             </div>
-            <button onClick={()=>navigate("/")}>Go Back</button>
         </>
     );
 };

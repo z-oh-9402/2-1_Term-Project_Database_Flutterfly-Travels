@@ -1,11 +1,13 @@
 import {useState} from "react";
-import {useNavigate} from "react-router-dom";
+import {useNavigate,Outlet} from "react-router-dom";
+import PropTypes from 'prop-types';
+import ColorPicker from './ColorPicker.jsx';
 
-const MyComponent = ()=>{
+const MyComponent = (props)=>{
     const [id,setId] = useState("");
     const [minSalary,setMinSalary] = useState("");
     const [shipment,setShipment] = useState("");
-    const [info,setInfo] = useState([]);
+    const [cpStatus,setCpStatus] = useState(false);
     const navigate = useNavigate();
 
     const handleChangeId = (e)=>{
@@ -20,16 +22,25 @@ const MyComponent = ()=>{
         setShipment(e.target.value);
     }
 
+    const handleCpStatusChange = () =>{
+        setCpStatus(!cpStatus);
+    }
+
     const handleSubmit = async ()=>{
+        navigate(`/`);
         setId("");
         setMinSalary("");
-        setInfo([]);
+        
         const response = await fetch(`http://localhost:3000/employee/id&minsalary/${id}/${minSalary}`,{
             method: "GET"
         });
-
+    
         const result = await response.json();
-        setInfo(result);
+        if(result.length!==0)
+        {
+            props.setParentData(result);
+            navigate(`user`);
+        }
     }
 
     return(
@@ -39,17 +50,18 @@ const MyComponent = ()=>{
             <p><input onChange={handleChangeMinSalary} value={minSalary} placeholder="Minimum Salary"/></p>
             <p>{minSalary}</p>
             <p><button onClick={handleSubmit}>Submit</button></p>
-            <ul>
-                {info.map((data,index)=>
-                        <li key={index}>{data.FIRST_NAME} {data.LAST_NAME} - {data.SALARY}</li>
-                    )}
-            </ul>
+            <Outlet/>
             <p><label><input type="radio" value="Pick up" checked={shipment === "Pick up"} onChange={handleShipmentChange}/>Pick up</label></p>
             <p><label><input type="radio" value="Delivery" checked={shipment === "Delivery"} onChange={handleShipmentChange}/>Delivery</label></p>
             <p>Shipment: {shipment}</p>
-            <p><button onClick={()=>navigate("/colorpicker")}>See Color Picker</button></p>
+            <p><button onClick={handleCpStatusChange}>{cpStatus ? "Hide Color Picker" : "Show Color Picker"}</button></p>
+            {cpStatus && <ColorPicker/>}
         </>
     );
+}
+
+MyComponent.propTypes = {
+    setParentData: PropTypes.func
 }
 
 export default MyComponent;

@@ -13,7 +13,7 @@ app.options('*',cors());
 
 app.get("/employee/id&minsalary/:id/:minsalary",async(req,res)=>{
     console.log(req.body);
-    const query = `SELECT FIRST_NAME, LAST_NAME, SALARY FROM EMPLOYEES WHERE DEPARTMENT_ID = ${req.params.id} AND SALARY>${req.params.minsalary}`;
+    const query = `SELECT FIRST_NAME, LAST_NAME, SALARY, EMAIL, PHONE_NUMBER, JOB_ID FROM EMPLOYEES WHERE DEPARTMENT_ID = ${req.params.id} AND SALARY>${req.params.minsalary}`;
     const params = [];
     const result = await database.query(query,params);
     res.status(200).json(result);
