@@ -31,8 +31,8 @@ function App() {
   const handleUserInfo = (Info,isLoggingOut)=>
   {
     setIsLoginOrSignUpPageLoaded(isLoggingOut);
-    if(isLoggingOut) isInLoginPage(isLoggingOut);
-    setIsLoggedIn(!isLoggedIn);
+    setIsInLoginPage(isLoggingOut);
+    setIsLoggedIn(!isLoggingOut);
     setUserInfo(Info);
   }
 
@@ -41,8 +41,8 @@ function App() {
       <Routes>
         <Route path='/' element={isLoginOrSignUpPageLoaded ? (isInLoginPage ? <Login setUserInfo={handleUserInfo} goToHome={handleBackFromLoginOrSignUp} goToSignUp={handleChangeBetweenLoginAndAignUp}/> 
                                                                             : <SignUp setUserInfo={handleUserInfo} goToHome={handleBackFromLoginOrSignUp} goToLogin={handleChangeBetweenLoginAndAignUp}/>)
-                                                          : <Home handleIsInLoginOrSignUpFromNavbar={handleIsInLoginOrSignUpFromNavbar} isLoggedIn={isLoggedIn}/>}>
-          {!isLoginOrSignUpPageLoaded && <Route index element={<TitleAndHome/>}/>}
+                                                          : <Home handleIsInLoginOrSignUpFromNavbar={handleIsInLoginOrSignUpFromNavbar} isLoggedIn={isLoggedIn} userInfo={userInfo}/>}>
+          {!isLoginOrSignUpPageLoaded && <Route index element={<TitleAndHome isLoggedIn={isLoggedIn} userInfo={userInfo}/>}/>}
           <Route path='user' element={<ProfileHomePage setLogOut={handleUserInfo} loginInfo={userInfo}/>}/>
         </Route>
         <Route path="*" element={<NoMatch/>}/>

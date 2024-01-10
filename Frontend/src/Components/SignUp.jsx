@@ -1,6 +1,7 @@
 import { useState } from "react";
 import PropTypes from 'prop-types'
 import { useNavigate } from "react-router-dom";
+import PasswordInput from "./PasswordInput";
 
 const SignUp = (props) =>{
     const navigate = useNavigate();
@@ -18,14 +19,14 @@ const SignUp = (props) =>{
         setUsername(e.target.value);
     }
 
-    const handlePasswordChange = (e)=>{
-        setPassword(e.target.value);
+    const handlePasswordChange = (text)=>{
+        setPassword(text);
         setIsStarting(false);
-        e.target.value.length>=8 ? setIsValidPassword(true) : setIsValidPassword(false);
+        text.length>=8 ? setIsValidPassword(true) : setIsValidPassword(false);
     }
 
-    const handleRePasswordChange = (e)=>{
-        setRePassword(e.target.value);
+    const handleRePasswordChange = (text)=>{
+        setRePassword(text);
     }
 
     const handleFirstNameChange = (e)=>{
@@ -60,12 +61,48 @@ const SignUp = (props) =>{
         }
         else
         {
-            const response = await fetch(`http://localhost:3000/user/${username}`,{
-                method: "GET"
+            let pref = ""
+            let indices = []
+            for(let i=1;i<=4;i++)
+            {
+                let check = document.getElementById("preference"+i);
+                if(check.checked)
+                {
+                    indices.push(i);
+                }
+            }
+
+            for(let i=0;i<indices.length;i++)
+            {
+                let check = document.getElementById("preference"+indices[i]);
+                pref = pref+check.value;
+                if(i!=indices.length-1)
+                {
+                    pref = pref + ',';
+                }
+            }
+
+            const info = {
+                username: username,
+                firstName: firstName,
+                lastName: lastName,
+                email: email,
+                password: password,
+                userType: 'customer',
+                preferences: pref
+            }
+
+            const response = await fetch(`http://localhost:3000/customer`,{
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(info)
             });
 
             const result = await response.json();
-            if(result.length!==0)
+
+            if(!result.status)
             {
                 setUsername("");
                 alert("This username is already taken. Use another one.");
@@ -79,47 +116,8 @@ const SignUp = (props) =>{
                 setPassword("");
                 setRePassword("");
 
-                let pref = ""
-                let indices = []
-                for(let i=1;i<=4;i++)
-                {
-                    let check = document.getElementById("preference"+i);
-                    if(check.checked)
-                    {
-                        indices.push(i);
-                    }
-                }
-
-                for(let i=0;i<indices.length;i++)
-                {
-                    let check = document.getElementById("preference"+indices[i]);
-                    pref = pref+check.value;
-                    if(i!=indices.length-1)
-                    {
-                        pref = pref + ',';
-                    }
-                }
-
-                const info = {
-                    username: username,
-                    firstName: firstName,
-                    lastName: lastName,
-                    email: email,
-                    password: password,
-                    userType: 'customer',
-                    preferences: pref
-                }
-
-                const response1 = await fetch(`http://localhost:3000/user`,{
-                    method: "POST",
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(info)
-                });
-
-                const result1 = await response1.json();
-                props.setUserInfo(result1,false);
+                
+                props.setUserInfo(result.data,false);
                 navigate("/user");
             }
         }
@@ -140,13 +138,13 @@ const SignUp = (props) =>{
 
         <h3>Choose Your Destination Preferences:</h3>
         <label><input type="checkbox" id="preference1" value="Mountains"/>Mountains</label><br/>
-        <label><input type="checkbox" id="preference2" value="Lakes"/>Lake</label><br/>
+        <label><input type="checkbox" id="preference2" value="Lakes"/>Lakes</label><br/>
         <label><input type="checkbox" id="preference3" value="Beaches"/>Beaches</label><br/>
         <label><input type="checkbox" id="preference4" value="Deserts"/>Deserts</label><br/><br/>
 
-        <label>Enter Password: <input type='password' value={password} onChange={handlePasswordChange}/><span style={{color: "red"}}> *</span></label>
+        <PasswordInput Label="Enter Password: " setPass={handlePasswordChange}/><span style={{color: "red"}}> *</span>
         {!isValidPassword && !isStarting ? <h5 style={{color: "red"}}>password must be at least 8 characters long</h5> : <><br/><br/></>}
-        <label>Confirm Password: <input type='password' value={rePassword} onChange={handleRePasswordChange}/><span style={{color: "red"}}> *</span></label><br/><br/>
+        <PasswordInput Label="Confirm Password: " setPass={handleRePasswordChange}/><span style={{color: "red"}}> *</span><br/><br/>
         <button onClick={handleDataSubmit}>Submit</button><br/><br/>
         <button onClick={handleChangeToLogin}>Go to Login</button><br/><br/>
         <button onClick={handleGoToHomePage}>Go to Homepage</button>

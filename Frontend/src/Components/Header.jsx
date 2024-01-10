@@ -7,8 +7,8 @@ const Header = (props)=>{
     }
 
     return(<nav className="main-navbar">
-        <div><Link to='/'>Home</Link> <Link to='/about'>About</Link></div>
-        {!props.isLoggedIn && <div>
+        <div><Link to='/' className="basicInfo">Home</Link> <Link to='/about' className="basicInfo">About</Link></div>
+        {props.isLoggedIn ? <div><h4 className="username">Hello <Link to='user' className="underlinedLink">{props.userInfo.USERNAME}</Link></h4></div> : <div>
                                     <button onClick={()=>goToLoginOrSignUp(true)}>Login</button>
                                     <button onClick={()=>goToLoginOrSignUp(false)}>Sign Up</button>
                                 </div>}
@@ -17,7 +17,8 @@ const Header = (props)=>{
 
 Header.propTypes = {
     isLoggedIn: PropTypes.bool,
-    handleIsInLoginOrSignUpFromNavbar: PropTypes.func
+    handleIsInLoginOrSignUpFromNavbar: PropTypes.func,
+    userInfo: PropTypes.object
 }
 
 export default Header;

@@ -1,0 +1,66 @@
+Table creation commands:
+
+1. Users:
+	CREATE TABLE Users (
+    		USER_ID NUMBER PRIMARY KEY,
+    		USERNAME VARCHAR2(50) UNIQUE NOT NULL,
+    		PASSWORD VARCHAR2(100),
+    		FIRST_NAME VARCHAR2(50),
+    		LAST_NAME VARCHAR2(50),
+    		USER_TYPE VARCHAR2(20),
+    		EMAIL VARCHAR2(50) CHECK(EMAIL LIKE '%@%.%')
+	);
+
+	
+	CREATE SEQUENCE user_id_sequence
+    		START WITH 1
+    		INCREMENT BY 1
+    		NOMAXVALUE;
+
+	CREATE OR REPLACE TRIGGER user_id_trigger
+	BEFORE INSERT ON Users
+	FOR EACH ROW
+	BEGIN
+    		SELECT user_id_sequence.NEXTVAL
+    		INTO :NEW.USER_ID
+    		FROM DUAL;
+	END;
+	/
+
+
+
+	INSERT INTO Users (USERNAME, PASSWORD, FIRST_NAME, LAST_NAME, USER_TYPE, EMAIL)
+	VALUES ('john_doe', 'password123', 'John', 'Doe', 'customer', 'john@example.com');
+
+	INSERT INTO Users (USERNAME, PASSWORD, FIRST_NAME, LAST_NAME, USER_TYPE, EMAIL)
+	VALUES ('jane_smith', 'pass1234', 'Jane', 'Smith', 'customer', 'jane@example.com');
+
+	INSERT INTO Users (USERNAME, PASSWORD, FIRST_NAME, LAST_NAME, USER_TYPE, EMAIL)
+	VALUES ('sam_jackson', 'sammy456', 'Sam', 'Jackson', 'customer', 'sam@example.com');
+
+	INSERT INTO Users (USERNAME, PASSWORD, FIRST_NAME, LAST_NAME, USER_TYPE, EMAIL)
+	VALUES ('agent007', 'agentpass', 'James', 'Bond', 'agent', 'james@mi6.com');
+
+
+2. Customer
+	CREATE TABLE Customer (
+    		user_id NUMBER PRIMARY KEY,
+    		preferences VARCHAR2(1000),
+    		FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
+	);
+
+	INSERT INTO Customer (USER_ID,PREFERENCES) VALUES (1,'Mountains,Lakes');
+	INSERT INTO Customer (USER_ID,PREFERENCES) VALUES (2,'Mountains,Deserts');
+	INSERT INTO Customer (USER_ID,PREFERENCES) VALUES (3,'Lakes,Beaches');
+
+3. Agent
+	CREATE TABLE Agent (
+    		user_id NUMBER PRIMARY KEY,
+    		experience_years NUMBER,
+    		fee NUMBER,
+    		FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
+	);
+	
+	INSERT INTO Agent (USER_ID,EXPERIENCE_YEARS,FEE) VALUES(4,5,10000);
+
+

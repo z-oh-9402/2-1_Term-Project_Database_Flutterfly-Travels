@@ -8,7 +8,7 @@ const ProfileHomePage = (props) =>{
 
     const handleLogOutOrDeleteAccount = async (isDeletingAccount) =>{
         {isDeletingAccount && 
-            await fetch(`http://localhost:3000/user/${user.USER_ID}`,{
+            await fetch(`http://localhost:3000/customer/${user.USER_ID}`,{
                 method: "DELETE"
             })}
 

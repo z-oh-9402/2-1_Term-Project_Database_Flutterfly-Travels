@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom';
+import PasswordInput from './PasswordInput';
 
 const Login = (props)=>{
     const [username,setUsername] = useState("");
@@ -12,8 +13,8 @@ const Login = (props)=>{
         setUsername(e.target.value);
     }
 
-    const handlePasswordChange = (e)=>{
-        setPassword(e.target.value);
+    const handlePasswordChange = (text)=>{
+        setPassword(text);
     }
 
     const handleChangeToSignUp = ()=>
@@ -22,27 +23,35 @@ const Login = (props)=>{
     }
 
     const handleDataSubmit = async ()=>{
-        setUsername("");
-        setPassword("");
-
-        const response = await fetch(`http://localhost:3000/user/${username}`,{
-            method: "GET"
-        });
-
-        const result = await response.json();
-        if(result.length === 0)
+        if(username!=="" && password!=="")
         {
-            alert("Username does not exist");
-        }
-        else
-        {
-            if(result[0].PASSWORD === password)
+            const response = await fetch(`http://localhost:3000/customer/${username}/${password}`,{
+                method: "GET"
+            });
+
+            const result = await response.json();
+            if(result.status === -1)
             {
-                props.setUserInfo(result[0],false);
-                navigate("user");
+                setUsername("");
+                alert("Username does not exist");
             }
-            else alert("Wrong password");
+            else
+            {
+                if(result.status === 1)
+                {
+                    setUsername("");
+                    setPassword("");
+                    props.setUserInfo(result.data,false);
+                    navigate("user");
+                }
+                else
+                {
+                    setPassword("");
+                    alert("Wrong password");
+                }
+            }
         }
+        else alert("Important field(s) empty!");
     }
 
     const handleGoToHomePage = () =>
@@ -55,7 +64,7 @@ const Login = (props)=>{
         <>
             <h1>Login Page</h1>
             <label>Username: <input value={username} placeholder='Enter username' onChange={handleUsernameChange}/></label><br/><br/>
-            <label>Password: <input type='password' value={password} placeholder='Enter password' onChange={handlePasswordChange}/></label><br/><br/>
+            <PasswordInput Label="Password: " setPass={handlePasswordChange}/><br/><br/>
             <button onClick={handleDataSubmit}>Submit</button><br/><br/>
             <button onClick={handleChangeToSignUp}>Go to Sign Up</button><br/><br/>
             <button onClick={handleGoToHomePage}>Go to Homepage</button>

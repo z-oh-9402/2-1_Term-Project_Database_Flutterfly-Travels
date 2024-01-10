@@ -9,16 +9,23 @@ body{
     justify-content: space-between;
 }
 
-.main-navbar a{
+.main-navbar .basicInfo{
     margin-right: 16px;
     text-decoration: none;
-    color:black;
 }
 
-.main-navbar a:hover{
+.main-navbar .basicInfo:hover{
     text-decoration: underline;
+}
+
+.main-navbar a{
+    color:black;
 }
 
 .main-navbar button{
     margin-right: 10px;
+}
+
+.username{
+    margin: 0px;
 }
