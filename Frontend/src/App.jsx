@@ -1,29 +1,49 @@
+import './App.css';
 import { useState } from 'react';
 import {Routes, Route} from 'react-router-dom';
-import './App.css';
-import Button from "./Button.jsx";
-import MyComponent from './MyComponent.jsx';
-import NoMatch from './NoMatch.jsx';
-import UserList from './UserList.jsx';
-import UserDetails from './UserDetails.jsx';
+import NoMatch from './Components/NoMatch.jsx';
+import ProfileHomePage from './Components/ProfileHomePage.jsx';
+import Home from './Components/Home.jsx';
+import TitleAndHome from './Components/TitleAndHome.jsx';
+import Login from './Components/Login.jsx';
+import SignUp from './Components/SignUp.jsx';
 
 function App() {
-  const [info,setInfo] = useState([]);
+  const [userInfo,setUserInfo] = useState(undefined);
+  const [isLoginOrSignUpPageLoaded, setIsLoginOrSignUpPageLoaded] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isInLoginPage, setIsInLoginPage] = useState(true);
 
-  const handleFunction = (param)=>
+  const handleIsInLoginOrSignUpFromNavbar = (isInLogin) => {
+    setIsLoginOrSignUpPageLoaded(true);
+    setIsInLoginPage(isInLogin);
+  }
+
+  const handleChangeBetweenLoginAndAignUp = () =>
   {
-    setInfo(param);
+    setIsInLoginPage(!isInLoginPage);
+  }
+
+  const handleBackFromLoginOrSignUp = () => {
+    setIsLoginOrSignUpPageLoaded(false);
+  }
+
+  const handleUserInfo = (Info,isLoggingOut)=>
+  {
+    setIsLoginOrSignUpPageLoaded(isLoggingOut);
+    if(isLoggingOut) isInLoginPage(isLoggingOut);
+    setIsLoggedIn(!isLoggedIn);
+    setUserInfo(Info);
   }
 
   return (
     <>
-      <Button/>
       <Routes>
-        <Route path='' element={<MyComponent setParentData={handleFunction}/>}>
-          <Route path='user' element={<UserList data={info}/>}>
-            {console.log(info[3])}
-            <Route path=':userId' element={<UserDetails data={info}/>}/>
-          </Route>
+        <Route path='/' element={isLoginOrSignUpPageLoaded ? (isInLoginPage ? <Login setUserInfo={handleUserInfo} goToHome={handleBackFromLoginOrSignUp} goToSignUp={handleChangeBetweenLoginAndAignUp}/> 
+                                                                            : <SignUp setUserInfo={handleUserInfo} goToHome={handleBackFromLoginOrSignUp} goToLogin={handleChangeBetweenLoginAndAignUp}/>)
+                                                          : <Home handleIsInLoginOrSignUpFromNavbar={handleIsInLoginOrSignUpFromNavbar} isLoggedIn={isLoggedIn}/>}>
+          {!isLoginOrSignUpPageLoaded && <Route index element={<TitleAndHome/>}/>}
+          <Route path='user' element={<ProfileHomePage setLogOut={handleUserInfo} loginInfo={userInfo}/>}/>
         </Route>
         <Route path="*" element={<NoMatch/>}/>
       </Routes>
@@ -31,4 +51,4 @@ function App() {
   )
 }
 
-export default App
+export default App;

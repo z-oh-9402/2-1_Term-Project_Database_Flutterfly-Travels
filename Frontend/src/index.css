@@ -1,0 +1,24 @@
+body{
+    margin: 0px;
+}
+
+.main-navbar {
+    background-color: rgba(161, 244, 250, 0.479);
+    padding: 16px 32px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.main-navbar a{
+    margin-right: 16px;
+    text-decoration: none;
+    color:black;
+}
+
+.main-navbar a:hover{
+    text-decoration: underline;
+}
+
+.main-navbar button{
+    margin-right: 10px;
+}
