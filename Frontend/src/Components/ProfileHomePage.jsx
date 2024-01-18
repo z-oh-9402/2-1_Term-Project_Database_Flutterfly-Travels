@@ -17,24 +17,27 @@ const ProfileHomePage = (props) =>{
     }
 
     return(<>
-        <h1>User Details: </h1>
-        <p>
-            Username: {user.USERNAME}<br/>
-            First Name: {user.FIRST_NAME}<br/>
-            Last Name: {user.LAST_NAME}<br/>
-            Email: {user.EMAIL}<br/><br/>
-            Passport Number: {user.PASSPORT_NUMBER}<br/><br/>
-            Trip Booked: {user.TRIP_BOOKED}<br/><br/>
-            {pref.length!==0 && "Preferences:"}
-        </p>
-        {pref.length!==0 && <ul>
-            {pref.map((data,index)=>
-                <li key={index}>{data}</li>
-            )}
-        </ul>}
+        <div>
+            <h1>User Details: </h1>
+            <p>
+                Username: {user.USERNAME}<br/>
+                First Name: {user.FIRST_NAME}<br/>
+                Last Name: {user.LAST_NAME}<br/>
+                Email: {user.EMAIL}<br/><br/>
+                Passport Number: {user.PASSPORT_NUMBER}<br/><br/>
+                Trip Booked: {user.TRIP_BOOKED}<br/><br/>
+                {pref.length!==0 && "Preferences:"}
+            </p>
+            {pref.length!==0 && <ul>
+                {pref.map((data,index)=>
+                    <li key={index}>{data}</li>
+                )}
+            </ul>}
 
-        <button onClick={() => {handleLogOutOrDeleteAccount(false)}}>Log Out</button><br/><br/>
-        <button onClick={() => {handleLogOutOrDeleteAccount(true)}}>Delete Account</button>
+            <button onClick={() => {handleLogOutOrDeleteAccount(false)}}>Log Out</button><br/><br/>
+            <button onClick={() => {handleLogOutOrDeleteAccount(true)}}>Delete Account</button>
+        </div>
+        <div></div>
     </>)
 }
 
