@@ -35,6 +35,7 @@ const ProfileHomePage = (props) =>{
             </ul>}
 
             <button onClick={() => {handleLogOutOrDeleteAccount(false)}}>Log Out</button><br/><br/>
+            <button>Update Account</button><br/><br/>
             <button onClick={() => {handleLogOutOrDeleteAccount(true)}}>Delete Account</button>
         </div>
         <div></div>

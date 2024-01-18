@@ -67,7 +67,6 @@ const SignUp = (props) =>{
         else
         {
             let pref = []
-            let indices = []
             for(let i=1;i<=4;i++)
             {
                 let check = document.getElementById("preference"+i);
@@ -76,12 +75,6 @@ const SignUp = (props) =>{
                     pref.push(check.value);
                 }
             }
-
-            // for(let i=0;i<indices.length;i++)
-            // {
-            //     let check = document.getElementById("preference"+indices[i]);
-            //     pref.push(check.value);
-            // }
 
             const info = {
                 "username": username,
