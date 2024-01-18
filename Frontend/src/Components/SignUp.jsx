@@ -73,15 +73,15 @@ const SignUp = (props) =>{
                 let check = document.getElementById("preference"+i);
                 if(check.checked)
                 {
-                    indices.push(i);
+                    pref.push(check.value);
                 }
             }
 
-            for(let i=0;i<indices.length;i++)
-            {
-                let check = document.getElementById("preference"+indices[i]);
-                pref.push(check.value);
-            }
+            // for(let i=0;i<indices.length;i++)
+            // {
+            //     let check = document.getElementById("preference"+indices[i]);
+            //     pref.push(check.value);
+            // }
 
             const info = {
                 "username": username,
