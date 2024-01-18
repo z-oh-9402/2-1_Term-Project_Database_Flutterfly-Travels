@@ -11,6 +11,7 @@ const SignUp = (props) =>{
     const [firstName,setFirstName] = useState("");
     const [lastName,setLastName] = useState("");
     const [email,setEmail] = useState("");
+    const [passportNumber,setPassportNumber] = useState("");
     const [isValidPassword,setIsValidPassword] = useState(false);
     const [isStarting,setIsStarting] = useState(true);
 
@@ -41,6 +42,10 @@ const SignUp = (props) =>{
         setEmail(e.target.value);
     }
 
+    const handlePassportNumberChange = (e)=>{
+        setPassportNumber(e.target.value);
+    }
+
     const handleChangeToLogin = () =>{
         props.goToLogin();
     }
@@ -55,13 +60,13 @@ const SignUp = (props) =>{
         {
             alert("Password and Confirmed Password don't match.");
         }
-        else if(username==="" || firstName==="" || lastName==="" || email==="")
+        else if(username==="" || firstName==="" || lastName==="" || email==="" || passportNumber==="")
         {
             alert("Important field(s) empty!");
         }
         else
         {
-            let pref = ""
+            let pref = []
             let indices = []
             for(let i=1;i<=4;i++)
             {
@@ -75,21 +80,19 @@ const SignUp = (props) =>{
             for(let i=0;i<indices.length;i++)
             {
                 let check = document.getElementById("preference"+indices[i]);
-                pref = pref+check.value;
-                if(i!=indices.length-1)
-                {
-                    pref = pref + ',';
-                }
+                pref.push(check.value);
             }
 
             const info = {
-                username: username,
-                firstName: firstName,
-                lastName: lastName,
-                email: email,
-                password: password,
-                userType: 'customer',
-                preferences: pref
+                "username": username,
+                "firstName": firstName,
+                "lastName": lastName,
+                "email": email,
+                "passportNumber": passportNumber,
+                "tripBooked": 0,
+                "password": password,
+                "userType": 'customer',
+                "preferences": pref
             }
 
             const response = await fetch(`http://localhost:3000/customer`,{
@@ -113,9 +116,9 @@ const SignUp = (props) =>{
                 setFirstName("");
                 setLastName("");
                 setEmail("");
+                setPassportNumber("");
                 setPassword("");
                 setRePassword("");
-
                 
                 props.setUserInfo(result.data,false);
                 navigate("/user");
@@ -135,6 +138,7 @@ const SignUp = (props) =>{
         <label>First Name: <input value={firstName} placeholder='Enter first name' onChange={handleFirstNameChange}/><span style={{color: "red"}}> *</span></label><br/><br/>
         <label>Last Name: <input value={lastName} placeholder='Enter last name' onChange={handleLastNameChange}/><span style={{color: "red"}}> *</span></label><br/><br/>
         <label>Email: <input value={email} placeholder='Enter email' onChange={handleEmailChange}/><span style={{color: "red"}}> *</span></label><br/><br/>
+        <label>Passport Number: <input value={passportNumber} placeholder='Enter passport number' onChange={handlePassportNumberChange}/><span style={{color: "red"}}> *</span></label><br/><br/>
 
         <h3>Choose Your Destination Preferences:</h3>
         <label><input type="checkbox" id="preference1" value="Mountains"/>Mountains</label><br/>

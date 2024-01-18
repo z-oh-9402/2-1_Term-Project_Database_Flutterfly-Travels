@@ -23,9 +23,11 @@ const ProfileHomePage = (props) =>{
             First Name: {user.FIRST_NAME}<br/>
             Last Name: {user.LAST_NAME}<br/>
             Email: {user.EMAIL}<br/><br/>
-            {pref!==null && "Preferences:"}
+            Passport Number: {user.PASSPORT_NUMBER}<br/><br/>
+            Trip Booked: {user.TRIP_BOOKED}<br/><br/>
+            {pref.length!==0 && "Preferences:"}
         </p>
-        {pref!==null && <ul>
+        {pref.length!==0 && <ul>
             {pref.map((data,index)=>
                 <li key={index}>{data}</li>
             )}

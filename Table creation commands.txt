@@ -44,9 +44,10 @@ Table creation commands:
 
 2. Customer
 	CREATE TABLE Customer (
-    		user_id NUMBER PRIMARY KEY,
-    		preferences VARCHAR2(1000),
-    		FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
+    		customer_id NUMBER PRIMARY KEY,
+			passport_number VARCHAR2(20) NOT NULL,
+			preferred_language VARCHAR2(50),
+    		FOREIGN KEY (customer_id) REFERENCES Users(user_id) ON DELETE CASCADE
 	);
 
 	INSERT INTO Customer (USER_ID,PREFERENCES) VALUES (1,'Mountains,Lakes');
@@ -55,12 +56,282 @@ Table creation commands:
 
 3. Agent
 	CREATE TABLE Agent (
-    		user_id NUMBER PRIMARY KEY,
+    		agent_id NUMBER PRIMARY KEY,
     		experience_years NUMBER,
     		fee NUMBER,
-    		FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
+    		FOREIGN KEY (agent_id) REFERENCES Users(user_id) ON DELETE CASCADE
 	);
 	
 	INSERT INTO Agent (USER_ID,EXPERIENCE_YEARS,FEE) VALUES(4,5,10000);
 
+4. Destination_Info
+	CREATE TABLE destination_info (
+		destination_id NUMBER PRIMARY KEY,
+		name VARCHAR2(255),
+		Description CLOB,
+		Attractions CLOB,
+		Weather_info CLOB,
+		Travel_Tips CLOB
+	);
 
+	CREATE SEQUENCE destination_id_sequence
+		START WITH 1
+		INCREMENT BY 1
+		NOMAXVALUE;
+
+	CREATE OR REPLACE TRIGGER destination_id_trigger
+    BEFORE INSERT ON Destination_Info
+    FOR EACH ROW
+	BEGIN
+		SELECT destination_id_sequence.NEXTVAL
+		INTO :NEW.DESTINATION_ID
+		FROM DUAL;
+	END;
+	/
+
+65. Customer_Preference
+	CREATE TABLE Customer_Preference (
+    	customer_id NUMBER,
+		preferences VARCHAR2(100);
+		FOREIGN KEY (customer_id) REFERENCES Customer(customer_id) ON DELETE CASCADE
+	);
+
+6. Destination_Type
+	CREATE TABLE Destination_Type (
+		destination_id NUMBER,
+		place_type VARCHAR2(100);
+		FOREIGN KEY (destination_id) REFERENCES Destination_Info(destination_id) ON DELETE CASCADE
+	);
+
+7. Trip 
+	CREATE TABLE Trip (
+		trip_id NUMBER PRIMARY KEY,
+		agent_id NUMBER,
+		customer_id NUMBER,
+		booking_id NUMBER,
+		departure_date DATE,
+		trip_duration NUMBER,
+		total_cost NUMBER,
+		discount NUMBER,
+		FOREIGN KEY (agent_id) REFERENCES Agent(agent_id),
+		FOREIGN KEY (customer_id) REFERENCES Customer(customer_id) ON DELETE CASCADE,
+	);
+
+	CREATE SEQUENCE trip_id_sequence
+		START WITH 1
+		INCREMENT BY 1
+		NOMAXVALUE;
+
+
+	CREATE OR REPLACE TRIGGER trip_id_trigger
+    BEFORE INSERT ON Trip
+    FOR EACH ROW
+	BEGIN
+		SELECT trip_id_sequence.NEXTVAL
+		INTO :NEW.TRIP_ID
+		FROM DUAL;
+	END;
+	/
+
+5. Booking
+	CREATE TABLE Booking (
+		booking_id NUMBER PRIMARY KEY,
+		customer_id NUMBER,
+		trip_id NUMBER,
+		agent_id NUMBER,
+		booking_date DATE,
+		cost NUMBER,
+		booking_type VARCHAR2(100),
+		FOREIGN KEY (customer_id) REFERENCES Customer(customer_id) ON DELETE CASCADE,
+		FOREIGN KEY (trip_id) REFERENCES Trip(trip_id) ON DELETE CASCADE,
+		FOREIGN KEY (agent_id) REFERENCES Agent(agent_id)
+	);
+
+	CREATE SEQUENCE booking_id_sequence
+		START WITH 1
+		INCREMENT BY 1
+		NOMAXVALUE;
+
+
+	CREATE OR REPLACE TRIGGER booking_id_trigger
+    BEFORE INSERT ON Booking
+    FOR EACH ROW
+	BEGIN
+		SELECT booking_id_sequence.NEXTVAL
+		INTO :NEW.BOOKING_ID
+		FROM DUAL;
+	END;
+	/
+
+9. Trip_Destination
+	CREATE TABLE Trip_Destination (
+		trip_id NUMBER,
+		destination_id NUMBER,
+		FOREIGN KEY (trip_id) REFERENCES Trip(trip_id) ON DELETE CASCADE,
+		FOREIGN KEY (destination_id) REFERENCES Destination_Info(destination_id) ON DELETE CASCADE
+	);
+
+10. Accommodation
+	CREATE TABLE Accommodation (
+		accommodation_id NUMBER PRIMARY KEY,
+		name VARCHAR2(200),
+		rating NUMBER CHECK(rating<=5),
+		room_capacity NUMBER,
+		room_price NUMBER,
+		accommodation_type VARCHAR2(100),
+		destination_id NUMBER,
+		FOREIGN KEY (destination_id) REFERENCES Destination_Info(destination_id) ON DELETE CASCADE
+	);
+
+	CREATE SEQUENCE accommodation_id_sequence
+		START WITH 1
+		INCREMENT BY 1
+		NOMAXVALUE;
+
+
+	CREATE OR REPLACE TRIGGER accommodation_id_trigger
+    BEFORE INSERT ON Accommodation
+    FOR EACH ROW
+	BEGIN
+		SELECT accommodation_id_sequence.NEXTVAL
+		INTO :NEW.ACCOMMODATION_ID
+		FROM DUAL;
+	END;
+	/
+
+11. Accommodation_Booking
+	CREATE TABLE Accommodation_Booking (
+		accommodation_booking_id NUMBER PRIMARY KEY,
+		accommodation_id NUMBER,
+		number_of_rooms NUMBER,
+		trip_duration NUMBER,
+		FOREIGN KEY (accommodation_booking_id) REFERENCES Booking(booking_id) ON DELETE CASCADE,
+		FOREIGN KEY (accommodation_id) REFERENCES Accommodation(accommodation_id) ON DELETE CASCADE
+	);
+
+12. Transport
+	CREATE TABLE Transport (
+		transport_id NUMBER PRIMARY KEY,
+		name VARCHAR2(200),
+		rating NUMBER CHECK(rating<=5),
+		ticket_price NUMBER,
+		departure_location VARCHAR2(100),
+		destination_id NUMBER,
+		departure_time INTERVAL DAY TO SECOND,
+		transport_type VARCHAR2(100),
+		FOREIGN KEY (destination_id) REFERENCES Destination_Info(destination_id) ON DELETE CASCADE
+	);
+
+	CREATE SEQUENCE transport_id_sequence
+		START WITH 1
+		INCREMENT BY 1
+		NOMAXVALUE;
+
+
+	CREATE OR REPLACE TRIGGER transport_id_trigger
+    BEFORE INSERT ON Transport
+    FOR EACH ROW
+	BEGIN
+		SELECT transport_id_sequence.NEXTVAL
+		INTO :NEW.TRANSPORT_ID
+		FROM DUAL;
+	END;
+	/
+
+13. Transport_Booking
+	CREATE TABLE Transport_Booking (
+		transport_booking_id NUMBER PRIMARY KEY,
+		transport_id NUMBER,
+		departure_time INTERVAL DAY TO SECOND,
+		departure_location VARCHAR2(100),
+		FOREIGN KEY (transport_booking_id) REFERENCES Booking(booking_id) ON DELETE CASCADE,
+		FOREIGN KEY (transport_id) REFERENCES Transport(transport_id) ON DELETE CASCADE
+	);
+
+14. Flight
+	CREATE TABLE Flight (
+		flight_id NUMBER PRIMARY KEY,
+		airline_name VARCHAR2(200),
+		rating NUMBER CHECK(rating<=5),
+		seat_class VARCHAR2(50),
+		ticket_price NUMBER,
+		departure_location VARCHAR2(100),
+		destination_id NUMBER,
+		departure_time INTERVAL DAY TO SECOND,
+		arrival_time INTERVAL DAY TO SECOND,
+		FOREIGN KEY (destination_id) REFERENCES Destination_Info(destination_id) ON DELETE CASCADE
+	);
+
+	CREATE SEQUENCE flight_id_sequence
+		START WITH 1
+		INCREMENT BY 1
+		NOMAXVALUE;
+
+
+	CREATE OR REPLACE TRIGGER flight_id_trigger
+    BEFORE INSERT ON Flight
+    FOR EACH ROW
+	BEGIN
+		SELECT flight_id_sequence.NEXTVAL
+		INTO :NEW.FLIGHT_ID
+		FROM DUAL;
+	END;
+	/
+
+15. Flight_Booking
+	CREATE TABLE Flight_Booking (
+		flight_booking_id NUMBER PRIMARY KEY,
+		flight_id NUMBER,
+		seat_class VARCHAR2(50),
+		airline_name VARCHAR2(200),
+		number_of_seats NUMBER,
+		departure_time INTERVAL DAY TO SECOND,
+		departure_location VARCHAR2(100),
+		FOREIGN KEY (flight_booking_id) REFERENCES Booking(booking_id) ON DELETE CASCADE,
+		FOREIGN KEY (flight_id) REFERENCES Flight(flight_id) ON DELETE CASCADE
+	);
+
+16. Payment
+	CREATE TABLE Payment (
+		customer_id NUMBER,
+		trip_id NUMBER,
+		payment_type VARCHAR2(100),
+		payment_status VARCHAR2(10),
+		FOREIGN KEY (customer_id) REFERENCES Customer(customer_id) ON DELETE CASCADE,
+		FOREIGN KEY (trip_id) REFERENCES Trip(trip_id) ON DELETE CASCADE
+	);
+
+17. Feedback
+	CREATE TABLE Feedback (
+		customer_id NUMBER,
+		trip_id NUMBER,
+		review VARCHAR2(200),
+		rating NUMBER CHECK(rating<=5),
+		FOREIGN KEY (customer_id) REFERENCES Customer(customer_id) ON DELETE CASCADE,
+		FOREIGN KEY (trip_id) REFERENCES Trip(trip_id) ON DELETE CASCADE
+	);
+
+18. Gifts and Coupons
+	CREATE TABLE Gifts_and_Coupons (
+		coupon_id NUMBER PRIMARY KEY,
+		customer_id NUMBER,
+		discount NUMBER,
+		category VARCHAR2(50),
+		FOREIGN KEY (customer_id) REFERENCES Customer(customer_id) ON DELETE CASCADE
+	);
+
+	CREATE SEQUENCE coupon_id_sequence
+		START WITH 1
+		INCREMENT BY 1
+		NOMAXVALUE;
+
+
+	CREATE OR REPLACE TRIGGER coupon_id_trigger
+    BEFORE INSERT ON Gifts_and_Coupons
+    FOR EACH ROW
+	BEGIN
+		SELECT coupon_id_sequence.NEXTVAL
+		INTO :NEW.COUPON_ID
+		FROM DUAL;
+	END;
+	/
