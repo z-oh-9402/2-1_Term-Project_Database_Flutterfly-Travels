@@ -95,14 +95,14 @@ Table creation commands:
 65. Customer_Preference
 	CREATE TABLE Customer_Preference (
     	customer_id NUMBER,
-		preferences VARCHAR2(100);
+		preferences VARCHAR2(100),
 		FOREIGN KEY (customer_id) REFERENCES Customer(customer_id) ON DELETE CASCADE
 	);
 
 6. Destination_Type
 	CREATE TABLE Destination_Type (
 		destination_id NUMBER,
-		place_type VARCHAR2(100);
+		place_type VARCHAR2(100),
 		FOREIGN KEY (destination_id) REFERENCES Destination(destination_id) ON DELETE CASCADE
 	);
 
@@ -111,13 +111,12 @@ Table creation commands:
 		trip_id NUMBER PRIMARY KEY,
 		agent_id NUMBER,
 		customer_id NUMBER,
-		booking_id NUMBER,
 		departure_date DATE,
 		trip_duration NUMBER,
 		total_cost NUMBER,
 		discount NUMBER,
 		FOREIGN KEY (agent_id) REFERENCES Agent(agent_id),
-		FOREIGN KEY (customer_id) REFERENCES Customer(customer_id) ON DELETE CASCADE,
+		FOREIGN KEY (customer_id) REFERENCES Customer(customer_id) ON DELETE CASCADE
 	);
 
 	CREATE SEQUENCE trip_id_sequence
@@ -247,6 +246,7 @@ Table creation commands:
 		transport_id NUMBER,
 		departure_time INTERVAL DAY TO SECOND,
 		departure_location VARCHAR2(100),
+		number_of_seats NUMBER,
 		FOREIGN KEY (transport_booking_id) REFERENCES Booking(booking_id) ON DELETE CASCADE,
 		FOREIGN KEY (transport_id) REFERENCES Transport(transport_id) ON DELETE CASCADE
 	);
