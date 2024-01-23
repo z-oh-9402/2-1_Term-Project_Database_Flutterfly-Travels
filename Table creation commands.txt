@@ -70,10 +70,10 @@ Table creation commands:
 	CREATE TABLE Destination (
 		destination_id NUMBER PRIMARY KEY,
 		name VARCHAR2(255),
-		Description CLOB,
-		Attractions CLOB,
-		Weather_info CLOB,
-		Travel_Tips CLOB,
+		Description VARCHAR2(1000),
+		Attractions VARCHAR2(1000),
+		Weather_info VARCHAR2(1000),
+		Travel_Tips VARCHAR2(1000),
 		district VARCHAR2(100)
 	);
 

@@ -1,5 +1,54 @@
-body{
-    margin: 0px;
+@keyframes slideToCenter {
+    from {
+        transform: translateY(-100%);
+    }
+    to {
+        transform: translateY(0%);
+    }
+}
+
+@keyframes slideAway {
+    from {
+        transform: translateY(0%);
+    }
+    to {
+        transform: translateY(-160%);
+    }
+}
+
+body, p {
+    margin: 0;
+    padding: 0;
+}
+
+/* Define button styles */
+.custom-btn {
+    display: inline-block;
+    margin-right: 10px;
+    padding: 0.37rem 0.70rem;
+    font-size: 0.9rem;
+    font-weight: 400;
+    line-height: 1.5;
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+    border: 1px solid #6c757d; /* Border color similar to Bootstrap btn-outline-secondary */
+    color: #6c757d; /* Text color similar to Bootstrap btn-outline-secondary */
+    background-color: transparent;
+    border-radius: 0.25rem;
+    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+}
+
+/* Hover state */
+.custom-btn:hover {
+    color: #fff; /* Text color on hover */
+    background-color: #6c757d; /* Background color on hover */
+    border-color: #6c757d; /* Border color on hover */
+}
+
+.main-section{
+    display: flex;
+    align-items: center;
 }
 
 .main-navbar {
@@ -28,4 +77,149 @@ body{
 
 .username{
     margin: 0px;
+}
+
+.login-signup-popup{
+    position: absolute;
+    top: 0;
+    left: 0;
+    min-width: 100%;
+    min-height: 100%;
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+}
+
+.login-signup-container{
+    background: rgb(186, 244, 245);
+    position: relative;
+    padding: 20px 50px 30px 50px;
+    border-radius: 8px;
+    border-style: solid;
+    border-width: 2px;
+    border-color: #46cdd7;
+    animation: slideToCenter 0.5s ease;
+}
+
+.slide-away {
+    animation: slideAway 0.5s ease;
+}
+
+.close{
+    position: absolute;
+    color:white;
+    background-color: black;
+    top: -10px;
+    right: -10px;
+    border-radius: 30px;
+    padding: 8px;
+}
+
+.go-to:hover{
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.profile-page{
+    display: flex;
+}
+
+.profile-container{
+    flex: 0.85;
+}
+
+.recommendation-container{
+    flex: 2;
+    margin-bottom: 50px;
+}
+
+.destination-info-container{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.destination-container{
+    display: flex;
+    flex-direction: row;
+}
+
+.destination-card{
+    position: relative;
+    width: 21%;
+    margin-right: 12px;
+    padding: 8px;
+    height: 240px;
+    background-color: #dbf7fa;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    border: 1px solid #bde8f5;
+    transition: transform 0.3s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 0;
+}
+
+.destination-card:hover {
+    transform: scale(1.05);
+}
+
+.destination-card img {
+    width: 100%;
+    height: 70%;
+    border: 1px solid #72cfe8;
+    border-radius: 6px;
+    object-fit: cover;
+}
+
+.destination-card .title {
+    margin-top: 20px;
+    margin-bottom: 12px;
+}
+
+.destination-card p {
+    margin-bottom: 20px;
+    color: #555;
+}
+
+.popup {
+    position: absolute;
+    top: 100%;
+    left: 90%;
+    transform: translate(-50%, -50%);
+    background-color: #fffffff5;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    padding: 20px;
+    display: none;
+    flex-direction: column;
+    width: 100%
+}
+
+.popup p {
+    margin: 0;
+}
+
+input {
+    padding: 7px 0px 7px 12px;
+    border: 1px solid #ccc;
+    border-radius: 30px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: border-color 0.3s ease-in-out;
+  }
+
+  /* Hover effect */
+input:hover {
+    border-color: #6c757d; /* Change the border color on hover */
+}
+
+/* Focus effect */
+input:focus {
+    outline: none;
+    border-color: #007bff; /* Change the border color when focused */
+    box-shadow: 0 0 8px rgba(0, 123, 255, 0.6);
 }

@@ -1,22 +1,20 @@
 import './App.css';
-import { useState } from 'react';
 import {Routes, Route} from 'react-router-dom';
-import NoMatch from './Components/NoMatch.jsx';
-import ProfileHomePage from './Components/ProfileHomePage.jsx';
-import Home from './Components/Home.jsx';
-import TitleAndHome from './Components/TitleAndHome.jsx';
+import Header from './Components/Header.jsx';
 import Login from './Components/Login.jsx';
 import SignUp from './Components/SignUp.jsx';
+import TitleAndHome from './Components/TitleAndHome.jsx';
+import ProfileHomePage from './Components/ProfileHomePage.jsx';
+import NoMatch from './Components/NoMatch.jsx';
+import { useState } from 'react';
 
 function App() {
-  const [userInfo,setUserInfo] = useState(undefined);
-  const [isLoginOrSignUpPageLoaded, setIsLoginOrSignUpPageLoaded] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoginOrSignUpPageLoaded,setIsLoginOrSignUpPageLoaded] = useState(false);
   const [isInLoginPage, setIsInLoginPage] = useState(true);
 
-  const handleIsInLoginOrSignUpFromNavbar = (isInLogin) => {
+  const handleIsInLoginOrSignUpFromNavbar = (isInLogin) =>{
     setIsLoginOrSignUpPageLoaded(true);
-    setIsInLoginPage(isInLogin);
+    setIsInLoginPage(isInLogin)
   }
 
   const handleChangeBetweenLoginAndAignUp = () =>
@@ -24,27 +22,24 @@ function App() {
     setIsInLoginPage(!isInLoginPage);
   }
 
-  const handleBackFromLoginOrSignUp = () => {
+  const goToHome = () =>
+  {
     setIsLoginOrSignUpPageLoaded(false);
   }
 
-  const handleUserInfo = (Info,isLoggingOut)=>
+  const handleUserInfo = (isLoggingOut)=>
   {
     setIsLoginOrSignUpPageLoaded(isLoggingOut);
     setIsInLoginPage(isLoggingOut);
-    setIsLoggedIn(!isLoggingOut);
-    setUserInfo(Info);
   }
 
   return (
     <>
+      {isLoginOrSignUpPageLoaded && (isInLoginPage ? <Login goToHome={goToHome} setUserInfo={handleUserInfo} goToSignUp={handleChangeBetweenLoginAndAignUp}/> : <SignUp goToHome={goToHome} setUserInfo={handleUserInfo} goToLogin={handleChangeBetweenLoginAndAignUp}/>)}
+      <Header handleIsInLoginOrSignUpFromNavbar={handleIsInLoginOrSignUpFromNavbar}/>
       <Routes>
-        <Route path='/' element={isLoginOrSignUpPageLoaded ? (isInLoginPage ? <Login setUserInfo={handleUserInfo} goToHome={handleBackFromLoginOrSignUp} goToSignUp={handleChangeBetweenLoginAndAignUp}/> 
-                                                                            : <SignUp setUserInfo={handleUserInfo} goToHome={handleBackFromLoginOrSignUp} goToLogin={handleChangeBetweenLoginAndAignUp}/>)
-                                                          : <Home handleIsInLoginOrSignUpFromNavbar={handleIsInLoginOrSignUpFromNavbar} isLoggedIn={isLoggedIn} userInfo={userInfo}/>}>
-          {!isLoginOrSignUpPageLoaded && <Route index element={<TitleAndHome isLoggedIn={isLoggedIn} userInfo={userInfo}/>}/>}
-          <Route path='user' element={<ProfileHomePage setLogOut={handleUserInfo} loginInfo={userInfo}/>}/>
-        </Route>
+        <Route index element={<TitleAndHome/>}/>
+        <Route path='user' element={<ProfileHomePage setLogOut={handleUserInfo}/>}/>
         <Route path="*" element={<NoMatch/>}/>
       </Routes>
     </>

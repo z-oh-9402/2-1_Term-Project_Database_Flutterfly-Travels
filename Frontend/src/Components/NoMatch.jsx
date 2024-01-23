@@ -1,5 +1,5 @@
 const NoMatch = () => {
-    return(<div>404: Page Not Found</div>) ;
+    return(<>404: Page Not Found</>) ;
 }
 
-export default NoMatch
+export default NoMatch;

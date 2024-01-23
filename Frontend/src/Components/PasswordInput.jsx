@@ -17,17 +17,17 @@ const PasswordInput = (props) => {
   return (
     <>
         <div style={{ position: 'relative', display:'inline-block'}}>
-            <label>{props.Label}</label>
-            <input
+            <label>{props.Label}
+            <input style={{position: 'relative'}}
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => {setPassword(e.target.value); props.setPass(e.target.value)}}
-            />
+            /></label>
             <div
                 style={{
                 position: 'absolute',
-                right: '5px',
-                top: '12px',
+                right: '7px',
+                top: '53%',
                 transform: 'translateY(-50%)',
                 cursor: 'pointer',
                 }}

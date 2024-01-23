@@ -33,6 +33,7 @@ router.get("/:username/:password",async(req,res)=>{
                 }    
             }
             ans[0].PREFERENCES = pref;
+            ans[0].PASSWORD = req.params.password;
             result.data = ans[0];
             result.status = 1;
         }
@@ -44,10 +45,6 @@ router.get("/:username/:password",async(req,res)=>{
 router.post("/",async(req,res)=>{
     const user = req.body;
     
-    const plaintextPassword = user.password;
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(plaintextPassword, salt);
-
     let result = {
         status: false,
         data: undefined
@@ -59,6 +56,10 @@ router.post("/",async(req,res)=>{
 
     if(ans.length===0)
     {
+        const plaintextPassword = user.password;
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(plaintextPassword, salt);
+
         const query = `INSERT INTO Users (USERNAME, PASSWORD, FIRST_NAME, LAST_NAME, USER_TYPE, EMAIL)
                        VALUES ('${user.username}','${hashedPassword}','${user.firstName}','${user.lastName}','${user.userType}','${user.email}')`;
         await database.query(query,params);
@@ -72,6 +73,7 @@ router.post("/",async(req,res)=>{
                         VALUES (${ans[0].USER_ID},'${user.passportNumber}',${user.tripBooked})`
         await database.query(query2,params);
 
+        ans[0].PASSWORD = user.password;
         ans[0].PASSPORT_NUMBER = user.passportNumber;
         ans[0].TRIP_BOOKED = user.tripBooked;
         ans[0].PREFERENCES = user.preferences;
@@ -82,6 +84,60 @@ router.post("/",async(req,res)=>{
             await database.query(query3,params);
         }
         await database.query('commit',params);
+        
+        result.status = true;
+        result.data = ans[0];
+    }
+
+    res.status(200).json(result);
+});
+
+router.put("/:userId",async(req,res)=>{
+    const user = req.body;
+
+    let result = {
+        status: false,
+        data: undefined
+    }
+
+    const check_query = `SELECT * FROM Users WHERE USERNAME='${user.username}'`;
+    const params = [];
+    let ans = await database.query(check_query,params);
+
+    if(ans.length===0  || ans[0].USER_ID!==req.params.userId)
+    {
+        const plaintextPassword = user.password;
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(plaintextPassword, salt);
+
+        const query = `UPDATE Users
+                       SET USERNAME='${user.username}',PASSWORD='${hashedPassword}',FIRST_NAME='${user.firstName}',LAST_NAME='${user.lastName}',EMAIL='${user.email}'
+                       WHERE USER_ID=${req.params.userId}`;
+        await database.query(query,params);
+
+        const query2 = `UPDATE Customer
+                        SET PASSPORT_NUMBER='${user.passportNumber}'
+                        WHERE CUSTOMER_ID=${req.params.userId}`
+        await database.query(query2,params);
+
+        const query3 = `DELETE FROM Customer_Preference
+                        WHERE CUSTOMER_ID=${req.params.userId}`;
+        await database.query(query3,params);
+
+        for(let i=0;i<user.preferences.length;i++)
+        {
+            const query4 = `INSERT INTO Customer_Preference (CUSTOMER_ID,PREFERENCES) 
+                            VALUES (${req.params.userId},'${user.preferences[i]}')`;
+            await database.query(query4,params);
+        }
+        await database.query('commit',params);
+
+        const res_query = `SELECT U.*,C.PASSPORT_NUMBER,C.TRIP_BOOKED
+                           FROM Users U LEFT JOIN Customer C ON  U.USER_ID=C.CUSTOMER_ID
+                           WHERE USER_ID=${req.params.userId}`;
+        ans = await database.query(res_query,params);
+        ans[0].PREFERENCES = user.preferences;
+        ans[0].PASSWORD = user.password;
         
         result.status = true;
         result.data = ans[0];

@@ -1,9 +1,14 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import PropTypes from 'prop-types'
 import { useNavigate } from "react-router-dom";
 import PasswordInput from "./PasswordInput";
+import { ImCross } from "react-icons/im";
+import LoginContext from "../Context/LoginContext";
+import UserInfoContext from "../Context/UserInfoContext";
 
 const SignUp = (props) =>{
+    const {setIsLoggingIn} = useContext(LoginContext);
+    const {setInfo} = useContext(UserInfoContext);
     const navigate = useNavigate();
     const [username,setUsername] = useState("");
     const [password,setPassword] = useState("");
@@ -14,6 +19,7 @@ const SignUp = (props) =>{
     const [passportNumber,setPassportNumber] = useState("");
     const [isValidPassword,setIsValidPassword] = useState(false);
     const [isStarting,setIsStarting] = useState(true);
+    const [isFormFilledUp, setIsFormFilledUp] = useState(false);
 
     const handleUsernameChange = (e)=>
     {
@@ -50,9 +56,24 @@ const SignUp = (props) =>{
         props.goToLogin();
     }
 
-    const handleDataSubmit = async () =>
-    {
-        if(!isValidPassword)
+    const togglePage = () =>{
+        if(isFormFilledUp)
+        {
+            console.log("Hello");
+            setPassword("");
+            setRePassword("");
+            setIsValidPassword(false);
+            setIsStarting(true);
+        }
+        setIsFormFilledUp(!isFormFilledUp)
+    }
+
+    const handleForm = ()=>{
+        if(username==="" || firstName==="" || lastName==="" || email==="" || passportNumber==="")
+        {
+            alert("Important field(s) empty!");
+        }
+        else if(!isValidPassword)
         {
             alert("Invalid Password");
         }
@@ -60,92 +81,117 @@ const SignUp = (props) =>{
         {
             alert("Password and Confirmed Password don't match.");
         }
-        else if(username==="" || firstName==="" || lastName==="" || email==="" || passportNumber==="")
+        else
         {
-            alert("Important field(s) empty!");
+            togglePage();
+        }
+    }
+
+    const handleDataSubmit = async () =>
+    {
+        let pref = []
+        for(let i=1;i<=7;i++)
+        {
+            let check = document.getElementById("preference"+i);
+            if(check.checked)
+            {
+                pref.push(check.value);
+            }
+        }
+
+        const info = {
+            "username": username,
+            "firstName": firstName,
+            "lastName": lastName,
+            "email": email,
+            "passportNumber": passportNumber,
+            "tripBooked": 0,
+            "password": password,
+            "userType": 'customer',
+            "preferences": pref
+        }
+
+        const response = await fetch(`http://localhost:3000/customer`,{
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(info)
+        });
+
+        const result = await response.json();
+
+        if(!result.status)
+        {
+            setUsername("");
+            alert("This username is already taken. Use another one.");
         }
         else
         {
-            let pref = []
-            for(let i=1;i<=4;i++)
-            {
-                let check = document.getElementById("preference"+i);
-                if(check.checked)
-                {
-                    pref.push(check.value);
-                }
-            }
-
-            const info = {
-                "username": username,
-                "firstName": firstName,
-                "lastName": lastName,
-                "email": email,
-                "passportNumber": passportNumber,
-                "tripBooked": 0,
-                "password": password,
-                "userType": 'customer',
-                "preferences": pref
-            }
-
-            const response = await fetch(`http://localhost:3000/customer`,{
+            const response = await fetch(`http://localhost:3000/destination/`,{
                 method: "POST",
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(info)
+                body: JSON.stringify(result.data.PREFERENCES)
             });
 
-            const result = await response.json();
-
-            if(!result.status)
-            {
-                setUsername("");
-                alert("This username is already taken. Use another one.");
-            }
-            else
-            {
-                setUsername("");
-                setFirstName("");
-                setLastName("");
-                setEmail("");
-                setPassportNumber("");
-                setPassword("");
-                setRePassword("");
-                
-                props.setUserInfo(result.data,false);
-                navigate("/user");
-            }
+            result.data.RECOMMENDED_DESTINATIONS = await response.json();
+            
+            setIsLoggingIn(true);
+            setInfo(result.data);
+            props.setUserInfo(false);
+            navigate("/user");
         }
     }
 
     const handleGoToHomePage = () =>
     {
-        props.goToHome();
-        navigate("");
+        const box = document.querySelector('.login-signup-container');
+        box.classList.add('slide-away');
+
+        box.addEventListener('animationend', () => {
+            box.remove();
+            props.goToHome();
+        });
     }
 
-    return(<>
-        <h1>Sign Up Page</h1>
-        <label>Username: <input value={username} placeholder='Enter username' onChange={handleUsernameChange}/><span style={{color: "red"}}> *</span></label><br/><br/>  
-        <label>First Name: <input value={firstName} placeholder='Enter first name' onChange={handleFirstNameChange}/><span style={{color: "red"}}> *</span></label><br/><br/>
-        <label>Last Name: <input value={lastName} placeholder='Enter last name' onChange={handleLastNameChange}/><span style={{color: "red"}}> *</span></label><br/><br/>
-        <label>Email: <input value={email} placeholder='Enter email' onChange={handleEmailChange}/><span style={{color: "red"}}> *</span></label><br/><br/>
-        <label>Passport Number: <input value={passportNumber} placeholder='Enter passport number' onChange={handlePassportNumberChange}/><span style={{color: "red"}}> *</span></label><br/><br/>
+    return(
+        <div className='login-signup-popup'>
+            <div className='login-signup-container'>
+                <ImCross className='close' onClick={handleGoToHomePage}/>
+                <h1>Sign Up Page</h1>
+                {!isFormFilledUp?
+                    <>
+                        <label>Username: <input value={username} placeholder='Enter username' onChange={handleUsernameChange}/><span style={{color: "red"}}> *</span></label><br/><br/>  
+                        <label>First Name: <input value={firstName} placeholder='Enter first name' onChange={handleFirstNameChange}/><span style={{color: "red"}}> *</span></label><br/><br/>
+                        <label>Last Name: <input value={lastName} placeholder='Enter last name' onChange={handleLastNameChange}/><span style={{color: "red"}}> *</span></label><br/><br/>
+                        <label>Email: <input value={email} placeholder='Enter email' onChange={handleEmailChange}/><span style={{color: "red"}}> *</span></label><br/><br/>
+                        <label>Passport Number: <input value={passportNumber} placeholder='Enter passport number' onChange={handlePassportNumberChange}/><span style={{color: "red"}}> *</span></label><br/><br/><br/>
 
-        <h3>Choose Your Destination Preferences:</h3>
-        <label><input type="checkbox" id="preference1" value="Mountains"/>Mountains</label><br/>
-        <label><input type="checkbox" id="preference2" value="Lakes"/>Lakes</label><br/>
-        <label><input type="checkbox" id="preference3" value="Beaches"/>Beaches</label><br/>
-        <label><input type="checkbox" id="preference4" value="Deserts"/>Deserts</label><br/><br/>
-
-        <PasswordInput Label="Enter Password: " setPass={handlePasswordChange}/><span style={{color: "red"}}> *</span>
-        {!isValidPassword && !isStarting ? <h5 style={{color: "red"}}>password must be at least 8 characters long</h5> : <><br/><br/></>}
-        <PasswordInput Label="Confirm Password: " setPass={handleRePasswordChange}/><span style={{color: "red"}}> *</span><br/><br/>
-        <button onClick={handleDataSubmit}>Submit</button><br/><br/>
-        <button onClick={handleChangeToLogin}>Go to Login</button><br/><br/>
-        <button onClick={handleGoToHomePage}>Go to Homepage</button>
-    </>)
+                        <PasswordInput Label="Enter Password: " setPass={handlePasswordChange}/><span style={{color: "red"}}> *</span>
+                        {!isValidPassword && !isStarting ? <h5 style={{color: "red"}}>password must be at least 8 characters long</h5> : <><br/><br/></>}
+                        <PasswordInput Label="Confirm Password: " setPass={handleRePasswordChange}/><span style={{color: "red"}}> *</span><br/><br/>
+                        <button className="custom-btn" onClick={handleForm}>Next</button><br/><br/>
+                        <p style={{textAlign: "center"}}>Already have an account? <span className='go-to' onClick={handleChangeToLogin} style={{color: "red"}}>Login now!</span></p>
+                    </> :
+                    <>
+                        <h3>Choose Your Destination Preferences: (Optional)</h3>
+                        <label><input type="checkbox" id="preference1" value="Mountains"/>Mountains</label><br/>
+                        <label><input type="checkbox" id="preference2" value="Lakes"/>Lakes</label><br/>
+                        <label><input type="checkbox" id="preference3" value="Beaches"/>Beaches</label><br/>
+                        <label><input type="checkbox" id="preference4" value="Forests"/>Forests</label><br/>
+                        <label><input type="checkbox" id="preference5" value="Hill Tracks"/>Hill Tracks</label><br/>
+                        <label><input type="checkbox" id="preference6" value="Tea Gardens"/>Tea Gardens</label><br/>
+                        <label><input type="checkbox" id="preference7" value="Historical Places"/>Historical Places</label><br/><br/>
+                        
+                        <div><button className="custom-btn" onClick={togglePage}>Prev</button>
+                        <button className="custom-btn" onClick={handleDataSubmit}>Sign Up</button><br/><br/></div>
+                    </>
+                }
+            </div>
+        </div>
+    )
 }
 
 SignUp.propTypes = {

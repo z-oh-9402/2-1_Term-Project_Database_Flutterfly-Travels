@@ -1,9 +1,14 @@
 import PropTypes from 'prop-types'
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import PasswordInput from './PasswordInput';
+import { ImCross } from "react-icons/im";
+import LoginContext from '../Context/LoginContext';
+import UserInfoContext from '../Context/UserInfoContext';
 
 const Login = (props)=>{
+    const {setInfo} = useContext(UserInfoContext);
+    const {setIsLoggingIn} = useContext(LoginContext);
     const [username,setUsername] = useState("");
     const [password,setPassword] = useState("");
     const navigate = useNavigate();
@@ -29,7 +34,7 @@ const Login = (props)=>{
                 method: "GET"
             });
 
-            const result = await response.json();
+            let result = await response.json();
             if(result.status === -1)
             {
                 setUsername("");
@@ -41,12 +46,24 @@ const Login = (props)=>{
                 {
                     setUsername("");
                     setPassword("");
-                    props.setUserInfo(result.data,false);
+                    
+                    const response = await fetch(`http://localhost:3000/destination/`,{
+                        method: "POST",
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(result.data.PREFERENCES)
+                    });
+
+                    result.data.RECOMMENDED_DESTINATIONS = await response.json();
+
+                    setIsLoggingIn(true);
+                    setInfo(result.data);
+                    props.setUserInfo(false);
                     navigate("user");
                 }
                 else
                 {
-                    setPassword("");
                     alert("Wrong password");
                 }
             }
@@ -56,19 +73,26 @@ const Login = (props)=>{
 
     const handleGoToHomePage = () =>
     {
-        props.goToHome();
-        navigate("");
+        const box = document.querySelector('.login-signup-container');
+        box.classList.add('slide-away');
+
+        box.addEventListener('animationend', () => {
+            box.remove();
+            props.goToHome();
+        });
     }
 
     return(
-        <>
-            <h1>Login Page</h1>
-            <label>Username: <input value={username} placeholder='Enter username' onChange={handleUsernameChange}/></label><br/><br/>
-            <PasswordInput Label="Password: " setPass={handlePasswordChange}/><br/><br/>
-            <button onClick={handleDataSubmit}>Submit</button><br/><br/>
-            <button onClick={handleChangeToSignUp}>Go to Sign Up</button><br/><br/>
-            <button onClick={handleGoToHomePage}>Go to Homepage</button>
-        </>
+        <div className='login-signup-popup'>
+            <div className='login-signup-container'>
+                <ImCross className='close' onClick={handleGoToHomePage}/>
+                <h1>Login Page</h1>
+                <label>Username: <input value={username} placeholder='Enter username' onChange={handleUsernameChange}/></label><br/><br/>
+                <PasswordInput Label="Password: " setPass={handlePasswordChange}/><br/><br/>
+                <button className="custom-btn" onClick={handleDataSubmit}>Login</button><br/><br/>
+                <p style={{textAlign: "center"}}>Don{"'"}t have an account? <span className='go-to' onClick={handleChangeToSignUp} style={{color: "red"}}>Sign up now!</span></p>
+            </div>
+        </div>
     )
 
 }
