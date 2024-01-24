@@ -18,7 +18,7 @@ const DestinationCard = (props) => {
       <p>{props.destination.DISTRICT}</p>
 
       <div className="popup" id={`${props.index}`}>
-            <p className="description"><span style={{fontWeight:"bold",color:"black"}}>Description: </span><br/>{props.destination.DESCRIPTION}</p>
+          <p className="description"><span style={{fontWeight:"bold",color:"black"}}>Description: </span><br/>{props.destination.DESCRIPTION}</p>
       </div>
     </div>
   )

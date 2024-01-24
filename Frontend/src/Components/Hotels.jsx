@@ -1,10 +1,24 @@
+import { useState } from "react";
+
 const Hotels = ()=>{
+    const [search,setSearch] = useState("");
+
+    const handleSearch = (e) =>{
+        setSearch(e.target.value);
+
+        
+    }
+
+    const handleSubmit = () =>{
+        
+    }
+
     return(
         <div className="homepage">
             <h1>Flutterfly Travels</h1>
             <div className="search-container">
-                <input type="text" className="search-input" placeholder="Search..."/>
-                <button className="search-button custom-btn">&#128269;</button>
+                <input type="text" className="search-input" value={search} placeholder="Search..." onChange={handleSearch}/>
+                <button className="search-button custom-btn" onClick={handleSubmit}>&#128269;</button>
             </div>
         </div>)
 }

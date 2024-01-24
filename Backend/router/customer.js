@@ -3,8 +3,8 @@ const database = require('../database');
 const bcrypt = require('bcryptjs');
 
 router.get("/:username/:password",async(req,res)=>{
-    const query = `SELECT U.*, C.passport_number, C.trip_booked, CP.preferences
-                   FROM Users U LEFT JOIN Customer C ON C.CUSTOMER_ID=U.USER_ID LEFT JOIN CUSTOMER_PREFERENCE CP ON C.CUSTOMER_ID=CP.CUSTOMER_ID
+    const query = `SELECT U.*, C.passport_number, C.trip_booked, P.type_name
+                   FROM Users U LEFT JOIN Customer C ON C.CUSTOMER_ID=U.USER_ID LEFT JOIN CUSTOMER_PREFERENCE CP ON C.CUSTOMER_ID=CP.CUSTOMER_ID LEFT JOIN Place_Type P ON CP.PREFERENCE_ID=P.PLACE_TYPE_ID
                    WHERE U.USER_TYPE='customer' AND U.USERNAME='${req.params.username}'`;
     const params = [];
     const ans = await database.query(query,params);
@@ -27,9 +27,9 @@ router.get("/:username/:password",async(req,res)=>{
             let pref = [];
             for(let data of ans)
             {
-                if(data.PREFERENCES!=null)
+                if(data.TYPE_NAME!=null)
                 {
-                    pref.push(data.PREFERENCES);
+                    pref.push(data.TYPE_NAME);
                 }    
             }
             ans[0].PREFERENCES = pref;
@@ -77,10 +77,14 @@ router.post("/",async(req,res)=>{
         ans[0].PASSPORT_NUMBER = user.passportNumber;
         ans[0].TRIP_BOOKED = user.tripBooked;
         ans[0].PREFERENCES = user.preferences;
+        
         for(let i=0;i<user.preferences.length;i++)
         {
-            const query3 = `INSERT INTO Customer_Preference (CUSTOMER_ID,PREFERENCES) 
-                            VALUES (${ans[0].USER_ID},'${user.preferences[i]}')`;
+            const param_query = `SELECT place_type_id FROM Place_Type WHERE TYPE_NAME = '${user.preferences[i]}'`;
+            const id = await database.query(param_query,params);
+
+            const query3 = `INSERT INTO Customer_Preference (CUSTOMER_ID,PREFERENCE_ID) 
+                            VALUES (${ans[0].USER_ID},${id[0].PLACE_TYPE_ID})`;
             await database.query(query3,params);
         }
         await database.query('commit',params);
@@ -126,8 +130,11 @@ router.put("/:userId",async(req,res)=>{
 
         for(let i=0;i<user.preferences.length;i++)
         {
-            const query4 = `INSERT INTO Customer_Preference (CUSTOMER_ID,PREFERENCES) 
-                            VALUES (${req.params.userId},'${user.preferences[i]}')`;
+            const param_query = `SELECT place_type_id FROM Place_Type WHERE TYPE_NAME = '${user.preferences[i]}'`;
+            const id = await database.query(param_query,params);
+
+            const query4 = `INSERT INTO Customer_Preference (CUSTOMER_ID,PREFERENCE_ID) 
+                            VALUES (${req.params.userId},${id[0].PLACE_TYPE_ID})`;
             await database.query(query4,params);
         }
         await database.query('commit',params);
