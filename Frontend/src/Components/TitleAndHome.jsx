@@ -1,8 +1,10 @@
 const TitleAndHome = () =>
 {
-    return(<>
-        <h1>Flutterfly Travels</h1>
-    </>)
+    return(
+        <div className="homepage">
+            <h1>Flutterfly Travels</h1>
+        </div>
+    )
 }
 
 export default TitleAndHome;

@@ -7,6 +7,8 @@ import TitleAndHome from './Components/TitleAndHome.jsx';
 import ProfileHomePage from './Components/ProfileHomePage.jsx';
 import NoMatch from './Components/NoMatch.jsx';
 import { useState } from 'react';
+import Destinations from './Components/Destinations.jsx';
+import Hotels from './Components/Hotels.jsx';
 
 function App() {
   const [isLoginOrSignUpPageLoaded,setIsLoginOrSignUpPageLoaded] = useState(false);
@@ -39,6 +41,8 @@ function App() {
       <Header handleIsInLoginOrSignUpFromNavbar={handleIsInLoginOrSignUpFromNavbar}/>
       <Routes>
         <Route index element={<TitleAndHome/>}/>
+        <Route path='destinations' element={<Destinations/>}/>
+        <Route path='hotels' element={<Hotels/>}/>
         <Route path='user' element={<ProfileHomePage setLogOut={handleUserInfo}/>}/>
         <Route path="*" element={<NoMatch/>}/>
       </Routes>

@@ -1,19 +1,24 @@
+import { Fragment } from 'react';
 import DestinationCard from './DestinationCard';
 import PropTypes from 'prop-types'
 
 const CategorizedDestination = ({destinationObj}) => {
-  console.log(destinationObj)
+  
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        {destinationObj.map((d, index) => (
-            <Fragment/>
-             key={index}>
+    <>
+      {destinationObj.map((d, index) => (
+        d.destinations.length>0 && <Fragment key={index}>
+            <div className='destination-info-container'>
                 <h2>{d.category}</h2>
-                {d.destinations.map((destination,index2)=>
-                    <DestinationCard key={index2} destination={destination} />
-                )}
-        ))}
-    </div>
+                <div className='destination-container'>
+                    {d.destinations.map((destination,index2)=>
+                        <DestinationCard key={index2} destination={destination} index={`${d.category}${index2}`}/>
+                    )}
+                </div>
+            </div>
+        </Fragment>
+      ))}
+    </>
   );
 };
 

@@ -1,3 +1,5 @@
+import "../Styles/button.css"
+
 import PropTypes from 'prop-types'
 import { useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
@@ -60,7 +62,7 @@ const Login = (props)=>{
                     setIsLoggingIn(true);
                     setInfo(result.data);
                     props.setUserInfo(false);
-                    navigate("user");
+                    navigate("/");
                 }
                 else
                 {

@@ -1,10 +1,11 @@
 import PropTypes from 'prop-types'
-import { Fragment, useContext, useState } from 'react';
+import { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PasswordInput from './PasswordInput';
-import DestinationCard from './DestinationCard';
 import UserInfoContext from '../Context/UserInfoContext';
 import LoginContext from '../Context/LoginContext';
+import CategorizedDestination from './CategorizedDestination';
+import "../Styles/button.css"
 
 const ProfileHomePage = (props) =>{
     const {userInfo, setInfo} = useContext(UserInfoContext);
@@ -195,9 +196,9 @@ const ProfileHomePage = (props) =>{
                         )}
                     </ul>}
 
-                    <button className="custom-btn" onClick={() => {handleLogOutOrDeleteAccount(false)}}>Log Out</button><br/><br/>
-                    <button className="custom-btn" onClick={gotToUpdate}>Update Account</button><br/><br/>
-                    <button className="custom-btn" onClick={() => {handleLogOutOrDeleteAccount(true)}}>Delete Account</button>
+                    <button className="btn-primary" onClick={() => {handleLogOutOrDeleteAccount(false)}}>Log Out</button><br/><br/>
+                    <button className="btn-primary" onClick={gotToUpdate}>Update Account</button><br/><br/>
+                    <button className="btn-primary" onClick={() => {handleLogOutOrDeleteAccount(true)}}>Delete Account</button>
                 </div>:
                 <div>
                     <h2>Update Profile:</h2>
@@ -226,19 +227,8 @@ const ProfileHomePage = (props) =>{
                 </div>}
             </div>
             <div className='recommendation-container'>
-                <h1>You can visit -</h1>
-                {user.RECOMMENDED_DESTINATIONS.map((d, index) => (
-                    d.destinations.length>0 && <Fragment key={index}>
-                        <div className='destination-info-container'>
-                            <h2>{d.category}</h2>
-                            <div className='destination-container'>
-                                {d.destinations.map((destination,index2)=>
-                                    <DestinationCard key={index2} destination={destination} index={`${d.category}${index2}`}/>
-                                )}
-                            </div>
-                        </div>
-                    </Fragment>
-                ))}
+                <h1>Recommended Destinations -</h1>
+                <CategorizedDestination destinationObj={user.RECOMMENDED_DESTINATIONS}/>
             </div>
         </div>
     )
