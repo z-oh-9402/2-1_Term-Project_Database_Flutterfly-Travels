@@ -1,6 +1,6 @@
 Table creation commands:
 
-1. Users:
+--1. Users:
 	CREATE TABLE Users (
 		USER_ID NUMBER PRIMARY KEY,
 		USERNAME VARCHAR2(50) UNIQUE NOT NULL,
@@ -42,7 +42,7 @@ Table creation commands:
 	VALUES ('agent007', 'agentpass', 'James', 'Bond', 'agent', 'james@mi6.com');
 
 
-2. Customer
+--2. Customer
 	CREATE TABLE Customer (
 		customer_id NUMBER PRIMARY KEY,
 		passport_number VARCHAR2(20) NOT NULL,
@@ -54,7 +54,7 @@ Table creation commands:
 	INSERT INTO Customer (USER_ID,PREFERENCES) VALUES (2,'Mountains,Deserts');
 	INSERT INTO Customer (USER_ID,PREFERENCES) VALUES (3,'Lakes,Beaches');
 
-3. Agent
+--3. Agent
 	CREATE TABLE Agent (
 		agent_id NUMBER PRIMARY KEY,
 		experience_years NUMBER,
@@ -66,7 +66,7 @@ Table creation commands:
 	
 	INSERT INTO Agent (USER_ID,EXPERIENCE_YEARS,FEE) VALUES(4,5,10000);
 
-4. Destination
+--4. Destination
 	CREATE TABLE Destination (
 		destination_id NUMBER PRIMARY KEY,
 		name VARCHAR2(255),
@@ -94,7 +94,7 @@ Table creation commands:
 	END;
 	/
 
-5. place_type
+--5. place_type
 	CREATE TABLE Place_Type(
 		PLACE_TYPE_ID NUMBER PRIMARY KEY,
 		TYPE_NAME VARCHAR2(100)
@@ -115,7 +115,7 @@ Table creation commands:
 	END;
 	/
 
-6. Customer_Preference
+--6. Customer_Preference
 	CREATE TABLE Customer_Preference (
 		customer_preference_id NUMBER PRIMARY KEY,
     	customer_id NUMBER,
@@ -139,7 +139,7 @@ Table creation commands:
 	END;
 	/
 
-7. Destination_Type
+--7. Destination_Type
 	CREATE TABLE Destination_Type (
 		destination_type_id NUMBER PRIMARY KEY,
 		destination_id NUMBER,
@@ -163,7 +163,7 @@ Table creation commands:
 	END;
 	/
 
-8. Trip 
+--8. Trip 
 	CREATE TABLE Trip (
 		trip_id NUMBER PRIMARY KEY,
 		agent_id NUMBER,
@@ -192,7 +192,7 @@ Table creation commands:
 	END;
 	/
 
-9. Booking
+--9. Booking
 	CREATE TABLE Booking (
 		booking_id NUMBER PRIMARY KEY,
 		customer_id NUMBER,
@@ -222,7 +222,7 @@ Table creation commands:
 	END;
 	/
 
-10. Trip_Destination
+--10. Trip_Destination
 	CREATE TABLE Trip_Destination (
 		trip_destination_id NUMBER PRIMARY KEY,
 		trip_id NUMBER,
@@ -246,7 +246,7 @@ Table creation commands:
 	END;
 	/
 
-11. Accommodation
+--11. Accommodation
 	CREATE TABLE Accommodation (
 		accommodation_id NUMBER PRIMARY KEY,
 		name VARCHAR2(200),
@@ -255,7 +255,7 @@ Table creation commands:
 		room_price NUMBER,
 		accommodation_type VARCHAR2(100),
 		location_id NUMBER,
-		ACCOMMODATION_CLASS NUMBER,
+		accommodation_class NUMBER,
 		style VARCHAR2(100),
 		free_wifi VARCHAR2(1),
 		parking VARCHAR2(1),
@@ -280,7 +280,7 @@ Table creation commands:
 	END;
 	/
 
-12. Accommodation_Booking
+--12. Accommodation_Booking
 	CREATE TABLE Accommodation_Booking (
 		accommodation_booking_id NUMBER PRIMARY KEY,
 		accommodation_id NUMBER,
@@ -291,17 +291,18 @@ Table creation commands:
 		FOREIGN KEY (accommodation_id) REFERENCES Accommodation(accommodation_id) ON DELETE CASCADE
 	);
 
-13. Transport
+--13. Transport
 	CREATE TABLE Transport (
 		transport_id NUMBER PRIMARY KEY,
 		name VARCHAR2(200),
 		rating NUMBER CHECK(rating<=5),
 		ticket_price NUMBER,
-		departure_location VARCHAR2(100),
-		destination_id NUMBER,
+		departure_location_id NUMBER,
+		arrival_location_id NUMBER,
 		departure_time INTERVAL DAY TO SECOND,
 		transport_type VARCHAR2(100),
-		FOREIGN KEY (destination_id) REFERENCES Destination(destination_id) ON DELETE CASCADE
+		FOREIGN KEY (departure_location_id) REFERENCES Location(location_id) ON DELETE CASCADE,
+		FOREIGN KEY (arrival_location_id) REFERENCES Location(location_id) ON DELETE CASCADE
 	);
 
 	CREATE SEQUENCE transport_id_sequence
@@ -320,7 +321,7 @@ Table creation commands:
 	END;
 	/
 
-14. Transport_Booking
+--14. Transport_Booking
 	CREATE TABLE Transport_Booking (
 		transport_booking_id NUMBER PRIMARY KEY,
 		transport_id NUMBER,
@@ -331,18 +332,19 @@ Table creation commands:
 		FOREIGN KEY (transport_id) REFERENCES Transport(transport_id) ON DELETE CASCADE
 	);
 
-15. Flight
+--15. Flight
 	CREATE TABLE Flight (
 		flight_id NUMBER PRIMARY KEY,
 		airline_name VARCHAR2(200),
 		rating NUMBER CHECK(rating<=5),
 		seat_class VARCHAR2(50),
 		ticket_price NUMBER,
-		departure_location VARCHAR2(100),
-		destination_id NUMBER,
+		departure_location_id NUMBER,
+		arrival_location_id NUMBER,
 		departure_time INTERVAL DAY TO SECOND,
 		arrival_time INTERVAL DAY TO SECOND,
-		FOREIGN KEY (destination_id) REFERENCES Destination(destination_id) ON DELETE CASCADE
+		FOREIGN KEY (departure_location_id) REFERENCES Location(location_id) ON DELETE CASCADE,
+		FOREIGN KEY (arrival_location_id) REFERENCES Location(location_id) ON DELETE CASCADE
 	);
 
 	CREATE SEQUENCE flight_id_sequence
@@ -361,7 +363,7 @@ Table creation commands:
 	END;
 	/
 
-16. Flight_Booking
+--16. Flight_Booking
 	CREATE TABLE Flight_Booking (
 		flight_booking_id NUMBER PRIMARY KEY,
 		flight_id NUMBER,
@@ -374,7 +376,47 @@ Table creation commands:
 		FOREIGN KEY (flight_id) REFERENCES Flight(flight_id) ON DELETE CASCADE
 	);
 
-17. Payment
+--17. Restaurant
+	CREATE TABLE Restaurant(
+		restaurant_id NUMBER PRIMARY KEY,
+		name VARCHAR2(150),
+		location_id NUMBER,
+		phone_number NUMBER check(LENGTH(phone_number)=11),
+		cuisine_type VARCHAR2(100),
+		restaurant_class VARCHAR2(100),
+		price_range VARCHAR2(50),
+		rating NUMBER check(rating<=5),
+		FOREIGN KEY (location_id) REFERENCES Location(location_id) ON DELETE CASCADE
+	);
+
+	CREATE SEQUENCE restaurant_id_sequence
+		START WITH 1
+		INCREMENT BY 1
+		NOMAXVALUE;
+
+
+	CREATE OR REPLACE TRIGGER restaurant_id_trigger
+    BEFORE INSERT ON Restaurant
+    FOR EACH ROW
+	BEGIN
+		SELECT restaurant_id_sequence.NEXTVAL
+		INTO :NEW.RESTAURANT_ID
+		FROM DUAL;
+	END;
+	/
+
+--18. Restaurant_Booking
+	CREATE TABLE Restaurant_Booking (
+		restaurant_booking_id NUMBER PRIMARY KEY,
+		restaurant_id NUMBER,
+		seat_class VARCHAR2(50),
+		number_of_seats NUMBER,
+		arrival_time DATE,
+		FOREIGN KEY (restaurant_booking_id) REFERENCES Booking(booking_id) ON DELETE CASCADE,
+		FOREIGN KEY (restaurant_id) REFERENCES Restaurant(restaurant_id) ON DELETE CASCADE
+	);
+
+--19. Payment
 	CREATE TABLE Payment (
 		customer_id NUMBER,
 		trip_id NUMBER,
@@ -384,7 +426,7 @@ Table creation commands:
 		FOREIGN KEY (trip_id) REFERENCES Trip(trip_id) ON DELETE CASCADE
 	);
 
-18. Feedback
+--20. Feedback
 	CREATE TABLE Feedback (
 		customer_id NUMBER,
 		trip_id NUMBER,
@@ -394,7 +436,7 @@ Table creation commands:
 		FOREIGN KEY (trip_id) REFERENCES Trip(trip_id) ON DELETE CASCADE
 	);
 
-19. Gifts and Coupons
+--21. Gifts and Coupons
 	CREATE TABLE Gifts_and_Coupons (
 		coupon_id NUMBER PRIMARY KEY,
 		customer_id NUMBER,
@@ -419,7 +461,7 @@ Table creation commands:
 	END;
 	/
 
-20. Division
+--22. Division
 	CREATE TABLE Division(
 		division_id NUMBER PRIMARY KEY,
 		division_name VARCHAR2(100)
@@ -441,7 +483,7 @@ Table creation commands:
 	END;
 	/
 
-21. District
+--23. District
 	CREATE TABLE District(
 		district_id NUMBER PRIMARY KEY,
 		district_name VARCHAR2(100),
@@ -465,7 +507,7 @@ Table creation commands:
 	END;
 	/
 
-22. Location 
+--24. Location 
 	CREATE TABLE Location(
 		location_id NUMBER PRIMARY KEY,
 		location_name VARCHAR2(100),
@@ -485,34 +527,6 @@ Table creation commands:
 	BEGIN
 		SELECT location_id_sequence.NEXTVAL
 		INTO :NEW.LOCATION_ID
-		FROM DUAL;
-	END;
-	/
-
-23. Restaurant
-	CREATE TABLE Restaurant(
-		restaurant_id NUMBER PRIMARY KEY,
-		name VARCHAR2(150),
-		location_id NUMBER,
-		phone_number NUMBER check(LENGTH(phone_number)=11),
-		cuisine_type VARCHAR2(100),
-		price_range VARCHAR2(50),
-		rating NUMBER check(rating<=5),
-		FOREIGN KEY (location_id) REFERENCES Location(location_id) ON DELETE CASCADE
-	);
-
-	CREATE SEQUENCE restaurant_id_sequence
-		START WITH 1
-		INCREMENT BY 1
-		NOMAXVALUE;
-
-
-	CREATE OR REPLACE TRIGGER restaurant_id_trigger
-    BEFORE INSERT ON Restaurant
-    FOR EACH ROW
-	BEGIN
-		SELECT restaurant_id_sequence.NEXTVAL
-		INTO :NEW.RESTAURANT_ID
 		FROM DUAL;
 	END;
 	/
