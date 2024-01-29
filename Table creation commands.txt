@@ -74,7 +74,9 @@ Table creation commands:
 		Attractions VARCHAR2(1000),
 		Weather_info VARCHAR2(1000),
 		Travel_Tips VARCHAR2(1000),
-		district VARCHAR2(100)
+		rating NUMBER check(rating<=5),
+		location_id NUMBER,
+		FOREIGN KEY (location_id) REFERENCES Location(location_id) ON DELETE CASCADE
 	);
 
 	CREATE SEQUENCE destination_id_sequence
@@ -252,8 +254,14 @@ Table creation commands:
 		room_capacity NUMBER,
 		room_price NUMBER,
 		accommodation_type VARCHAR2(100),
-		destination_id NUMBER,
-		FOREIGN KEY (destination_id) REFERENCES Destination(destination_id) ON DELETE CASCADE
+		location_id NUMBER,
+		ACCOMMODATION_CLASS NUMBER,
+		style VARCHAR2(100),
+		free_wifi VARCHAR2(1),
+		parking VARCHAR2(1),
+		breakfast VARCHAR2(1),
+		pool VARCHAR2(1),
+		FOREIGN KEY (location_id) REFERENCES Location(location_id) ON DELETE CASCADE
 	);
 
 	CREATE SEQUENCE accommodation_id_sequence
@@ -277,7 +285,8 @@ Table creation commands:
 		accommodation_booking_id NUMBER PRIMARY KEY,
 		accommodation_id NUMBER,
 		number_of_rooms NUMBER,
-		trip_duration NUMBER,
+		check_in DATE,
+		check_out DATE,
 		FOREIGN KEY (accommodation_booking_id) REFERENCES Booking(booking_id) ON DELETE CASCADE,
 		FOREIGN KEY (accommodation_id) REFERENCES Accommodation(accommodation_id) ON DELETE CASCADE
 	);
@@ -406,6 +415,104 @@ Table creation commands:
 	BEGIN
 		SELECT coupon_id_sequence.NEXTVAL
 		INTO :NEW.COUPON_ID
+		FROM DUAL;
+	END;
+	/
+
+20. Division
+	CREATE TABLE Division(
+		division_id NUMBER PRIMARY KEY,
+		division_name VARCHAR2(100)
+	);
+
+	CREATE SEQUENCE division_id_sequence
+		START WITH 1
+		INCREMENT BY 1
+		NOMAXVALUE;
+
+
+	CREATE OR REPLACE TRIGGER division_id_trigger
+    BEFORE INSERT ON Division
+    FOR EACH ROW
+	BEGIN
+		SELECT division_id_sequence.NEXTVAL
+		INTO :NEW.DIVISION_ID
+		FROM DUAL;
+	END;
+	/
+
+21. District
+	CREATE TABLE District(
+		district_id NUMBER PRIMARY KEY,
+		district_name VARCHAR2(100),
+		division_id NUMBER,
+		FOREIGN KEY (division_id) REFERENCES Division(division_id) ON DELETE CASCADE
+	);
+
+	CREATE SEQUENCE district_id_sequence
+		START WITH 1
+		INCREMENT BY 1
+		NOMAXVALUE;
+
+
+	CREATE OR REPLACE TRIGGER district_id_trigger
+    BEFORE INSERT ON District
+    FOR EACH ROW
+	BEGIN
+		SELECT district_id_sequence.NEXTVAL
+		INTO :NEW.DISTRICT_ID
+		FROM DUAL;
+	END;
+	/
+
+22. Location 
+	CREATE TABLE Location(
+		location_id NUMBER PRIMARY KEY,
+		location_name VARCHAR2(100),
+		district_id NUMBER,
+		FOREIGN KEY (district_id) REFERENCES District(district_id) ON DELETE CASCADE
+	);
+
+	CREATE SEQUENCE location_id_sequence
+		START WITH 1
+		INCREMENT BY 1
+		NOMAXVALUE;
+
+
+	CREATE OR REPLACE TRIGGER location_id_trigger
+    BEFORE INSERT ON Location
+    FOR EACH ROW
+	BEGIN
+		SELECT location_id_sequence.NEXTVAL
+		INTO :NEW.LOCATION_ID
+		FROM DUAL;
+	END;
+	/
+
+23. Restaurant
+	CREATE TABLE Restaurant(
+		restaurant_id NUMBER PRIMARY KEY,
+		name VARCHAR2(150),
+		location_id NUMBER,
+		phone_number NUMBER check(LENGTH(phone_number)=11),
+		cuisine_type VARCHAR2(100),
+		price_range VARCHAR2(50),
+		rating NUMBER check(rating<=5),
+		FOREIGN KEY (location_id) REFERENCES Location(location_id) ON DELETE CASCADE
+	);
+
+	CREATE SEQUENCE restaurant_id_sequence
+		START WITH 1
+		INCREMENT BY 1
+		NOMAXVALUE;
+
+
+	CREATE OR REPLACE TRIGGER restaurant_id_trigger
+    BEFORE INSERT ON Restaurant
+    FOR EACH ROW
+	BEGIN
+		SELECT restaurant_id_sequence.NEXTVAL
+		INTO :NEW.RESTAURANT_ID
 		FROM DUAL;
 	END;
 	/

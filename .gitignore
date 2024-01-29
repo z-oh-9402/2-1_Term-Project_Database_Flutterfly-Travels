@@ -35,7 +35,6 @@ Frontend/*.njsproj
 Frontend/*.sln
 Frontend/*.sw?
 
-Frontend/public
 Frontend/.eslintrc.cjs
 Frontend/package.json
 Frontend/package-lock.json

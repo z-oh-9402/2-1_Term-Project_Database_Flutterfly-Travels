@@ -1,6 +1,7 @@
 import { Fragment } from 'react';
 import DestinationCard from './DestinationCard';
 import PropTypes from 'prop-types'
+import "../Styles/card.css"
 
 const CategorizedDestination = ({destinationObj}) => {
   
@@ -10,7 +11,7 @@ const CategorizedDestination = ({destinationObj}) => {
         d.destinations.length>0 && <Fragment key={index}>
             <div className='destination-info-container'>
                 <h2>{d.category}</h2>
-                <div className='destination-container'>
+                <div className='card-container'>
                     {d.destinations.map((destination,index2)=>
                         <DestinationCard key={index2} destination={destination} index={`${d.category}${index2}`}/>
                     )}
