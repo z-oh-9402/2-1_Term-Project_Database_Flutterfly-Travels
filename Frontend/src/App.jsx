@@ -9,6 +9,7 @@ import NoMatch from './Components/NoMatch.jsx';
 import { useState } from 'react';
 import Destinations from './Components/Destinations.jsx';
 import Hotels from './Components/Hotels.jsx';
+import Restaurants from './Components/Restaurants.jsx';
 
 function App() {
   const [isLoginOrSignUpPageLoaded,setIsLoginOrSignUpPageLoaded] = useState(false);
@@ -43,6 +44,7 @@ function App() {
         <Route index element={<TitleAndHome/>}/>
         <Route path='destinations' element={<Destinations/>}/>
         <Route path='hotels' element={<Hotels/>}/>
+        <Route path='restaurants' element={<Restaurants/>}/>
         <Route path='user' element={<ProfileHomePage setLogOut={handleUserInfo}/>}/>
         <Route path="*" element={<NoMatch/>}/>
       </Routes>

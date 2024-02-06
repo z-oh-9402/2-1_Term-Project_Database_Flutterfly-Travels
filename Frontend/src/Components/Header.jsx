@@ -19,11 +19,16 @@ const Header = (props)=>{
         navigate('/hotels');
     }
 
+    const goToRestaurants = () =>{
+        navigate('/restaurants');
+    }
+
     return(<nav className="main-navbar">
         <div className="main-section"><Link to='/' className="basicInfo">Home</Link> <Link to='/about' className="basicInfo">About</Link></div>
         <div className="button-container">
             <button className="btn-primary" onClick={goToDestinations}>Destinations</button>
             <button className="btn-primary" onClick={goToHotels}>Hotels</button>
+            <button className="btn-primary" onClick={goToRestaurants}>Restaurants</button>
         </div>
         {isLoggedIn ? <div><h4 className="username">Hello <Link to='user' className="underlinedLink">{userInfo.USERNAME}</Link></h4></div> : <div>
                                     <button className="custom-btn" onClick={()=>props.handleIsInLoginOrSignUpFromNavbar(true)}>Login</button>
