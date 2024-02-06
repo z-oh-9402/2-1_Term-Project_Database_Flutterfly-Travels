@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs');
 router.get("/:username/:password",async(req,res)=>{
     const query = `SELECT U.*, C.passport_number, C.trip_booked, P.type_name
                    FROM Users U LEFT JOIN Customer C ON C.CUSTOMER_ID=U.USER_ID LEFT JOIN CUSTOMER_PREFERENCE CP ON C.CUSTOMER_ID=CP.CUSTOMER_ID LEFT JOIN Place_Type P ON CP.PREFERENCE_ID=P.PLACE_TYPE_ID
-                   WHERE U.USER_TYPE='customer' AND U.USERNAME='${req.params.username}'`;
+                   WHERE U.USERNAME='${req.params.username}'`;
     const params = [];
     const ans = await database.query(query,params);
 

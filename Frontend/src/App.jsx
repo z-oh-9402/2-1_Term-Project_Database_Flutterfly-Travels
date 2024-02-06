@@ -20,7 +20,7 @@ function App() {
     setIsInLoginPage(isInLogin)
   }
 
-  const handleChangeBetweenLoginAndAignUp = () =>
+  const handleChangeBetweenLoginAndSignUp = () =>
   {
     setIsInLoginPage(!isInLoginPage);
   }
@@ -38,7 +38,7 @@ function App() {
 
   return (
     <>
-      {isLoginOrSignUpPageLoaded && (isInLoginPage ? <Login goToHome={goToHome} setUserInfo={handleUserInfo} goToSignUp={handleChangeBetweenLoginAndAignUp}/> : <SignUp goToHome={goToHome} setUserInfo={handleUserInfo} goToLogin={handleChangeBetweenLoginAndAignUp}/>)}
+      {isLoginOrSignUpPageLoaded && (isInLoginPage ? <Login goToHome={goToHome} setUserInfo={handleUserInfo} goToSignUp={handleChangeBetweenLoginAndSignUp}/> : <SignUp goToHome={goToHome} setUserInfo={handleUserInfo} goToLogin={handleChangeBetweenLoginAndAignUp}/>)}
       <Header handleIsInLoginOrSignUpFromNavbar={handleIsInLoginOrSignUpFromNavbar}/>
       <Routes>
         <Route index element={<TitleAndHome/>}/>

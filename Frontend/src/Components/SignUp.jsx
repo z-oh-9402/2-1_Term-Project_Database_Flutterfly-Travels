@@ -61,7 +61,6 @@ const SignUp = (props) =>{
     const togglePage = () =>{
         if(isFormFilledUp)
         {
-            console.log("Hello");
             setPassword("");
             setRePassword("");
             setIsValidPassword(false);

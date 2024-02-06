@@ -74,8 +74,10 @@ Table creation commands:
 		Attractions VARCHAR2(1000),
 		Weather_info VARCHAR2(1000),
 		Travel_Tips VARCHAR2(1000),
+		image VARCHAR2(1000),
 		rating NUMBER check(rating<=5),
 		location_id NUMBER,
+		map VARCHAR2(1000),
 		FOREIGN KEY (location_id) REFERENCES Location(location_id) ON DELETE CASCADE
 	);
 
@@ -261,6 +263,7 @@ Table creation commands:
 		parking VARCHAR2(1),
 		breakfast VARCHAR2(1),
 		pool VARCHAR2(1),
+		map VARCHAR2(1000),
 		FOREIGN KEY (location_id) REFERENCES Location(location_id) ON DELETE CASCADE
 	);
 
@@ -386,6 +389,7 @@ Table creation commands:
 		restaurant_class VARCHAR2(100),
 		price_range VARCHAR2(50),
 		rating NUMBER check(rating<=5),
+		map VARCHAR2(1000),
 		FOREIGN KEY (location_id) REFERENCES Location(location_id) ON DELETE CASCADE
 	);
 
