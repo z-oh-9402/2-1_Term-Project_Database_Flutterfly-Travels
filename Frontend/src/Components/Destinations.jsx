@@ -59,23 +59,26 @@ const Destinations = ()=>{
     }
 
     const setOnFocus = () =>{
-        const suggestionsBlock = document.getElementById("suggestions-container");
-        const searchBlock = document.getElementById("search-div-container");
-
         if(suggestions)
         {
+            const suggestionsBlock = document.getElementById("suggestions-container");
             suggestionsBlock.style.display = "flex";
         }
+
+        const searchBackground = document.getElementById("dim-background");
+        searchBackground.style.display = "block";
     }
 
     const setOnBlur = () =>{
-        const suggestionsBlock = document.getElementById("suggestions-container");
-        const searchBlock = document.getElementById("search-div-container");
-
         if(suggestions)
         {
+            const suggestionsBlock = document.getElementById("suggestions-container");
+
             setTimeout(()=>{suggestionsBlock.style.display = "none"}, 250);
         }
+        
+        const searchBackground = document.getElementById("dim-background");
+        setTimeout(()=>{searchBackground.style.display = "none"},250);
     }
 
     const placeSelected = async (category,e) =>{
@@ -135,10 +138,13 @@ const Destinations = ()=>{
     return(
         <div className="homepage">
             <h1>Flutterfly Travels</h1>
-            <div id="search-div-container" style={{position: "relative"}}>
+            <span id="dim-background"></span>
+            <div className="search-div-container" style={{position: "relative"}}>
                 <div className="search-container">
                     <input type="text" onFocus={setOnFocus} onBlur={setOnBlur} className="search-input" value={search} placeholder="Search destination name or area..." onChange={handleSearch}/>
-                    <button className="search-button custom-btn" onClick={handleSubmit}>&#128269;</button>
+                    <button className="search-button custom-btn" onClick={handleSubmit}>
+                        <img src="search-icon.png"/>
+                    </button>
                 </div>
                 {suggestions!==undefined && 
                     <div id="suggestions-container">
