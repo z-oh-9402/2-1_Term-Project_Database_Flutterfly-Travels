@@ -107,6 +107,27 @@ router.get("/fetch",async(req,res)=>{
     res.status(200).json(result);
 });
 
+router.get("/fetch/destination-name",async(req,res)=>{
+    const name = req.query.name.replace(`'`,`''`);
+
+    const query = `SELECT D.*,L.LOCATION_NAME,DIS.DISTRICT_NAME,DIV.DIVISION_NAME
+                        FROM DESTINATION D LEFT JOIN Location L ON D.LOCATION_ID=L.LOCATION_ID 
+                        LEFT JOIN District DIS ON DIS.DISTRICT_ID=L.DISTRICT_ID
+                        LEFT JOIN Division DIV ON DIV.DIVISION_ID=DIS.DIVISION_ID
+                   WHERE D.NAME='${name}'
+                   ORDER BY D.RATING DESC`;
+    const params = [];
+    const ans = await database.query(query,params);
+
+    const query2 = `SELECT P.TYPE_NAME
+            FROM DESTINATION_TYPE D LEFT JOIN PLACE_TYPE P ON D.PLACE_TYPE_ID = P.PLACE_TYPE_ID
+            WHERE D.DESTINATION_ID = ${ans[0].DESTINATION_ID}`;
+    const result2 = await database.query(query2,params);
+    ans[0].TYPE = result2;
+
+    res.status(200).json(ans[0]);
+});
+
 router.get("/fetch/location",async(req,res)=>{
     const location = req.query.name.replace(`'`,`''`);
 
@@ -119,27 +140,16 @@ router.get("/fetch/location",async(req,res)=>{
     const params = [];
     const ans = await database.query(query,params);
 
-    const result = {
-        status: false,
-        data: undefined
-    }
-
-    if(ans.length!==0)
+    for(let des of ans)
     {
-        for(let des of ans)
-        {
-            const query2 = `SELECT P.TYPE_NAME
-                    FROM DESTINATION_TYPE D LEFT JOIN PLACE_TYPE P ON D.PLACE_TYPE_ID = P.PLACE_TYPE_ID
-                    WHERE D.DESTINATION_ID = ${des.DESTINATION_ID}`;
-            const result2 = await database.query(query2,params);
-            des.TYPE = result2;
-        }
-
-        result.status = true;
-        result.data = ans;
+        const query2 = `SELECT P.TYPE_NAME
+                FROM DESTINATION_TYPE D LEFT JOIN PLACE_TYPE P ON D.PLACE_TYPE_ID = P.PLACE_TYPE_ID
+                WHERE D.DESTINATION_ID = ${des.DESTINATION_ID}`;
+        const result2 = await database.query(query2,params);
+        des.TYPE = result2;
     }
 
-    res.status(200).json(result);
+    res.status(200).json(ans);
 });
 
 router.get("/fetch/district",async(req,res)=>{
@@ -154,27 +164,16 @@ router.get("/fetch/district",async(req,res)=>{
     const params = [];
     const ans = await database.query(query,params);
 
-    const result = {
-        status: false,
-        data: undefined
-    }
-
-    if(ans.length!==0)
+    for(let des of ans)
     {
-        for(let des of ans)
-        {
-            const query2 = `SELECT P.TYPE_NAME
-                    FROM DESTINATION_TYPE D LEFT JOIN PLACE_TYPE P ON D.PLACE_TYPE_ID = P.PLACE_TYPE_ID
-                    WHERE D.DESTINATION_ID = ${des.DESTINATION_ID}`;
-            const result2 = await database.query(query2,params);
-            des.TYPE = result2;
-        }
-
-        result.status = true;
-        result.data = ans;
+        const query2 = `SELECT P.TYPE_NAME
+                FROM DESTINATION_TYPE D LEFT JOIN PLACE_TYPE P ON D.PLACE_TYPE_ID = P.PLACE_TYPE_ID
+                WHERE D.DESTINATION_ID = ${des.DESTINATION_ID}`;
+        const result2 = await database.query(query2,params);
+        des.TYPE = result2;
     }
 
-    res.status(200).json(result);
+    res.status(200).json(ans);
 });
 
 router.get("/fetch/division",async(req,res)=>{
@@ -189,27 +188,16 @@ router.get("/fetch/division",async(req,res)=>{
     const params = [];
     const ans = await database.query(query,params);
 
-    const result = {
-        status: false,
-        data: undefined
-    }
-
-    if(ans.length!==0)
+    for(let des of ans)
     {
-        for(let des of ans)
-        {
-            const query2 = `SELECT P.TYPE_NAME
-                    FROM DESTINATION_TYPE D LEFT JOIN PLACE_TYPE P ON D.PLACE_TYPE_ID = P.PLACE_TYPE_ID
-                    WHERE D.DESTINATION_ID = ${des.DESTINATION_ID}`;
-            const result2 = await database.query(query2,params);
-            des.TYPE = result2;
-        }
-
-        result.status = true;
-        result.data = ans;
+        const query2 = `SELECT P.TYPE_NAME
+                FROM DESTINATION_TYPE D LEFT JOIN PLACE_TYPE P ON D.PLACE_TYPE_ID = P.PLACE_TYPE_ID
+                WHERE D.DESTINATION_ID = ${des.DESTINATION_ID}`;
+        const result2 = await database.query(query2,params);
+        des.TYPE = result2;
     }
 
-    res.status(200).json(result);
+    res.status(200).json(ans);
 });
 
 router.post("/",async(req,res)=>{

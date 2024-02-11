@@ -1,4 +1,4 @@
-const TitleAndHome = () =>
+const Title = () =>
 {
     return(
         <div className="homepage">
@@ -7,4 +7,4 @@ const TitleAndHome = () =>
     )
 }
 
-export default TitleAndHome;
+export default Title;

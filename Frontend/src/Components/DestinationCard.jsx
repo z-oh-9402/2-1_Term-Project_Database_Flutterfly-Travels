@@ -1,8 +1,11 @@
 import PropTypes from 'prop-types'
 import Rating from './Rating';
 import "../Styles/card.css"
+import { useNavigate } from 'react-router-dom';
 
 const DestinationCard = (props) => {
+  const navigate = useNavigate();
+
   const showPopup = () => {
       document.getElementById(`${props.index}`).style.display = 'flex';
   }
@@ -12,7 +15,7 @@ const DestinationCard = (props) => {
   }
 
   return (
-    <div className="card" id={`card${props.index}`} onMouseOver={showPopup} onMouseOut={hidePopup}>
+    <div className="card" id={`card${props.index}`} onMouseOver={showPopup} onMouseOut={hidePopup} onClick={()=>navigate(`/destinations/${props.destination.NAME}`)}>
       <img src={props.destination.IMAGE} alt="Card Image"/>
       <h3 className='title'>{props.destination.NAME}</h3>
       <p>{props.destination.DISTRICT_NAME}, {props.destination.DIVISION_NAME.includes("Chattogram") ? "Chattogram" : props.destination.DIVISION_NAME}</p>
