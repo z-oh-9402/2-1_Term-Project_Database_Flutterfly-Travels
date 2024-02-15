@@ -6,7 +6,7 @@ import ProfileHomePage from './Components/ProfileHomePage.jsx';
 import NoMatch from './Components/NoMatch.jsx';
 import {useState} from 'react';
 import Destinations from './Components/Destinations.jsx';
-import Hotels from './Components/Hotels.jsx';
+import Hotels from './Components/Accommodations.jsx';
 import Restaurants from './Components/Restaurants.jsx';
 import DestinationProfile from './Components/DestinationProfile.jsx';
 import Title from './Components/Title.jsx';
@@ -50,7 +50,7 @@ function App() {
           <Route index element={<Destinations/>}/>
           <Route path=':name' element={<DestinationProfile/>}/> 
         </Route>
-        <Route path='hotels' element={<Hotels/>}/>
+        <Route path='accommodations' element={<Hotels/>}/>
         <Route path='restaurants' element={<Restaurants/>}/>
         <Route path='user' element={<ProfileHomePage setLogOut={handleUserInfo}/>}/>
         <Route path='*' element={<NoMatch/>}/>

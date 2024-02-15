@@ -18,7 +18,9 @@ const Restaurants = ()=>{
         <div className="homepage">
             <div className="search-container">
                 <input type="text" className="search-input" value={search} placeholder="Search restaurant name or area..." onChange={handleSearch}/>
-                <button className="search-button custom-btn" onClick={handleSubmit}>&#128269;</button>
+                <button className="search-button custom-btn" onClick={handleSubmit}>
+                    <h1>🔍</h1>
+                </button>
             </div>
         </div>)
 }

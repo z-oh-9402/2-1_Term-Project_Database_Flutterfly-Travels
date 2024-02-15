@@ -2,6 +2,20 @@ const router = require("express-promise-router")();
 const database = require('../database');
 const bcrypt = require('bcryptjs');
 
+router.get("/:username",async(req,res)=>{
+    const query = `SELECT *
+                   FROM Users
+                   WHERE USERNAME='${req.params.username}'`;
+    const params = [];
+    const ans = await database.query(query,params);
+
+    const result = {
+        status: ans.length === 0
+    }
+
+    res.status(200).json(result);
+});
+
 router.get("/:username/:password",async(req,res)=>{
     const query = `SELECT U.*, C.passport_number, C.trip_booked, P.type_name
                    FROM Users U LEFT JOIN Customer C ON C.CUSTOMER_ID=U.USER_ID LEFT JOIN CUSTOMER_PREFERENCE CP ON C.CUSTOMER_ID=CP.CUSTOMER_ID LEFT JOIN Place_Type P ON CP.PREFERENCE_ID=P.PLACE_TYPE_ID
@@ -44,56 +58,42 @@ router.get("/:username/:password",async(req,res)=>{
 
 router.post("/",async(req,res)=>{
     const user = req.body;
-    
-    let result = {
-        status: false,
-        data: undefined
-    }
 
-    const check_query = `SELECT * FROM Users WHERE USERNAME='${user.username}'`;
+    const plaintextPassword = user.password;
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(plaintextPassword, salt);
+
+    const query = `INSERT INTO Users (USERNAME, PASSWORD, FIRST_NAME, LAST_NAME, USER_TYPE, EMAIL)
+                   VALUES ('${user.username}','${hashedPassword}','${user.firstName}','${user.lastName}','${user.userType}','${user.email}')`;
     const params = [];
-    let ans = await database.query(check_query,params);
+    await database.query(query,params);
 
-    if(ans.length===0)
+    const res_query = `SELECT *
+                       FROM Users
+                       WHERE USERNAME='${user.username}'`;
+    let ans = await database.query(res_query,params);
+
+    const query2 = `INSERT INTO Customer (CUSTOMER_ID,PASSPORT_NUMBER,TRIP_BOOKED)
+                    VALUES (${ans[0].USER_ID},'${user.passportNumber}',${user.tripBooked})`
+    await database.query(query2,params);
+
+    ans[0].PASSWORD = user.password;
+    ans[0].PASSPORT_NUMBER = user.passportNumber;
+    ans[0].TRIP_BOOKED = user.tripBooked;
+    ans[0].PREFERENCES = user.preferences;
+    
+    for(let i=0;i<user.preferences.length;i++)
     {
-        const plaintextPassword = user.password;
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(plaintextPassword, salt);
+        const param_query = `SELECT place_type_id FROM Place_Type WHERE TYPE_NAME = '${user.preferences[i]}'`;
+        const id = await database.query(param_query,params);
 
-        const query = `INSERT INTO Users (USERNAME, PASSWORD, FIRST_NAME, LAST_NAME, USER_TYPE, EMAIL)
-                       VALUES ('${user.username}','${hashedPassword}','${user.firstName}','${user.lastName}','${user.userType}','${user.email}')`;
-        await database.query(query,params);
-
-        const res_query = `SELECT *
-                           FROM Users
-                           WHERE USERNAME='${user.username}'`;
-        ans = await database.query(res_query,params);
-
-        const query2 = `INSERT INTO Customer (CUSTOMER_ID,PASSPORT_NUMBER,TRIP_BOOKED)
-                        VALUES (${ans[0].USER_ID},'${user.passportNumber}',${user.tripBooked})`
-        await database.query(query2,params);
-
-        ans[0].PASSWORD = user.password;
-        ans[0].PASSPORT_NUMBER = user.passportNumber;
-        ans[0].TRIP_BOOKED = user.tripBooked;
-        ans[0].PREFERENCES = user.preferences;
-        
-        for(let i=0;i<user.preferences.length;i++)
-        {
-            const param_query = `SELECT place_type_id FROM Place_Type WHERE TYPE_NAME = '${user.preferences[i]}'`;
-            const id = await database.query(param_query,params);
-
-            const query3 = `INSERT INTO Customer_Preference (CUSTOMER_ID,PREFERENCE_ID) 
-                            VALUES (${ans[0].USER_ID},${id[0].PLACE_TYPE_ID})`;
-            await database.query(query3,params);
-        }
-        await database.query('commit',params);
-        
-        result.status = true;
-        result.data = ans[0];
+        const query3 = `INSERT INTO Customer_Preference (CUSTOMER_ID,PREFERENCE_ID) 
+                        VALUES (${ans[0].USER_ID},${id[0].PLACE_TYPE_ID})`;
+        await database.query(query3,params);
     }
+    await database.query('commit',params);
 
-    res.status(200).json(result);
+    res.status(200).json(ans[0]);
 });
 
 router.put("/:userId",async(req,res)=>{

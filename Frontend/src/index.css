@@ -1,21 +1,3 @@
-@keyframes slideToCenter {
-    from {
-        transform: translateY(-100%);
-    }
-    to {
-        transform: translateY(0%);
-    }
-}
-
-@keyframes slideAway {
-    from {
-        transform: translateY(0%);
-    }
-    to {
-        transform: translateY(-160%);
-    }
-}
-
 body, p {
     margin: 0;
     padding: 0;
@@ -27,8 +9,6 @@ body, p {
     align-items: center;
     flex-direction: column;
 }
-
-/* Define button styles */
 
 .main-section{
     display: flex;
@@ -63,49 +43,6 @@ body, p {
     margin: 0px;
 }
 
-.login-signup-popup{
-    position: absolute;
-    top: 0;
-    left: 0;
-    min-width: 100%;
-    min-height: 100%;
-    backdrop-filter: blur(10px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 999;
-}
-
-.login-signup-container{
-    background: rgb(186, 244, 245);
-    position: relative;
-    padding: 20px 50px 30px 50px;
-    border-radius: 8px;
-    border-style: solid;
-    border-width: 2px;
-    border-color: #46cdd7;
-    animation: slideToCenter 0.5s ease;
-}
-
-.slide-away {
-    animation: slideAway 0.5s ease;
-}
-
-.close{
-    position: absolute;
-    color:white;
-    background-color: black;
-    top: -10px;
-    right: -10px;
-    border-radius: 30px;
-    padding: 8px;
-}
-
-.go-to:hover{
-    text-decoration: underline;
-    cursor: pointer;
-}
-
 .profile-page{
     display: flex;
 }
@@ -115,7 +52,6 @@ body, p {
 }
 
 .recommendation-container{
-    flex: 2;
     margin-bottom: 50px;
     width: 66.67%;
 }
@@ -126,3 +62,10 @@ body, p {
     justify-content: space-between;
 }
 
+.destination-search{
+    display: flex;
+}
+
+.filter{
+    flex: 0.8;
+}

@@ -1,10 +1,8 @@
 import {useState } from "react";
 import DestinationCard from "./DestinationCard";
-import { MdLocationPin } from "react-icons/md";
-import { FaLocationArrow } from "react-icons/fa6";
-import "../Styles/search.css"
 import "../Styles/card.css"
 import { useNavigate } from "react-router-dom";
+import SearchAndSuggestions from "./SearchAndSuggestions";
 
 const Destinations = ()=>{
     const [search,setSearch] = useState("");
@@ -60,32 +58,10 @@ const Destinations = ()=>{
         }
     }
 
-    const setOnFocus = () =>{
-        const blurBackground = document.getElementById("dim-background");
-        blurBackground.style.display = "block";
-        
-        if(suggestions)
-        {
-            const suggestionsBlock = document.getElementById("suggestions-container");
-            suggestionsBlock.style.display = "flex";
-        }
-    }
-
-    const setOnBlur = () =>{
-        const blurBackground = document.getElementById("dim-background");
-        setTimeout(()=>{blurBackground.style.display = "none"}, 250);
-        
-        if(suggestions)
-        {
-            const suggestionsBlock = document.getElementById("suggestions-container");
-            setTimeout(()=>{suggestionsBlock.style.display = "none"}, 250);
-        }
-    }
-
-    const placeSelected = async (category,e) =>{
+    const placeSelected = async (category,text) =>{
         if(category===1)
         {
-            const response = await fetch(`http://localhost:3000/destination/fetch/location/?name=${e.target.innerText}`,{
+            const response = await fetch(`http://localhost:3000/destination/fetch/location/?name=${text}`,{
                 method: "GET",
             });
 
@@ -94,7 +70,7 @@ const Destinations = ()=>{
         }
         else if(category===2)
         {
-            const response = await fetch(`http://localhost:3000/destination/fetch/district?name=${e.target.innerText}`,{
+            const response = await fetch(`http://localhost:3000/destination/fetch/district?name=${text}`,{
                 method: "GET",
             });
 
@@ -103,7 +79,7 @@ const Destinations = ()=>{
         }
         else
         {
-            const response = await fetch(`http://localhost:3000/destination/fetch/division?name=${e.target.innerText}`,{
+            const response = await fetch(`http://localhost:3000/destination/fetch/division?name=${text}`,{
                 method: "GET",
             });
 
@@ -118,58 +94,36 @@ const Destinations = ()=>{
         navigate(`${e.target.innerText}`);
     }
 
+    const data = {
+        search: search,
+        suggestions: suggestions,
+        category: 'destination'
+    }
+
+    const functions = {
+        placeSelected: placeSelected,
+        handleSearch: handleSearch,
+        handleSubmit: handleSubmit,
+        showDestination: showDestination
+    }
+
     return(
         <div className="homepage">
-            <span id="dim-background"></span>
-            <div className="search-div-container" style={{position: "relative"}}>
-                <div className="search-container">
-                    <input type="text" onFocus={setOnFocus} onBlur={setOnBlur} className="search-input" value={search} placeholder="Search destination name or area..." onChange={handleSearch}/>
-                    <button className="search-button custom-btn" onClick={handleSubmit}>
-                        <img src="search-icon.png"/>
-                    </button>
-                </div>
-                {suggestions!==undefined &&
-                    <div id="suggestions-container">
-                        {suggestions.destination.map((item,index)=>
-                            <div key={index} className="suggested-items" id={"destination-suggestion"+index}>
-                                <FaLocationArrow size={30} style={{paddingRight: "8px"}}/>
-                                <div><h3 onClick={showDestination}>{item.NAME}</h3>
-                                {item.LOCATION_NAME}, {item.DISTRICT_NAME}</div>
-                            </div>
-                        )}
-                        {suggestions.location.subDistrict.map((item,index)=>
-                            <div key={index} className="suggested-items" id={"location-suggestion"+index}>
-                                <MdLocationPin size={30} style={{paddingRight: "8px"}}/>
-                                <div><h3 onClick={(e)=>{placeSelected(1,e)}}>{item.LOCATION_NAME}</h3>
-                                {item.DISTRICT_NAME}, {item.DIVISION_NAME}</div>
-                            </div>
-                        )}
-                        {suggestions.location.district.map((item,index)=>
-                            <div key={index} className="suggested-items" id={"district-suggestion"+index}>
-                                <MdLocationPin size={30} style={{paddingRight: "8px"}}/>
-                                <div><h3 onClick={(e)=>placeSelected(2,e)}>{item.DISTRICT_NAME}</h3>
-                                {item.DIVISION_NAME} Division</div>
-                            </div>
-                        )}
-                        {suggestions.location.division.map((item,index)=>
-                            <div key={index} className="suggested-items" id={"division-suggestion"+index}>
-                                <MdLocationPin size={30} style={{paddingRight: "8px"}}/>
-                                <div><h3 onClick={(e)=>placeSelected(3,e)}>{item.DIVISION_NAME}</h3>
-                                Bangladesh</div>
-                            </div>
-                        )}
-                    </div>
-                }
-            </div>
+            <SearchAndSuggestions data={data} functions={functions}/>
             
-            {destinations.length!==0 && <div className='recommendation-container'>
-                <h1>Searched Destinations -</h1>
-                <div className='card-container'>
-                    {destinations.map((destination,index)=>
-                        <DestinationCard key={index} destination={destination} index={`${index}`}/>
-                    )}
+            {destinations.length!==0 &&
+                <div className='destination-search'>
+                    <div className="filter"></div>
+                    <div className='recommendation-container'>
+                        <h1>Searched Destinations -</h1>
+                        <div className='card-container'>
+                            {destinations.map((destination,index)=>
+                                <DestinationCard key={index} itemType='destination' item={destination} index={`${index}`}/>
+                            )}
+                        </div>
+                    </div>
                 </div>
-            </div>}
+            }
         </div>)
 }
 

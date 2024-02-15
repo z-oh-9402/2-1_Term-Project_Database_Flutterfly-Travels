@@ -13,7 +13,7 @@ const CategorizedDestination = ({destinationObj}) => {
                 <h2>{d.category}</h2>
                 <div className='card-container'>
                     {d.destinations.map((destination,index2)=>
-                        <DestinationCard key={index2} destination={destination} index={`${d.category}${index2}`}/>
+                        <DestinationCard key={index2} itemType={destination} item={destination} index={`${d.category}${index2}`}/>
                     )}
                 </div>
             </div>

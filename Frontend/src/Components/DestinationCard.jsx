@@ -4,6 +4,7 @@ import "../Styles/card.css"
 import { useNavigate } from 'react-router-dom';
 
 const DestinationCard = (props) => {
+  const {item, index} = props
   const navigate = useNavigate();
 
   const showPopup = () => {
@@ -15,14 +16,15 @@ const DestinationCard = (props) => {
   }
 
   return (
-    <div className="card" id={`card${props.index}`} onMouseOver={showPopup} onMouseOut={hidePopup} onClick={()=>navigate(`/destinations/${props.destination.NAME}`)}>
-      <img src={props.destination.IMAGE} alt="Card Image"/>
-      <h3 className='title'>{props.destination.NAME}</h3>
-      <p>{props.destination.DISTRICT_NAME}, {props.destination.DIVISION_NAME.includes("Chattogram") ? "Chattogram" : props.destination.DIVISION_NAME}</p>
-      <Rating rating={props.destination.RATING}/>
+    <div className="card" id={`card${index}`} onMouseOver={showPopup} onMouseOut={hidePopup} onClick={()=>navigate(`/destinations/${item.NAME}`)}>
+      <img src={item.IMAGE} alt="Card Image"/>
+      <h3 className='title'>{item.NAME}</h3>
+      <p>{item.LOCATION_NAME}</p>
+      <p>{item.DISTRICT_NAME}, {item.DIVISION_NAME}</p>
+      <Rating rating={item.RATING}/>
 
-      <div className="popup" id={props.index}>
-          <p className="description"><span style={{fontWeight:"bold",color:"black"}}>Description: </span><br/>{props.destination.DESCRIPTION}</p>
+      <div className="popup" id={index}>
+          <p className="description"><span style={{fontWeight:"bold",color:"black"}}>Description: </span><br/>{item.DESCRIPTION}</p>
           <p></p>
       </div>
     </div>
@@ -30,7 +32,8 @@ const DestinationCard = (props) => {
 };
 
 DestinationCard.propTypes = { 
-    destination: PropTypes.object,
+    itemType: PropTypes.string,
+    item: PropTypes.object,
     index: PropTypes.string
 }
 

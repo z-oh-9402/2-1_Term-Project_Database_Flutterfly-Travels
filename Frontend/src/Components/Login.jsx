@@ -1,4 +1,5 @@
 import "../Styles/button.css"
+import "../Styles/login-signup.css"
 
 import PropTypes from 'prop-types'
 import { useContext, useState } from 'react'
@@ -89,8 +90,10 @@ const Login = (props)=>{
             <div className='login-signup-container'>
                 <ImCross className='close' onClick={handleGoToHomePage}/>
                 <h1>Login Page</h1>
-                <label>Username: <input value={username} placeholder='Enter username' onChange={handleUsernameChange}/></label><br/><br/>
-                <PasswordInput Label="Password: " setPass={handlePasswordChange}/><br/><br/>
+                <div style={{display: 'flex', flexDirection: "column", alignItems: 'flex-end'}}>
+                    <label>Username: <input value={username} placeholder='Enter username' onChange={handleUsernameChange}/></label><br/>
+                    <PasswordInput Label="Password: " setPass={handlePasswordChange}/><br/>
+                </div>
                 <button className="custom-btn" onClick={handleDataSubmit}>Login</button><br/><br/>
                 <p style={{textAlign: "center"}}>Don{"'"}t have an account? <span className='go-to' onClick={handleChangeToSignUp} style={{color: "red"}}>Sign up now!</span></p>
             </div>

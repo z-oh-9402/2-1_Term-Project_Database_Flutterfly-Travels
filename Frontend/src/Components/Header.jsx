@@ -16,10 +16,10 @@ const Header = (props)=>{
         <div className="button-container">
             <button className="btn-primary">Make Trip</button>
             <button className="btn-primary" onClick={()=>{navigate('/destinations')}}>Destinations</button>
-            <button className="btn-primary" onClick={()=>{navigate('/hotels');}}>Hotels</button>
+            <button className="btn-primary" onClick={()=>{navigate('/accommodations');}}>Accommodations</button>
             <button className="btn-primary" onClick={()=>{navigate('/restaurants');}}>Restaurants</button>
         </div>
-        {isLoggedIn ? <div><h4 className="username">Hello <Link to='user' className="underlinedLink">{userInfo.USERNAME}</Link></h4></div> : <div>
+        {isLoggedIn ? <div><h4 className="username">Hello <Link to='user'>{userInfo.USERNAME}</Link></h4></div> : <div>
                                     <button className="custom-btn" onClick={()=>props.handleIsInLoginOrSignUpFromNavbar(true)}>Login</button>
                                     <button className="custom-btn" onClick={()=>props.handleIsInLoginOrSignUpFromNavbar(false)}>Sign Up</button>
                                 </div>}
