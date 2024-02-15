@@ -33,7 +33,7 @@ const Login = (props)=>{
     const handleDataSubmit = async ()=>{
         if(username!=="" && password!=="")
         {
-            const response = await fetch(`http://localhost:3000/customer/${username}/${password}`,{
+            let response = await fetch(`http://localhost:3000/user/${username}/${password}`,{
                 method: "GET"
             });
 
@@ -50,15 +50,35 @@ const Login = (props)=>{
                     setUsername("");
                     setPassword("");
                     
-                    const response = await fetch(`http://localhost:3000/destination/`,{
-                        method: "POST",
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(result.data.PREFERENCES)
-                    });
+                    if(result.data.USER_TYPE === 'customer')
+                    {
+                        response = await fetch(`http://localhost:3000/customer/fetch?customerId=${result.data.USER_ID}`,{
+                            method: "GET"
+                        });
 
-                    result.data.RECOMMENDED_DESTINATIONS = await response.json();
+                        const result1 = await response.json();
+                        result.data.PASSPORT_NUMBER = result1.PASSPORT_NUMBER;
+                        result.data.TRIP_BOOKED = result1.TRIP_BOOKED;
+                        result.data.PREFERENCES = result1.PREFERENCES;
+                        console.log(result.data);
+
+                        response = await fetch(`http://localhost:3000/destination/`,{
+                            method: "POST",
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(result.data.PREFERENCES)
+                        });
+
+                        result.data.RECOMMENDED_DESTINATIONS = await response.json();
+                    }
+
+                    if(result.data.USER_TYPE === 'agent')
+                    {
+                        response = await fetch(`http://localhost:3000/agent/${result.data.USER_ID}`,{
+                            method: "GET"
+                        });
+                    }
 
                     setIsLoggingIn(true);
                     setInfo(result.data);
