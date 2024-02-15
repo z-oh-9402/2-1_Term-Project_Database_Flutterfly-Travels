@@ -13,6 +13,7 @@ const SignUp = (props) =>{
     const {setIsLoggingIn} = useContext(LoginContext);
     const {setInfo} = useContext(UserInfoContext);
     const navigate = useNavigate();
+    const [userType, setUserType] = useState("");
     const [username,setUsername] = useState("");
     const [password,setPassword] = useState("");
     const [rePassword,setRePassword] = useState("");
@@ -26,6 +27,10 @@ const SignUp = (props) =>{
     const [isPasswordStarting,setIsPasswordStarting] = useState(true);
     const [isPassportStarting,setIsPassportStarting] = useState(true);
     const [page, setPage] = useState(1);
+
+    const handleUserTypeChange = (e) =>{
+        setUserType(e.target.value);
+    }
 
     const handleUsernameChange = async (e)=>
     {
@@ -99,6 +104,10 @@ const SignUp = (props) =>{
         {
             alert("Password and Confirmed Password don't match.");
         }
+        else if(page === 2 && (username==="" || userType===""))
+        {
+            alert("Important field(s) empty!");
+        }
         else if(page === 2 && !isValidUsername)
         {
             alert("Username already exists.");
@@ -142,29 +151,55 @@ const SignUp = (props) =>{
             "passportNumber": passportNumber,
             "tripBooked": 0,
             "password": password,
-            "userType": 'customer',
+            "userType": userType,
             "preferences": pref
         }
 
-        let response = await fetch(`http://localhost:3000/customer`,{
-            method: "POST",
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(info)
-        });
-        const result = await response.json();
-        console.log(result);
+        let result;
+        if(userType === 'customer')
+        {
+            let response = await fetch(`http://localhost:3000/customer`,{
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(info)
+            });
+            result = await response.json();
+            console.log(result);
 
-        response = await fetch(`http://localhost:3000/destination/`,{
-            method: "POST",
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(pref)
-        });
+            response = await fetch(`http://localhost:3000/destination/`,{
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(pref)
+            });
 
-        result.RECOMMENDED_DESTINATIONS = await response.json();
+            result.RECOMMENDED_DESTINATIONS = await response.json();
+        }
+        else
+        {
+            let response = await fetch(`http://localhost:3000/customer`,{
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(info)
+            });
+            result = await response.json();
+            console.log(result);
+
+            response = await fetch(`http://localhost:3000/destination/`,{
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(pref)
+            });
+
+            result.RECOMMENDED_DESTINATIONS = await response.json();
+        }
         
         setIsLoggingIn(true);
         setInfo(result);
@@ -191,6 +226,16 @@ const SignUp = (props) =>{
 
                 {page === 1 ?
                     <>
+                        <div className="radio-group">
+                            <h3>Are you -</h3>
+                            <label className="radio-option">
+                                <input type="radio" name="userType" value="customer" onClick={handleUserTypeChange}/>A Customer
+                            </label>
+
+                            <label className="radio-option">
+                                <input type="radio" name="userType" value="agent" onClick={handleUserTypeChange}/>A Travel Agent
+                            </label>
+                        </div>
                         <div style={{display: 'flex', flexDirection: "column", alignItems: 'flex-end', marginBottom: '40px'}}>
                             <label>Username: <input value={username} placeholder='Enter username' onChange={handleUsernameChange}/><span style={{color: "red"}}> *</span></label> 
                             {!isValidUsername ? <h5 style={{color: "red"}}>username already exists</h5> : <><br/></>}

@@ -47,6 +47,16 @@ body, p {
     display: flex;
 }
 
+.radio-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+}
+
+.radio-option {
+    margin-bottom: 10px;
+}
+
 .profile-container{
     flex: 0.85;
 }
