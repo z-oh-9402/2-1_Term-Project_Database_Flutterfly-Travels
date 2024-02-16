@@ -8,7 +8,13 @@ const Destinations = ()=>{
     const [search,setSearch] = useState("");
     const [suggestions,setSuggestions] = useState(undefined);
     const [destinations,setDestinations] = useState([]);
+    const [ratingValue, setRatingValue] = useState(0);
+    const [isFilterApplied, setIsFilterApplied] = useState(false);
     const navigate = useNavigate();
+
+    const updateValue = (e) => {
+        setRatingValue(e.target.value);
+    }
 
     const handleSearch = async (e) =>{
         setSearch(e.target.value);
@@ -94,6 +100,51 @@ const Destinations = ()=>{
         navigate(`${e.target.innerText}`);
     }
 
+    const filterToggle = () => {
+        setIsFilterApplied(!isFilterApplied);
+    }
+
+    const filterCheck = (destination) => {
+        let  isChecked = true;
+        
+        if(destination.RATING < ratingValue)
+        {
+            
+            isChecked = false;
+        }
+
+        if(isChecked)
+        {
+            let flag = false;
+            let anySelected = false;
+            for(let i=1;i<7;i++)
+            {
+                const item = document.getElementById('preference'+i);
+                if(item.checked)
+                {
+                    anySelected = true;
+                    for(let i=0;i<destination.TYPE.length;i++)
+                    {
+                        if(destination.TYPE[i].TYPE_NAME === item.value)
+                        {
+                            flag = true;
+                            break;
+                        }
+                    }
+                }
+
+                if(flag)
+                {
+                    break;
+                }
+            }
+
+            isChecked = anySelected ? flag : !anySelected;
+        }
+
+        return isChecked;
+    }
+
     const data = {
         search: search,
         suggestions: suggestions,
@@ -113,12 +164,28 @@ const Destinations = ()=>{
             
             {destinations.length!==0 &&
                 <div className='destination-search'>
-                    <div className="filter"></div>
+                    <div className="filter">
+
+                        <button className="btn-primary" style={{marginBottom:'10px'}} onClick={filterToggle}>{isFilterApplied ? 'Remove Filter' : 'Apply Filter'}</button>
+                        <h3>Minimum Rating:</h3>
+                        <div className="slider"><span className="rating">{ratingValue}</span> <input type="range" id="slider" min="0" max="5" value={ratingValue} step="0.5" onInput={updateValue}/></div>
+
+                        <div style={{marginTop: '40px'}}>
+                            <h3>Choose Your Destination Preferences:</h3>
+                            <label><input type="checkbox" id="preference1" value="Mountains"/>Mountains</label><br/>
+                            <label><input type="checkbox" id="preference2" value="Lakes"/>Lakes</label><br/>
+                            <label><input type="checkbox" id="preference3" value="Beaches"/>Beaches</label><br/>
+                            <label><input type="checkbox" id="preference4" value="Forests"/>Forests</label><br/>
+                            <label><input type="checkbox" id="preference5" value="Hill Tracks"/>Hill Tracks</label><br/>
+                            <label><input type="checkbox" id="preference6" value="Tea Gardens"/>Tea Gardens</label><br/>
+                            <label><input type="checkbox" id="preference7" value="Historical Places"/>Historical Places</label><br/>
+                        </div>
+                    </div>
                     <div className='recommendation-container'>
                         <h1>Searched Destinations -</h1>
                         <div className='card-container'>
                             {destinations.map((destination,index)=>
-                                <DestinationCard key={index} itemType='destination' item={destination} index={`${index}`}/>
+                                (isFilterApplied ? filterCheck(destination) : true) && <DestinationCard key={index} itemType='destination' item={destination} index={`${index}`}/>
                             )}
                         </div>
                     </div>

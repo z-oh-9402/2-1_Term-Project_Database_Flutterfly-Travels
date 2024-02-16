@@ -53,7 +53,6 @@ const Login = (props) => {
                         result.data.PASSPORT_NUMBER = result1.PASSPORT_NUMBER;
                         result.data.TRIP_BOOKED = result1.TRIP_BOOKED;
                         result.data.PREFERENCES = result1.PREFERENCES;
-                        console.log(result.data);
 
                         response = await fetch(`http://localhost:3000/destination/`, {
                             method: "POST",

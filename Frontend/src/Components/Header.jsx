@@ -18,6 +18,7 @@ const Header = (props)=>{
             <button className="btn-primary" onClick={()=>{navigate('/destinations')}}>Destinations</button>
             <button className="btn-primary" onClick={()=>{navigate('/accommodations');}}>Accommodations</button>
             <button className="btn-primary" onClick={()=>{navigate('/restaurants');}}>Restaurants</button>
+            <button className="btn-primary" onClick={()=>{navigate('/flights');}}>Flights</button>
         </div>
         {isLoggedIn ? <div><h4 className="username">Hello <Link to='user'>{userInfo.USERNAME}</Link></h4></div> : <div>
                                     <button className="custom-btn" onClick={()=>props.handleIsInLoginOrSignUpFromNavbar(true)}>Login</button>

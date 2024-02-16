@@ -59,7 +59,7 @@ Table creation commands:
 		agent_id NUMBER PRIMARY KEY,
 		experience_years NUMBER,
 		fee NUMBER,
-		working_area_id NUMBER,
+		acc_status varchar2(20),
 		FOREIGN KEY (agent_id) REFERENCES Users(user_id) ON DELETE CASCADE,
 		FOREIGN KEY (working_area_id) REFERENCES Destination(destination_id) ON DELETE CASCADE
 	);
