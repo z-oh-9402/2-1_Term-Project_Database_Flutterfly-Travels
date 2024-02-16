@@ -9,82 +9,88 @@ import { ImCross } from "react-icons/im";
 import LoginContext from "../Context/LoginContext";
 import UserInfoContext from "../Context/UserInfoContext";
 
-const SignUp = (props) =>{
-    const {setIsLoggingIn} = useContext(LoginContext);
-    const {setInfo} = useContext(UserInfoContext);
+const SignUp = (props) => {
+    const { setIsLoggingIn } = useContext(LoginContext);
+    const { setInfo } = useContext(UserInfoContext);
     const navigate = useNavigate();
     const [userType, setUserType] = useState("");
-    const [username,setUsername] = useState("");
-    const [password,setPassword] = useState("");
-    const [rePassword,setRePassword] = useState("");
-    const [firstName,setFirstName] = useState("");
-    const [lastName,setLastName] = useState("");
-    const [email,setEmail] = useState("");
-    const [passportNumber,setPassportNumber] = useState("");
-    const [isValidPassword,setIsValidPassword] = useState(false);
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
+    const [rePassword, setRePassword] = useState("");
+    const [firstName, setFirstName] = useState("");
+    const [lastName, setLastName] = useState("");
+    const [email, setEmail] = useState("");
+    const [passportNumber, setPassportNumber] = useState("");
+    const [experience, setExperience] = useState("");
+    const [fee, setFee] = useState("");
+    const [isValidPassword, setIsValidPassword] = useState(false);
     const [isValidUsername, setIsValidUsername] = useState(true);
     const [isValidPassport, setIsValidPassport] = useState(true);
-    const [isPasswordStarting,setIsPasswordStarting] = useState(true);
-    const [isPassportStarting,setIsPassportStarting] = useState(true);
+    const [isPasswordStarting, setIsPasswordStarting] = useState(true);
+    const [isPassportStarting, setIsPassportStarting] = useState(true);
     const [page, setPage] = useState(1);
 
-    const handleUserTypeChange = (e) =>{
+    const handleUserTypeChange = (e) => {
         setUserType(e.target.value);
     }
 
-    const handleUsernameChange = async (e)=>
-    {
+    const handleUsernameChange = async (e) => {
         setUsername(e.target.value);
 
-        if(e.target.value !== "")
-        {
-            const response = await fetch(`http://localhost:3000/customer/${e.target.value}`,{
+        if (e.target.value !== "") {
+            const response = await fetch(`http://localhost:3000/customer/${e.target.value}`, {
                 method: "GET"
             });
             const result = await response.json();
             setIsValidUsername(result.status);
         }
-        else
-        {
+        else {
             setIsValidUsername(true);
         }
     }
 
-    const handlePasswordChange = (text)=>{
+    const handlePasswordChange = (text) => {
         setPassword(text);
         setIsPasswordStarting(false);
-        text.length>=8 ? setIsValidPassword(true) : setIsValidPassword(false);
+        text.length >= 8 ? setIsValidPassword(true) : setIsValidPassword(false);
     }
 
-    const handleRePasswordChange = (text)=>{
+    const handleRePasswordChange = (text) => {
         setRePassword(text);
     }
 
-    const handleFirstNameChange = (e)=>{
+    const handleFirstNameChange = (e) => {
         setFirstName(e.target.value);
     }
 
-    const handleLastNameChange = (e)=>{
+    const handleLastNameChange = (e) => {
         setLastName(e.target.value);
     }
 
-    const handleEmailChange = (e)=>{
+    const handleEmailChange = (e) => {
         setEmail(e.target.value);
     }
 
-    const handlePassportNumberChange = (e)=>{
+    const handlePassportNumberChange = (e) => {
         setPassportNumber(e.target.value);
         setIsPassportStarting(false);
-        e.target.value.length===12 ? setIsValidPassport(true) : setIsValidPassport(false);
+        e.target.value.length === 12 ? setIsValidPassport(true) : setIsValidPassport(false);
     }
 
-    const handleChangeToLogin = () =>{
+    const handleExperienceChange = (e) => {
+        setExperience(e.target.value);
+    }
+
+    const handleFee = (e) => {
+        setFee(e.target.value);
+    }
+
+    const handleChangeToLogin = () => {
         props.goToLogin();
     }
 
-    const togglePage = (page) =>{
-        if(page === 1)
-        {
+    const togglePage = (page) => {
+        if (page === 1) {
             setPassword("");
             setRePassword("");
             setIsValidPassword(false);
@@ -93,72 +99,63 @@ const SignUp = (props) =>{
         setPage(page);
     }
 
-    const handleForm = (page)=>{
+    const handleForm = (page) => {
         let correct = false;
 
-        if(page === 2 && !isValidPassword)
-        {
+        if (page === 2 && !isValidPassword) {
             alert("Invalid Password");
         }
-        else if(page === 2 && password!==rePassword)
-        {
+        else if (page === 2 && password !== rePassword) {
             alert("Password and Confirmed Password don't match.");
         }
-        else if(page === 2 && (username==="" || userType===""))
-        {
+        else if (page === 2 && (username === "" || userType === "")) {
             alert("Important field(s) empty!");
         }
-        else if(page === 2 && !isValidUsername)
-        {
+        else if (page === 2 && !isValidUsername) {
             alert("Username already exists.");
         }
-        else if(page === 3 && (username==="" || firstName==="" || lastName==="" || email==="" || passportNumber===""))
-        {
+        else if (page === 3 && (username === "" || firstName === "" || lastName === "" || email === "" || (userType === "customer" && passportNumber === "") || (userType === "agent" && (experience === "" || fee === "")))) {
             alert("Important field(s) empty!");
         }
-        else if(page === 3 & !isValidPassport)
-        {
+        else if (page === 3 & !isValidPassport) {
             alert("Invalid passport number.");
         }
-        else
-        {
+        else {
             correct = true;
         }
-        
-        if(correct)
-        {
+
+        if (correct) {
             togglePage(page);
         }
     }
 
-    const handleDataSubmit = async () =>
-    {
-        let pref = []
-        for(let i=1;i<=7;i++)
-        {
-            let check = document.getElementById("preference"+i);
-            if(check.checked)
-            {
-                pref.push(check.value);
-            }
-        }
+    const handleDataSubmit = async () => {
 
-        const info = {
-            "username": username,
-            "firstName": firstName,
-            "lastName": lastName,
-            "email": email,
-            "passportNumber": passportNumber,
-            "tripBooked": 0,
-            "password": password,
-            "userType": userType,
-            "preferences": pref
-        }
+
 
         let result;
-        if(userType === 'customer')
-        {
-            let response = await fetch(`http://localhost:3000/customer`,{
+        if (userType === 'customer') {
+            
+            let pref = []
+            for (let i = 1; i <= 7; i++) {
+                let check = document.getElementById("preference" + i);
+                if (check.checked) {
+                    pref.push(check.value);
+                }
+            }
+
+            const info = {
+                "username": username,
+                "firstName": firstName,
+                "lastName": lastName,
+                "email": email,
+                "passportNumber": passportNumber,
+                "tripBooked": 0,
+                "password": password,
+                "userType": "customer",
+                "preferences": pref
+            }
+            let response = await fetch(`http://localhost:3000/customer`, {
                 method: "POST",
                 headers: {
                     'Content-Type': 'application/json'
@@ -168,7 +165,7 @@ const SignUp = (props) =>{
             result = await response.json();
             console.log(result);
 
-            response = await fetch(`http://localhost:3000/destination/`,{
+            response = await fetch(`http://localhost:3000/destination/`, {
                 method: "POST",
                 headers: {
                     'Content-Type': 'application/json'
@@ -177,10 +174,22 @@ const SignUp = (props) =>{
             });
 
             result.RECOMMENDED_DESTINATIONS = await response.json();
+            setIsLoggingIn(true);
+            setInfo(result);
+            props.setUserInfo(false);
         }
-        else
-        {
-            let response = await fetch(`http://localhost:3000/customer`,{
+        else {
+            const info = {
+                "username": username,
+                "firstName": firstName,
+                "lastName": lastName,
+                "email": email,
+                "experience": experience,
+                "fee": fee,
+                "password": password,
+                "userType": "agent"
+            }
+            let response = await fetch(`http://localhost:3000/agent`, {
                 method: "POST",
                 headers: {
                     'Content-Type': 'application/json'
@@ -190,25 +199,13 @@ const SignUp = (props) =>{
             result = await response.json();
             console.log(result);
 
-            response = await fetch(`http://localhost:3000/destination/`,{
-                method: "POST",
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(pref)
-            });
-
-            result.RECOMMENDED_DESTINATIONS = await response.json();
+            alert("Your request is being processed");
         }
-        
-        setIsLoggingIn(true);
-        setInfo(result);
-        props.setUserInfo(false);
+
         navigate("/");
     }
 
-    const handleGoToHomePage = () =>
-    {
+    const handleGoToHomePage = () => {
         const box = document.querySelector('.login-signup-container');
         box.classList.add('slide-away');
 
@@ -218,10 +215,10 @@ const SignUp = (props) =>{
         });
     }
 
-    return(
+    return (
         <div className='login-signup-popup'>
             <div className='login-signup-container'>
-                <ImCross className='close' onClick={handleGoToHomePage}/>
+                <ImCross className='close' onClick={handleGoToHomePage} />
                 <h1>Sign Up Page</h1>
 
                 {page === 1 ?
@@ -229,53 +226,57 @@ const SignUp = (props) =>{
                         <div className="radio-group">
                             <h3>Are you -</h3>
                             <label className="radio-option">
-                                <input type="radio" name="userType" value="customer" onClick={handleUserTypeChange}/>A Customer
+                                <input type="radio" name="userType" value="customer" onClick={handleUserTypeChange} />A Customer
                             </label>
 
                             <label className="radio-option">
-                                <input type="radio" name="userType" value="agent" onClick={handleUserTypeChange}/>A Travel Agent
+                                <input type="radio" name="userType" value="agent" onClick={handleUserTypeChange} />A Travel Agent
                             </label>
                         </div>
-                        <div style={{display: 'flex', flexDirection: "column", alignItems: 'flex-end', marginBottom: '40px'}}>
-                            <label>Username: <input value={username} placeholder='Enter username' onChange={handleUsernameChange}/><span style={{color: "red"}}> *</span></label> 
-                            {!isValidUsername ? <h5 style={{color: "red"}}>username already exists</h5> : <><br/></>}
+                        <div style={{ display: 'flex', flexDirection: "column", alignItems: 'flex-end', marginBottom: '40px' }}>
+                            <label>Username: <input value={username} placeholder='Enter username' onChange={handleUsernameChange} /><span style={{ color: "red" }}> *</span></label>
+                            {!isValidUsername ? <h5 style={{ color: "red" }}>username already exists</h5> : <><br /></>}
 
-                            <div><PasswordInput Label="Enter Password: " setPass={handlePasswordChange}/><span style={{color: "red"}}> *</span></div>
-                            {!isValidPassword && !isPasswordStarting ? <h5 style={{color: "red"}}>password must be at least 8 characters long</h5> 
-                                                            : <><br/></>}
-                            <div><PasswordInput Label="Confirm Password: " setPass={handleRePasswordChange}/><span style={{color: "red"}}> *</span></div>
+                            <div><PasswordInput Label="Enter Password: " setPass={handlePasswordChange} /><span style={{ color: "red" }}> *</span></div>
+                            {!isValidPassword && !isPasswordStarting ? <h5 style={{ color: "red" }}>password must be at least 8 characters long</h5>
+                                : <><br /></>}
+                            <div><PasswordInput Label="Confirm Password: " setPass={handleRePasswordChange} /><span style={{ color: "red" }}> *</span></div>
                         </div>
-                        <button className="custom-btn" onClick={()=>{handleForm(2)}}>Next</button>
-                        <br/><br/>
+                        <button className="custom-btn" onClick={() => { handleForm(2) }}>Next</button>
+                        <br /><br />
                     </> :
-                    (page === 2 ? 
+                    (page === 2 ?
                         <>
-                            <label>First Name: <input value={firstName} placeholder='Enter first name' onChange={handleFirstNameChange}/><span style={{color: "red"}}> *</span></label><br/><br/>
-                            <label>Last Name: <input value={lastName} placeholder='Enter last name' onChange={handleLastNameChange}/><span style={{color: "red"}}> *</span></label><br/><br/>
-                            <label>Email: <input value={email} placeholder='Enter email' onChange={handleEmailChange}/><span style={{color: "red"}}> *</span></label><br/><br/>
-                            <label>Passport Number: <input value={passportNumber} placeholder='Enter passport number' onChange={handlePassportNumberChange}/><span style={{color: "red"}}> *</span></label>
-                            {!isValidPassport && !isPassportStarting ? <h5 style={{color: "red"}}>passport number must contain 12 characters</h5> 
-                                                         : <><br/><br/></>}
-                            <div><button className="custom-btn" onClick={()=>{togglePage(1)}}>Prev</button>
-                                <button className="custom-btn" onClick={()=>{handleForm(3)}}>Next</button>
-                            </div><br/><br/>
-                        </>:
+                            <label>First Name: <input value={firstName} placeholder='Enter first name' onChange={handleFirstNameChange} /><span style={{ color: "red" }}> *</span></label><br /><br />
+                            <label>Last Name: <input value={lastName} placeholder='Enter last name' onChange={handleLastNameChange} /><span style={{ color: "red" }}> *</span></label><br /><br />
+                            <label>Email: <input value={email} placeholder='Enter email' onChange={handleEmailChange} /><span style={{ color: "red" }}> *</span></label><br /><br />
+                            {userType === 'customer' ? <label>Passport Number: <input value={passportNumber} placeholder='Enter passport number' onChange={handlePassportNumberChange} /><span style={{ color: "red" }}> *</span></label>
+                                : <><label>Years of Experience: <input value={experience} placeholder='Enter years of experience' onChange={handleExperienceChange} /><span style={{ color: "red" }}> *</span></label><br /><br />
+                                    <label>Fee: <input value={fee} placeholder='Enter expected fee' onChange={handleFee} /><span style={{ color: "red" }}> *</span></label></>}
+                            {userType === "customer" && !isValidPassport && !isPassportStarting ? <h5 style={{ color: "red" }}>passport number must contain 12 characters</h5>
+                                : <><br /><br /></>}
+                            <div><button className="custom-btn" onClick={() => { togglePage(1) }}>Prev</button>
+                                {userType === "customer" ? <button className="custom-btn" onClick={() => { handleForm(3) }}>Next</button> :
+                                    <><button className="custom-btn" onClick={handleDataSubmit}>Sign Up</button><br /><br /></>}
+                            </div><br /><br />
+                        </> :
+                        userType === "customer" &&
                         <>
                             <h3>Choose Your Destination Preferences: (Optional)</h3>
-                            <label><input type="checkbox" id="preference1" value="Mountains"/>Mountains</label><br/>
-                            <label><input type="checkbox" id="preference2" value="Lakes"/>Lakes</label><br/>
-                            <label><input type="checkbox" id="preference3" value="Beaches"/>Beaches</label><br/>
-                            <label><input type="checkbox" id="preference4" value="Forests"/>Forests</label><br/>
-                            <label><input type="checkbox" id="preference5" value="Hill Tracks"/>Hill Tracks</label><br/>
-                            <label><input type="checkbox" id="preference6" value="Tea Gardens"/>Tea Gardens</label><br/>
-                            <label><input type="checkbox" id="preference7" value="Historical Places"/>Historical Places</label><br/><br/>
-                            
-                            <div><button className="custom-btn" onClick={()=>{togglePage(2)}}>Prev</button>
-                            <button className="custom-btn" onClick={handleDataSubmit}>Sign Up</button></div><br/><br/>
+                            <label><input type="checkbox" id="preference1" value="Mountains" />Mountains</label><br />
+                            <label><input type="checkbox" id="preference2" value="Lakes" />Lakes</label><br />
+                            <label><input type="checkbox" id="preference3" value="Beaches" />Beaches</label><br />
+                            <label><input type="checkbox" id="preference4" value="Forests" />Forests</label><br />
+                            <label><input type="checkbox" id="preference5" value="Hill Tracks" />Hill Tracks</label><br />
+                            <label><input type="checkbox" id="preference6" value="Tea Gardens" />Tea Gardens</label><br />
+                            <label><input type="checkbox" id="preference7" value="Historical Places" />Historical Places</label><br /><br />
+
+                            <div><button className="custom-btn" onClick={() => { togglePage(2) }}>Prev</button>
+                                <button className="custom-btn" onClick={handleDataSubmit}>Sign Up</button></div><br /><br />
                         </>)
                 }
-                
-                <p style={{textAlign: "center"}}>Already have an account? <span className='go-to' onClick={handleChangeToLogin} style={{color: "red"}}>Login now!</span></p>
+
+                <p style={{ textAlign: "center" }}>Already have an account? <span className='go-to' onClick={handleChangeToLogin} style={{ color: "red" }}>Login now!</span></p>
             </div>
         </div>
     )

@@ -29,6 +29,7 @@ router.get("/:username/:password",async(req,res)=>{
             result.status = 1;
         }
     }
+    console.log(result)
 
     res.status(200).json(result);
 });

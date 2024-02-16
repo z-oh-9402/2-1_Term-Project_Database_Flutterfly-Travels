@@ -4,7 +4,7 @@ import Login from './Components/Login.jsx';
 import SignUp from './Components/SignUp.jsx';
 import ProfileHomePage from './Components/ProfileHomePage.jsx';
 import NoMatch from './Components/NoMatch.jsx';
-import {useState} from 'react';
+import {useContext, useState} from 'react';
 import Destinations from './Components/Destinations.jsx';
 import Hotels from './Components/Accommodations.jsx';
 import Restaurants from './Components/Restaurants.jsx';
