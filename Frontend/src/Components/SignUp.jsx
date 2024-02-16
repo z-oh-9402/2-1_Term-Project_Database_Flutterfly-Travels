@@ -166,7 +166,6 @@ const SignUp = (props) =>{
                 body: JSON.stringify(info)
             });
             result = await response.json();
-            console.log(result);
 
             response = await fetch(`http://localhost:3000/destination/`,{
                 method: "POST",
@@ -188,7 +187,6 @@ const SignUp = (props) =>{
                 body: JSON.stringify(info)
             });
             result = await response.json();
-            console.log(result);
 
             response = await fetch(`http://localhost:3000/destination/`,{
                 method: "POST",
