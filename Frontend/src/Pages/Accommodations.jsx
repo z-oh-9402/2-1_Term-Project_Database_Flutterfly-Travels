@@ -1,8 +1,8 @@
 import {useState } from "react";
 import "../Styles/card.css"
 import { useNavigate } from "react-router-dom";
-import SearchAndSuggestions from "./SearchAndSuggestions";
-import ItemCard from "./ItemCard";
+import SearchAndSuggestions from "../Components/SearchAndSuggestions";
+import ItemCard from "../Components/ItemCard";
 
 const Accommodations = ()=>{
     const [search,setSearch] = useState("");

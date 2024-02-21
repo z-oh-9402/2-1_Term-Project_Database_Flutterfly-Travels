@@ -100,7 +100,6 @@ router.get("/fetch",async(req,res)=>{
 
 router.get("/fetch/accommodation-name",async(req,res)=>{
     const name = req.query.name.replace(`'`,`''`);
-    console.log("Hello");
 
     const query = `SELECT A.*,L.LOCATION_NAME,DIS.DISTRICT_NAME,DIV.DIVISION_NAME
                         FROM ACCOMMODATION A LEFT JOIN Location L ON A.LOCATION_ID=L.LOCATION_ID 

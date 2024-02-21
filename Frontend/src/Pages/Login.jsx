@@ -4,7 +4,7 @@ import "../Styles/login-signup.css"
 import PropTypes from 'prop-types'
 import { useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
-import PasswordInput from './PasswordInput';
+import PasswordInput from '../Components/PasswordInput';
 import { ImCross } from "react-icons/im";
 import UserInfoContext from '../Context/UserInfoContext';
 
@@ -58,8 +58,6 @@ const Login = (props) => {
                     }
 
                     if (result.data.USER_TYPE === 'agent') {
-                        
-                        console.log(result.data);
                         response = await fetch(`http://localhost:3000/agent/${result.data.USER_ID}`, {
                             method: "GET"
                         });

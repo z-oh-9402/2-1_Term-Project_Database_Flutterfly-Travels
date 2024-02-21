@@ -3,7 +3,6 @@ const database = require('../database');
 const bcrypt = require('bcryptjs');
 
 router.get("/fetch",async(req,res)=>{
-    console.log("Hello");
     const query = `SELECT C.passport_number, C.trip_booked, P.type_name
                    FROM Customer C LEFT JOIN CUSTOMER_PREFERENCE CP ON C.CUSTOMER_ID=CP.CUSTOMER_ID LEFT JOIN Place_Type P ON CP.PREFERENCE_ID=P.PLACE_TYPE_ID
                    WHERE C.CUSTOMER_ID=${req.query.customerId}`;

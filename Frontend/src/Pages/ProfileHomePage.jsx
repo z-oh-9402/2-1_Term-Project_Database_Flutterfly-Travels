@@ -1,9 +1,9 @@
 import PropTypes from 'prop-types'
 import { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import PasswordInput from './PasswordInput';
+import PasswordInput from '../Components/PasswordInput';
 import UserInfoContext from '../Context/UserInfoContext';
-import CategorizedDestination from './CategorizedDestination';
+import CategorizedDestination from '../Components/CategorizedDestination';
 import "../Styles/button.css"
 
 const ProfileHomePage = (props) => {
@@ -56,7 +56,6 @@ const ProfileHomePage = (props) => {
                 });
 
                 const data = await response.json();
-                console.log(data)
                 setPendingAgents(data);
             }
         };

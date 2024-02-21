@@ -4,7 +4,7 @@ import "../Styles/login-signup.css"
 import { useContext, useState } from "react";
 import PropTypes from 'prop-types'
 import { useNavigate } from "react-router-dom";
-import PasswordInput from "./PasswordInput";
+import PasswordInput from "../Components/PasswordInput";
 import { ImCross } from "react-icons/im";
 import UserInfoContext from "../Context/UserInfoContext";
 

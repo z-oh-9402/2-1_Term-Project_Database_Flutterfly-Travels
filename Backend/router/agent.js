@@ -3,7 +3,6 @@ const database = require('../database');
 const bcrypt = require('bcryptjs');
 
 router.get("/pending-agents",async(req,res)=>{
-    console.log("Hello");
     const query = `SELECT *
                    FROM Agent 
                    WHERE ACC_STATUS = 'PENDING'`;

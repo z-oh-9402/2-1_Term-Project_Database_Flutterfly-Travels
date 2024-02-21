@@ -1,17 +1,17 @@
 import {Routes, Route, Outlet} from 'react-router-dom';
 import Header from './Components/Header.jsx';
-import Login from './Components/Login.jsx';
-import SignUp from './Components/SignUp.jsx';
-import ProfileHomePage from './Components/ProfileHomePage.jsx';
-import NoMatch from './Components/NoMatch.jsx';
+import Login from './Pages/Login.jsx';
+import SignUp from './Pages/SignUp.jsx';
+import ProfileHomePage from './Pages/ProfileHomePage.jsx';
+import NoMatch from './Pages/NoMatch.jsx';
 import {useState} from 'react';
-import Destinations from './Components/Destinations.jsx';
-import Restaurants from './Components/Restaurants.jsx';
-import DestinationProfile from './Components/DestinationProfile.jsx';
+import Destinations from './Pages/Destinations.jsx';
+import Restaurants from './Pages/Restaurants.jsx';
+import DestinationProfile from './Pages/DestinationProfile.jsx';
 import Title from './Components/Title.jsx';
-import Homepage from './Components/Homepage.jsx';
-import Accommodations from './Components/Accommodations.jsx';
-import AccommodationProfile from './Components/AccommodationProfile.jsx';
+import Homepage from './Pages/Homepage.jsx';
+import Accommodations from './Pages/Accommodations.jsx';
+import AccommodationProfile from './Pages/AccommodationProfile.jsx';
 
 function App() {
   const [isLoginOrSignUpPageLoaded,setIsLoginOrSignUpPageLoaded] = useState(false);
