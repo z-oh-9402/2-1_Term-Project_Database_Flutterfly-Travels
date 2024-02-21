@@ -27,6 +27,7 @@ input:focus {
     min-width: 100%;
     background-color: #00000073;
     backdrop-filter: blur(1px);
+    z-index: 1;
 }
 
 .search-container {
@@ -89,7 +90,6 @@ input:focus {
 
 #suggestions-container{
     position: absolute;
-    z-index: 1px;
     width: 100%;
     display: flex;
     flex-direction: column;

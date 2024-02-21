@@ -6,12 +6,10 @@ import { useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import PasswordInput from './PasswordInput';
 import { ImCross } from "react-icons/im";
-import LoginContext from '../Context/LoginContext';
 import UserInfoContext from '../Context/UserInfoContext';
 
 const Login = (props) => {
     const { setInfo } = useContext(UserInfoContext);
-    const { setIsLoggingIn } = useContext(LoginContext);
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const navigate = useNavigate();
@@ -30,7 +28,7 @@ const Login = (props) => {
 
     const handleDataSubmit = async () => {
         if (username !== "" && password !== "") {
-            let response = await fetch(`http://localhost:3000/user/${username}/${password}`, {
+            let response = await fetch(`http://localhost:3000/user/${username}`, {
                 method: "GET"
             });
 
@@ -40,6 +38,10 @@ const Login = (props) => {
                 alert("Username does not exist");
             }
             else {
+                let response = await fetch(`http://localhost:3000/user/${username}/${password}`, {
+                    method: "GET"
+                });
+                result = await response.json();
                 if (result.status === 1) {
                     setUsername("");
                     setPassword("");
@@ -53,19 +55,6 @@ const Login = (props) => {
                         result.data.PASSPORT_NUMBER = result1.PASSPORT_NUMBER;
                         result.data.TRIP_BOOKED = result1.TRIP_BOOKED;
                         result.data.PREFERENCES = result1.PREFERENCES;
-
-                        response = await fetch(`http://localhost:3000/destination/`, {
-                            method: "POST",
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify(result.data.PREFERENCES)
-                        });
-
-                        result.data.RECOMMENDED_DESTINATIONS = await response.json();
-                        setIsLoggingIn(true);
-                        setInfo(result.data);
-                        props.setUserInfo(false);
                     }
 
                     if (result.data.USER_TYPE === 'agent') {
@@ -76,20 +65,16 @@ const Login = (props) => {
                         });
 
                         const result1 = await response.json();
-                        if (result1.ACC_STATUS === 'PENDING') {
-                            alert("Your request is still being processed!!");
-                        }
-                        
-                        else {
-                            result.data.EXPERIENCE_YEARS = result1.EXPERIENCE_YEARS;
-                            result.data.FEE = result1.FEE;
-                            setIsLoggingIn(true);
-                            setInfo(result.data);
-                            props.setUserInfo(false);
-                        }
+                        result.data.EXPERIENCE_YEARS = result1.EXPERIENCE_YEARS;
+                        result.data.FEE = result1.FEE;
 
+                        if (result1.ACC_STATUS === 'PENDING') {
+                            alert("Your request is still being processed!!!");
+                        }   
                     }
 
+                    setInfo(result.data);
+                    props.setUserInfo(false);
                     navigate("/");
                 }
                 else {

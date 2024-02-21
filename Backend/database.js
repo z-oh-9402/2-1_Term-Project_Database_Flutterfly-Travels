@@ -29,5 +29,19 @@ const db_query = async (query,params) =>{
     }
 };
 
+const db_query2 = async (query,params) =>{
+    try
+    {
+        let result = await connection.execute(query,params);
+        return result.outBinds;
+    }
+    catch(error)
+    {
+        console.log(error);
+    }
+};
+
 exports.connectToDB = connectToDB;
 exports.query = db_query;
+exports.query2 = db_query2;
+exports.oracledb = oracledb;

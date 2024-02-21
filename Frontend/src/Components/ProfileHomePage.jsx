@@ -1,17 +1,17 @@
 import PropTypes from 'prop-types'
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PasswordInput from './PasswordInput';
 import UserInfoContext from '../Context/UserInfoContext';
-import LoginContext from '../Context/LoginContext';
 import CategorizedDestination from './CategorizedDestination';
 import "../Styles/button.css"
 
 const ProfileHomePage = (props) => {
     const { userInfo, setInfo } = useContext(UserInfoContext);
-    const { setIsLoggingIn } = useContext(LoginContext);
     const user = userInfo;
     const pref = user.USER_TYPE === 'customer' ? user.PREFERENCES : null;
+    const [recommendedDestinations, setRecommendedDestinations] = useState([]);
+    const [pendingAgents, setPendingAgents] = useState([]);
     const list = ["Mountains", "Lakes", "Beaches", "Forests", "Hill Tracks", "Tea Gardens", "Historical Places"];
 
     const [isPref1Checked, setIsPref1Checked] = useState(pref !== null ? pref.includes(list[0]) : pref);
@@ -23,7 +23,6 @@ const ProfileHomePage = (props) => {
     const [isPref7Checked, setIsPref7Checked] = useState(pref !== null ? pref.includes(list[6]) : pref);
 
     const navigate = useNavigate();
-    const [userType, setUserType] = useState(user.USER_TYPE);
     const [isBeingUpdated, setIsBeingUpdated] = useState(false);
     const [username, setUsername] = useState(user.USERNAME);
     const [password, setPassword] = useState(user.PASSWORD);
@@ -34,6 +33,35 @@ const ProfileHomePage = (props) => {
     const [passportNumber, setPassportNumber] = useState(user.USER_TYPE === 'customer' ? user.PASSPORT_NUMBER : null);
     const [isValidPassword, setIsValidPassword] = useState(false);
     const [isStarting, setIsStarting] = useState(true);
+
+    useEffect(()=>{
+        const fetchData = async () => {
+            if(user.USER_TYPE === 'customer')
+            {
+                const response = await fetch(`http://localhost:3000/destination/`, {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(user.PREFERENCES)
+                });
+
+                const data = await response.json();
+                setRecommendedDestinations(data);
+            }
+            if(user.USER_TYPE === 'admin')
+            {
+                const response = await fetch(`http://localhost:3000/agent/pending-agents/`, {
+                    method: "GET"
+                });
+
+                const data = await response.json();
+                console.log(data)
+                setPendingAgents(data);
+            }
+        };
+        fetchData()}
+    ,[]);
 
     const handleUsernameChange = (e) => {
         setUsername(e.target.value);
@@ -120,16 +148,6 @@ const ProfileHomePage = (props) => {
                 alert("This username is already taken. Use another one.");
             }
             else {
-                // const response = await fetch(`http://localhost:3000/destination/`, {
-                //     method: "POST",
-                //     headers: {
-                //         'Content-Type': 'application/json'
-                //     },
-                //     body: JSON.stringify(result.data.PREFERENCES)
-                // });
-
-                // result.data.RECOMMENDED_DESTINATIONS = await response.json();
-
                 setInfo(result.data);
                 setIsBeingUpdated(false);
                 navigate("/user");
@@ -205,17 +223,14 @@ const ProfileHomePage = (props) => {
     }
 
     const handleLogOutOrDeleteAccount = async (isDeletingAccount) => {
-        {
-            isDeletingAccount && user.USER_TYPE==='customer' ?
-                await fetch(`http://localhost:3000/customer/${user.USER_ID}`, {
-                    method: "DELETE"
-                }) :
-                await fetch(`http://localhost:3000/agent/${user.USER_ID}`, {
-                    method: "DELETE"
-                })
-        }
+        isDeletingAccount && (user.USER_TYPE==='customer' ?
+        await fetch(`http://localhost:3000/customer/${user.USER_ID}`, {
+            method: "DELETE"
+        }) : (user.USER_TYPE === 'agent' &&
+        await fetch(`http://localhost:3000/agent/${user.USER_ID}`, {
+            method: "DELETE"
+        })))
 
-        setIsLoggingIn(false);
         setInfo(null);
         props.setLogOut(true);
         navigate("/");
@@ -256,8 +271,8 @@ const ProfileHomePage = (props) => {
                     )}
 
                     <button className="btn-primary" onClick={() => { handleLogOutOrDeleteAccount(false) }}>Log Out</button><br /><br />
-                    <button className="btn-primary" onClick={goToUpdate}>Update Account</button><br /><br />
-                    <button className="btn-primary" onClick={() => { handleLogOutOrDeleteAccount(true) }}>Delete Account</button>
+                    {(user.USER_TYPE==='customer' || (user.USER_TYPE==='agent' && user.ACC_STATUS==='OK')) && <><button className="btn-primary" onClick={goToUpdate}>Update Account</button><br /><br />
+                    <button className="btn-primary" onClick={() => { handleLogOutOrDeleteAccount(true) }}>Delete Account</button></>}
                 </div> :
                     <div>
                         <h2>Update Profile:</h2>
@@ -288,16 +303,31 @@ const ProfileHomePage = (props) => {
                         <PasswordInput Label="Confirm Password: " setPass={handleRePasswordChange} /><span style={{ color: "red" }}> *</span><br /><br />
 
                         <div>
-                            {user.USER_TYPE === 'customer' ? <button className="custom-btn" onClick={updateInfo}>Update Profile</button>:
-                            <button className="custom-btn" onClick={updateInfo2}>Update Profile</button>}
+                            <button className="custom-btn" onClick={user.USER_TYPE === 'customer' ? updateInfo : updateInfo2}>Update Profile</button>
                             <button className="custom-btn" onClick={() => { setIsBeingUpdated(false) }}>Cancel</button></div>
                     </div>}
             </div>
             {
-                user.USER_TYPE === 'customer' &&
+                user.USER_TYPE === 'customer' && recommendedDestinations.length!==0 &&
                 <div className='recommendation-container'>
                     <h1>Recommended Destinations -</h1>
-                    <CategorizedDestination destinationObj={user.RECOMMENDED_DESTINATIONS} />
+                    <CategorizedDestination destinationObj={recommendedDestinations} />
+                </div>
+            }
+            {
+                user.USER_TYPE === 'admin' &&
+                <div className='recommendation-container'>
+                    <h1>Pending Tasks -</h1>
+                    <div style={{display: 'flex', flexDirection:'column'}}>
+                        <div style={{display: 'flex', flexDirection:'column'}}>
+                            <h2>Agent accounts to be reviewed - </h2>
+                            {pendingAgents.map((agent,index) => {
+                                <div key={index}>
+                                    
+                                </div>
+                            })}
+                        </div>
+                    </div>
                 </div>
             }
 

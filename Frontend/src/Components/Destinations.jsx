@@ -1,8 +1,8 @@
 import {useState } from "react";
-import DestinationCard from "./DestinationCard";
 import "../Styles/card.css"
 import { useNavigate } from "react-router-dom";
 import SearchAndSuggestions from "./SearchAndSuggestions";
+import ItemCard from "./ItemCard";
 
 const Destinations = ()=>{
     const [search,setSearch] = useState("");
@@ -12,8 +12,13 @@ const Destinations = ()=>{
     const [isFilterApplied, setIsFilterApplied] = useState(false);
     const navigate = useNavigate();
 
+    const removeFilter = () => {
+        setIsFilterApplied(false);
+    }
+
     const updateValue = (e) => {
         setRatingValue(e.target.value);
+        setIsFilterApplied(true);
     }
 
     const handleSearch = async (e) =>{
@@ -172,20 +177,20 @@ const Destinations = ()=>{
 
                         <div style={{marginTop: '40px'}}>
                             <h3>Choose Your Destination Preferences:</h3>
-                            <label><input type="checkbox" id="preference1" value="Mountains"/>Mountains</label><br/>
-                            <label><input type="checkbox" id="preference2" value="Lakes"/>Lakes</label><br/>
-                            <label><input type="checkbox" id="preference3" value="Beaches"/>Beaches</label><br/>
-                            <label><input type="checkbox" id="preference4" value="Forests"/>Forests</label><br/>
-                            <label><input type="checkbox" id="preference5" value="Hill Tracks"/>Hill Tracks</label><br/>
-                            <label><input type="checkbox" id="preference6" value="Tea Gardens"/>Tea Gardens</label><br/>
-                            <label><input type="checkbox" id="preference7" value="Historical Places"/>Historical Places</label><br/>
+                            <label><input type="checkbox" id="preference1" value="Mountains" onChange={removeFilter}/>Mountains</label><br/>
+                            <label><input type="checkbox" id="preference2" value="Lakes" onChange={removeFilter}/>Lakes</label><br/>
+                            <label><input type="checkbox" id="preference3" value="Beaches" onChange={removeFilter}/>Beaches</label><br/>
+                            <label><input type="checkbox" id="preference4" value="Forests" onChange={removeFilter}/>Forests</label><br/>
+                            <label><input type="checkbox" id="preference5" value="Hill Tracks" onChange={removeFilter}/>Hill Tracks</label><br/>
+                            <label><input type="checkbox" id="preference6" value="Tea Gardens" onChange={removeFilter}/>Tea Gardens</label><br/>
+                            <label><input type="checkbox" id="preference7" value="Historical Places" onChange={removeFilter}/>Historical Places</label><br/>
                         </div>
                     </div>
                     <div className='recommendation-container'>
                         <h1>Searched Destinations -</h1>
                         <div className='card-container'>
                             {destinations.map((destination,index)=>
-                                (isFilterApplied ? filterCheck(destination) : true) && <DestinationCard key={index} itemType='destination' item={destination} index={`${index}`}/>
+                                (isFilterApplied ? filterCheck(destination) : true) && <ItemCard key={index} itemType='destination' item={destination} index={`${index}`}/>
                             )}
                         </div>
                     </div>

@@ -10,26 +10,45 @@ router.get("/:username/:password",async(req,res)=>{
     const ans = await database.query(query,params);
 
     let result = {
-        status: -1,
+        status: 0,
         data: undefined
     }
 
-    if(ans.length!==0)
-    {
-        const plaintextPassword = req.params.password;
-        const hashedPassword = ans[0].PASSWORD;
+    const plaintextPassword = req.params.password;
+    const hashedPassword = ans[0].PASSWORD;
 
-        const passwordsMatch = await bcrypt.compare(plaintextPassword, hashedPassword);
-        if (!passwordsMatch) {
-            result.status = 0
-        } 
-        else {
-            ans[0].PASSWORD = req.params.password;
-            result.data = ans[0];
-            result.status = 1;
-        }
+    const passwordsMatch = await bcrypt.compare(plaintextPassword, hashedPassword);
+    if (!passwordsMatch) {
+        result.status = 0
+    } 
+    else {
+        ans[0].PASSWORD = req.params.password;
+        result.data = ans[0];
+        result.status = 1;
     }
-    console.log(result)
+
+    res.status(200).json(result);
+});
+
+router.get("/:username",async(req,res)=>{
+    const oracledb = database.oracledb;
+    const query = `
+      BEGIN
+        :ret := CHECK_USERNAME(:username);
+      END;
+    `;
+
+    const binds = {
+      ret: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+      username: req.params.username ,
+    };
+    const ans = await database.query2(query,binds);
+
+    let result = {
+        status: -1,
+    }
+
+    result.status = ans.ret;
 
     res.status(200).json(result);
 });

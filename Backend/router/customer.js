@@ -19,7 +19,6 @@ router.get("/fetch",async(req,res)=>{
         }    
     }
     ans[0].PREFERENCES = pref;
-    console.log(ans[0]);
 
     res.status(200).json(ans[0]);
 });

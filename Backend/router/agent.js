@@ -2,8 +2,18 @@ const router = require("express-promise-router")();
 const database = require('../database');
 const bcrypt = require('bcryptjs');
 
-router.get("/:agentId",async(req,res)=>{
+router.get("/pending-agents",async(req,res)=>{
     console.log("Hello");
+    const query = `SELECT *
+                   FROM Agent 
+                   WHERE ACC_STATUS = 'PENDING'`;
+    const params = [];
+    const ans = await database.query(query,params);
+
+    res.status(200).json(ans);
+});
+
+router.get("/:agentId",async(req,res)=>{
     const query = `SELECT *
                    FROM Agent 
                    WHERE AGENT_ID=${req.params.agentId}`;

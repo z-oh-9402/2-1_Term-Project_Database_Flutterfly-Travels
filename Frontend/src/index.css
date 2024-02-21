@@ -1,3 +1,21 @@
+@keyframes picSlideToCenter {
+    from {
+        transform: translateX(100%);
+    }
+    to {
+        transform: translateX(0%);
+    }
+}
+
+@keyframes picSlideAway {
+    from {
+        transform: translateX(0%);
+    }
+    to {
+        transform: translateX(-100%);
+    }
+}
+
 body, p {
     margin: 0;
     padding: 0;
@@ -13,6 +31,10 @@ body, p {
 .main-section{
     display: flex;
     align-items: center;
+}
+
+button {
+    cursor: pointer;
 }
 
 .main-navbar {
@@ -106,6 +128,7 @@ input[type="range"] {
     opacity: 0.7;
     transition: opacity .2s;
     padding-right: 11px;
+    z-index: 0;
 }
 
 input[type="range"]:hover {
@@ -119,4 +142,34 @@ input[type="range"]::-webkit-slider-thumb {
     height: 17px;
     background: #30c5d2;
     cursor: pointer;
+}
+
+.slider-container {
+    width: 600px;
+    border-radius: 8px;
+    margin: 0 auto;
+    overflow: hidden;
+}
+
+.slides {
+    min-width: 100%;
+    display: flex;
+    transform: translateX(0%);
+    transition: none;
+}
+
+.des-image{
+    height: 300px;
+    min-width: 100%;
+    object-fit: cover;
+}
+
+.pic-slide-away {
+    animation: picSlideAway 0.9s ease;
+}
+
+iframe{
+    border: 0px;
+    border-radius: 8px;
+    margin: 30px;
 }

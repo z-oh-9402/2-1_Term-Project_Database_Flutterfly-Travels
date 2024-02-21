@@ -6,11 +6,9 @@ import PropTypes from 'prop-types'
 import { useNavigate } from "react-router-dom";
 import PasswordInput from "./PasswordInput";
 import { ImCross } from "react-icons/im";
-import LoginContext from "../Context/LoginContext";
 import UserInfoContext from "../Context/UserInfoContext";
 
 const SignUp = (props) => {
-    const { setIsLoggingIn } = useContext(LoginContext);
     const { setInfo } = useContext(UserInfoContext);
     const navigate = useNavigate();
     const [userType, setUserType] = useState("");
@@ -38,11 +36,19 @@ const SignUp = (props) => {
         setUsername(e.target.value);
 
         if (e.target.value !== "") {
-            const response = await fetch(`http://localhost:3000/customer/${e.target.value}`, {
+            const response = await fetch(`http://localhost:3000/user/${e.target.value}`, {
                 method: "GET"
             });
             const result = await response.json();
-            setIsValidUsername(result.status);
+
+            if(result.status === 1)
+            {
+                setIsValidUsername(false);
+            }
+            else
+            {
+                setIsValidUsername(true);
+            }
         }
         else {
             setIsValidUsername(true);
@@ -130,9 +136,6 @@ const SignUp = (props) => {
     }
 
     const handleDataSubmit = async () => {
-
-
-
         let result;
         if (userType === 'customer') {
             
@@ -162,20 +165,8 @@ const SignUp = (props) => {
                 },
                 body: JSON.stringify(info)
             });
+
             result = await response.json();
-
-            response = await fetch(`http://localhost:3000/destination/`, {
-                method: "POST",
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(pref)
-            });
-
-            result.RECOMMENDED_DESTINATIONS = await response.json();
-            setIsLoggingIn(true);
-            setInfo(result);
-            props.setUserInfo(false);
         }
         else {
             const info = {
@@ -199,7 +190,9 @@ const SignUp = (props) => {
 
             alert("Your request is being processed");
         }
-
+        
+        setInfo(result);
+        props.setUserInfo(false);
         navigate("/");
     }
 

@@ -4,13 +4,14 @@ import Login from './Components/Login.jsx';
 import SignUp from './Components/SignUp.jsx';
 import ProfileHomePage from './Components/ProfileHomePage.jsx';
 import NoMatch from './Components/NoMatch.jsx';
-import {useContext, useState} from 'react';
+import {useState} from 'react';
 import Destinations from './Components/Destinations.jsx';
-import Hotels from './Components/Accommodations.jsx';
 import Restaurants from './Components/Restaurants.jsx';
 import DestinationProfile from './Components/DestinationProfile.jsx';
 import Title from './Components/Title.jsx';
 import Homepage from './Components/Homepage.jsx';
+import Accommodations from './Components/Accommodations.jsx';
+import AccommodationProfile from './Components/AccommodationProfile.jsx';
 
 function App() {
   const [isLoginOrSignUpPageLoaded,setIsLoginOrSignUpPageLoaded] = useState(false);
@@ -50,7 +51,10 @@ function App() {
           <Route index element={<Destinations/>}/>
           <Route path=':name' element={<DestinationProfile/>}/> 
         </Route>
-        <Route path='accommodations' element={<Hotels/>}/>
+        <Route path='accommodations' element={<><Outlet/></>}>
+          <Route index element={<Accommodations/>}/>
+          <Route path=':name' element={<AccommodationProfile/>}/> 
+        </Route>
         <Route path='restaurants' element={<Restaurants/>}/>
         <Route path='user' element={<ProfileHomePage setLogOut={handleUserInfo}/>}/>
         <Route path='*' element={<NoMatch/>}/>
