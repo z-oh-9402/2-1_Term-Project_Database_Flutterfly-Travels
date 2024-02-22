@@ -1,0 +1,24 @@
+.slider-container {
+    width: 600px;
+    border-radius: 8px;
+    margin: 0px;
+    overflow: hidden;
+    display: inline-block;
+}
+
+.slides {
+    min-width: 100%;
+    display: flex;
+    transform: translateX(0%);
+    transition: none;
+}
+
+.des-image{
+    height: 300px;
+    min-width: 100%;
+    object-fit: cover;
+}
+
+.pic-slide-away {
+    animation: picSlideAway 0.9s ease;
+}

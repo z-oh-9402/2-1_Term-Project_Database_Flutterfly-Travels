@@ -99,6 +99,18 @@ button {
     justify-content: space-between;
 }
 
+.rating{
+    border: none;
+    width: 18px;
+    height: 18px;
+    margin-left: 3px;
+}
+
+.rating-container{
+    display: flex;
+    align-items: center;
+}
+
 .filter{
     width: 20%;
     padding: 0px 40px 0px 20px;
@@ -106,19 +118,19 @@ button {
 
 .slider
 {
-    margin-bottom: 20px;
+    margin-bottom: 40px;
     display: flex;
     align-items: center;
 }
 
-.rating
+.filter-value
 {
     font-weight: bold;
     width: 20px;
     text-align: center;
 }
 
-input[type="range"] {
+.normal-slider {
     margin: 0px 0px 0px 10px;
     appearance: none;
     width: 80%;
@@ -131,45 +143,47 @@ input[type="range"] {
     z-index: 0;
 }
 
-input[type="range"]:hover {
+input{
+    cursor: pointer;
+}
+
+.normal-slider:hover {
     opacity: 1;
 }
 
-input[type="range"]::-webkit-slider-thumb {
+.normal-slider::-webkit-slider-thumb {
     appearance: none;
     border-radius: 8px;
     width: 30px;
     height: 17px;
     background: #30c5d2;
-    cursor: pointer;
-}
-
-.slider-container {
-    width: 600px;
-    border-radius: 8px;
-    margin: 0 auto;
-    overflow: hidden;
-}
-
-.slides {
-    min-width: 100%;
-    display: flex;
-    transform: translateX(0%);
-    transition: none;
-}
-
-.des-image{
-    height: 300px;
-    min-width: 100%;
-    object-fit: cover;
-}
-
-.pic-slide-away {
-    animation: picSlideAway 0.9s ease;
 }
 
 iframe{
     border: 0px;
     border-radius: 8px;
-    margin: 30px;
+}
+
+input[type="radio"]{
+    box-shadow: none;
+}
+
+.information-container{
+    display: inline-block;
+}
+
+.information-container h3{
+    display: inline-block;
+    margin-top: 5px;
+}
+
+.review-section{
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+}
+
+form{
+    width: 200px;
+    display: inline-block;
 }

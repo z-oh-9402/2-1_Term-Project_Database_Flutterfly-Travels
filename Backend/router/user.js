@@ -32,11 +32,10 @@ router.get("/:username/:password",async(req,res)=>{
 
 router.get("/:username",async(req,res)=>{
     const oracledb = database.oracledb;
-    const query = `
-      BEGIN
+    const query = 
+     `BEGIN
         :ret := CHECK_USERNAME(:username);
-      END;
-    `;
+      END;`;
 
     const binds = {
       ret: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },

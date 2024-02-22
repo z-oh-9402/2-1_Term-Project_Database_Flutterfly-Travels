@@ -174,6 +174,7 @@ Table creation commands:
 		trip_duration NUMBER,
 		total_cost NUMBER,
 		discount NUMBER,
+		rating NUMBER CHECK(rating<=5),
 		FOREIGN KEY (agent_id) REFERENCES Agent(agent_id),
 		FOREIGN KEY (customer_id) REFERENCES Customer(customer_id) ON DELETE CASCADE
 	);
@@ -430,7 +431,7 @@ Table creation commands:
 		FOREIGN KEY (trip_id) REFERENCES Trip(trip_id) ON DELETE CASCADE
 	);
 
---20. Feedback
+--19. Feedback
 	CREATE TABLE Feedback (
 		customer_id NUMBER,
 		trip_id NUMBER,
@@ -440,7 +441,7 @@ Table creation commands:
 		FOREIGN KEY (trip_id) REFERENCES Trip(trip_id) ON DELETE CASCADE
 	);
 
---21. Gifts and Coupons
+--20. Gifts and Coupons
 	CREATE TABLE Gifts_and_Coupons (
 		coupon_id NUMBER PRIMARY KEY,
 		customer_id NUMBER,
@@ -465,7 +466,7 @@ Table creation commands:
 	END;
 	/
 
---22. Division
+--21. Division
 	CREATE TABLE Division(
 		division_id NUMBER PRIMARY KEY,
 		division_name VARCHAR2(100)
@@ -487,7 +488,7 @@ Table creation commands:
 	END;
 	/
 
---23. District
+--22. District
 	CREATE TABLE District(
 		district_id NUMBER PRIMARY KEY,
 		district_name VARCHAR2(100),
@@ -511,7 +512,7 @@ Table creation commands:
 	END;
 	/
 
---24. Location 
+--23. Location 
 	CREATE TABLE Location(
 		location_id NUMBER PRIMARY KEY,
 		location_name VARCHAR2(100),
@@ -531,6 +532,58 @@ Table creation commands:
 	BEGIN
 		SELECT location_id_sequence.NEXTVAL
 		INTO :NEW.LOCATION_ID
+		FROM DUAL;
+	END;
+	/
+
+--24. Rating
+	CREATE TABLE Rating(
+		rating_id NUMBER PRIMARY KEY,
+		customer_id NUMBER,
+		rating NUMBER CHECK(rating<=5),
+		item_type VARCHAR2(20),
+		item_id NUMBER,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		FOREIGN KEY (customer_id) REFERENCES Customer(customer_id) ON DELETE CASCADE
+	);
+
+	CREATE SEQUENCE rating_id_sequence
+		START WITH 1
+		INCREMENT BY 1
+		NOMAXVALUE;
+
+	CREATE OR REPLACE TRIGGER rating_id_trigger
+	BEFORE INSERT ON Rating
+	FOR EACH ROW
+	BEGIN
+		SELECT rating_id_sequence.NEXTVAL
+		INTO :NEW.RATING_ID
+		FROM DUAL;
+	END;
+	/
+
+--25. Review
+	CREATE TABLE Review(
+		review_id NUMBER PRIMARY KEY,
+		customer_id NUMBER,
+		review VARCHAR2(1000),
+		item_type VARCHAR2(20),
+		item_id NUMBER,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		FOREIGN KEY (customer_id) REFERENCES Customer(customer_id) ON DELETE CASCADE
+	);
+
+	CREATE SEQUENCE review_id_sequence
+		START WITH 1
+		INCREMENT BY 1
+		NOMAXVALUE;
+
+	CREATE OR REPLACE TRIGGER review_id_trigger
+	BEFORE INSERT ON Review
+	FOR EACH ROW
+	BEGIN
+		SELECT review_id_sequence.NEXTVAL
+		INTO :NEW.REVIEW_ID
 		FROM DUAL;
 	END;
 	/

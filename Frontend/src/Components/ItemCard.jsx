@@ -32,7 +32,7 @@ const ItemCard = (props) => {
       <h3 className='title'>{item.NAME}</h3>
       <p>{item.LOCATION_NAME}</p>
       <p>{item.DISTRICT_NAME}, {item.DIVISION_NAME}</p>
-      <Rating rating={item.RATING}/>
+      <Rating rating={item.RATING} state={0} setRating={null}/>
 
       {props.itemType==='destination' && <div className="popup" id={index}>
           <p className="description"><span style={{fontWeight:"bold",color:"black"}}>Description: </span><br/>{item.DESCRIPTION}</p>

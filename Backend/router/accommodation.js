@@ -67,52 +67,6 @@ router.get("/search",async(req,res)=>{
     res.status(200).json(result);
 });
 
-
-
-router.get("/fetch",async(req,res)=>{
-    const keyword = req.query.keyword.replace(`'`,`''`).toLowerCase();
-
-    const query = `SELECT A.*,L.LOCATION_NAME,DIS.DISTRICT_NAME,DIV.DIVISION_NAME
-                        FROM ACCOMMODATION A LEFT JOIN Location L ON A.LOCATION_ID=L.LOCATION_ID 
-                        LEFT JOIN District DIS ON DIS.DISTRICT_ID=L.DISTRICT_ID
-                        LEFT JOIN Division DIV ON DIV.DIVISION_ID=DIS.DIVISION_ID
-                   WHERE LOWER(A.NAME) LIKE '%${keyword}%'
-                   OR LOWER(L.LOCATION_NAME) LIKE '%${keyword}%'
-                   OR LOWER(DIS.DISTRICT_NAME) LIKE '%${keyword}%'
-                   OR LOWER(DIV.DIVISION_NAME) LIKE '%${keyword}%'
-                   ORDER BY A.RATING DESC`;
-    const params = [];
-    const ans = await database.query(query,params);
-
-    const result = {
-        status: false,
-        data: undefined
-    }
-
-    if(ans.length!==0)
-    {
-        result.status = true;
-        result.data = ans;
-    }
-
-    res.status(200).json(result);
-});
-
-router.get("/fetch/accommodation-name",async(req,res)=>{
-    const name = req.query.name.replace(`'`,`''`);
-
-    const query = `SELECT A.*,L.LOCATION_NAME,DIS.DISTRICT_NAME,DIV.DIVISION_NAME
-                        FROM ACCOMMODATION A LEFT JOIN Location L ON A.LOCATION_ID=L.LOCATION_ID 
-                        LEFT JOIN District DIS ON DIS.DISTRICT_ID=L.DISTRICT_ID
-                        LEFT JOIN Division DIV ON DIV.DIVISION_ID=DIS.DIVISION_ID
-                   WHERE A.NAME='${name}'
-                   ORDER BY A.RATING DESC`;
-    const params = [];
-    const ans = await database.query(query,params);
-
-    res.status(200).json(ans[0]);
-});
-
 router.get("/fetch/location",async(req,res)=>{
     const location = req.query.name.replace(`'`,`''`);
 
@@ -155,6 +109,144 @@ router.get("/fetch/division",async(req,res)=>{
     const params = [];
     const ans = await database.query(query,params);
     res.status(200).json(ans);
+});
+
+router.get("/fetch/accommodation-name",async(req,res)=>{
+    const name = req.query.name.replace(`'`,`''`);
+
+    const query = `SELECT A.*,L.LOCATION_NAME,DIS.DISTRICT_NAME,DIV.DIVISION_NAME
+                        FROM ACCOMMODATION A LEFT JOIN Location L ON A.LOCATION_ID=L.LOCATION_ID 
+                        LEFT JOIN District DIS ON DIS.DISTRICT_ID=L.DISTRICT_ID
+                        LEFT JOIN Division DIV ON DIV.DIVISION_ID=DIS.DIVISION_ID
+                   WHERE A.NAME='${name}'
+                   ORDER BY A.RATING DESC`;
+    const params = [];
+    const ans = await database.query(query,params);
+
+    res.status(200).json(ans[0]);
+});
+
+router.get("/fetch",async(req,res)=>{
+    const keyword = req.query.keyword.replace(`'`,`''`).toLowerCase();
+
+    const query = `SELECT A.*,L.LOCATION_NAME,DIS.DISTRICT_NAME,DIV.DIVISION_NAME
+                        FROM ACCOMMODATION A LEFT JOIN Location L ON A.LOCATION_ID=L.LOCATION_ID 
+                        LEFT JOIN District DIS ON DIS.DISTRICT_ID=L.DISTRICT_ID
+                        LEFT JOIN Division DIV ON DIV.DIVISION_ID=DIS.DIVISION_ID
+                   WHERE LOWER(A.NAME) LIKE '%${keyword}%'
+                   OR LOWER(L.LOCATION_NAME) LIKE '%${keyword}%'
+                   OR LOWER(DIS.DISTRICT_NAME) LIKE '%${keyword}%'
+                   OR LOWER(DIV.DIVISION_NAME) LIKE '%${keyword}%'
+                   ORDER BY A.RATING DESC`;
+    const params = [];
+    const ans = await database.query(query,params);
+
+    const result = {
+        status: false,
+        data: undefined
+    }
+
+    if(ans.length!==0)
+    {
+        result.status = true;
+        result.data = ans;
+    }
+
+    res.status(200).json(result);
+});
+
+router.get("/review-rating/:accommodationId/:customerId",async(req,res)=>{
+    const id = req.params.accommodationId;
+    const customerId = req.params.customerId;
+
+    const query = 
+     `
+        SELECT RATING FROM RATING
+        WHERE CUSTOMER_ID=${customerId} AND ITEM_ID=${id} AND ITEM_TYPE='accommodation'
+     `;
+
+    const params = [];
+
+    const ans = await database.query(query,params);
+    const result = ans[0].RATING;
+
+    res.status(200).json(result);
+});
+
+router.get("/review-rating/:accommodationId",async(req,res)=>{
+    const id = req.params.accommodationId;
+
+    const query = 
+     `
+        SELECT RE.REVIEW, RA.RATING, RE.CREATED_AT, U.USERNAME
+        FROM REVIEW RE JOIN RATING RA ON RE.ITEM_ID=RA.ITEM_ID AND RE.ITEM_TYPE=RA.ITEM_TYPE AND RE.CUSTOMER_ID=RA.CUSTOMER_ID JOIN USERS U ON U.USER_ID=RE.CUSTOMER_ID
+        WHERE RE.ITEM_ID=${id} AND RE.ITEM_TYPE='accommodation'
+        ORDER BY RE.CREATED_AT DESC
+     `;
+
+    const params = [];
+
+    const ans = await database.query(query,params);
+    res.status(200).json(ans);
+});
+
+router.post("/review-rating/:id",async(req,res)=>{
+    const id = req.params.id;
+    const review = req.body.review;
+    const rating = req.body.rating;
+    const customerId = req.body.customerId;
+    console.log("Hello "+id+" "+review+" "+rating+" "+customerId);
+
+    const params = [];
+    if(rating!==0)
+    {
+        const query1 = 
+        `
+            SELECT * FROM RATING
+            WHERE CUSTOMER_ID=${customerId} AND ITEM_ID=${id} AND ITEM_TYPE='accommodation'
+        `
+        const ans = await database.query(query1,params);
+
+        if(ans.length===0)
+        {
+            const query2 = 
+            `
+                INSERT INTO RATING (ITEM_ID,ITEM_TYPE,REVIEW,CUSTOMER_ID)
+                VALUES (${id},'accommodation','${review}',${customerId})
+            `
+            await database.query(query2,params);
+        }
+        else
+        {
+            const query2 = 
+            `
+                UPDATE RATING SET RATING=${rating} WHERE ITEM_ID=${id} AND ITEM_TYPE='accommodation' AND CUSTOMER_ID=${customerId}
+            `
+            await database.query(query2,params);
+
+            const ratingUpdateQuery = 
+            `
+                UPDATE ACCOMMODATION 
+                SET RATING=(SELECT ROUND(AVG(RATING),1) FROM RATING WHERE ITEM_ID=${id} AND ITEM_TYPE='accommodation') 
+                WHERE ACCOMMODATION_ID=${id}
+            `
+            await database.query(ratingUpdateQuery,params);
+        }
+    }
+
+    if(review.length!==0)
+    {
+        const query3 = 
+        `
+            INSERT INTO REVIEW (ITEM_ID,ITEM_TYPE,REVIEW,CUSTOMER_ID)
+            VALUES (${id},'accommodation','${review}',${customerId})
+        `
+        await database.query(query3,params);
+    }
+
+    await database.query('commit',params);
+
+    res.status(200).json({status:'ok'});
 });
 
 module.exports = router;

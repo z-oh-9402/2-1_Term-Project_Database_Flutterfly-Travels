@@ -1,0 +1,23 @@
+.rc-slider{
+    padding-bottom: 35px;
+}
+
+.rc-slider-track {
+    background-color: rgb(91, 206, 244);
+}
+
+.rc-slider-handle {
+    background-color: rgb(91, 206, 244);
+    opacity: 1;
+    border: none;
+}
+
+.rc-slider-dot {
+    background-color: blue;
+    border: none;
+}
+  
+.rc-slider-dot-active {
+    border: solid 1.5px blue;
+    background-color: white;
+}

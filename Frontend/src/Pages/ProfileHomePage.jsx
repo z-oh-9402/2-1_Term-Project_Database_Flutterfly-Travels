@@ -319,12 +319,12 @@ const ProfileHomePage = (props) => {
                     <h1>Pending Tasks -</h1>
                     <div style={{display: 'flex', flexDirection:'column'}}>
                         <div style={{display: 'flex', flexDirection:'column'}}>
-                            <h2>Agent accounts to be reviewed - </h2>
-                            {pendingAgents.map((agent,index) => {
+                            {pendingAgents.length>0 && <h2>Agent accounts to be reviewed - </h2>}
+                            {pendingAgents.map((agent,index) =>
                                 <div key={index}>
-                                    
+                                    <h3>{agent.USERNAME}</h3>
                                 </div>
-                            })}
+                            )}
                         </div>
                     </div>
                 </div>

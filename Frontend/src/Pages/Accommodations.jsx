@@ -3,6 +3,7 @@ import "../Styles/card.css"
 import { useNavigate } from "react-router-dom";
 import SearchAndSuggestions from "../Components/SearchAndSuggestions";
 import ItemCard from "../Components/ItemCard";
+import RangeSlider from "../Components/RangeSlider";
 
 const Accommodations = ()=>{
     const [search,setSearch] = useState("");
@@ -11,6 +12,7 @@ const Accommodations = ()=>{
     const [ratingValue, setRatingValue] = useState(0);
     const [roomCapacity, setRoomCapacity] = useState(0);
     const [accommodationClass, setAccommodationClass] = useState(0);
+    const [prices, setPrices] = useState([0, 20000]);
     const [isFilterApplied, setIsFilterApplied] = useState(false);
     const navigate = useNavigate();
 
@@ -159,6 +161,16 @@ const Accommodations = ()=>{
             isChecked = false;
         }
 
+        if(isChecked && document.getElementById('preference5').checked && accommodation.ACCESSIBLE==="N")
+        {
+            isChecked = false;
+        }
+
+        if(isChecked && (accommodation.ROOM_PRICE<prices[0] || accommodation.ROOM_PRICE>prices[1]))
+        {
+            isChecked = false;
+        }
+
         return isChecked;
     }
 
@@ -184,13 +196,15 @@ const Accommodations = ()=>{
                     <div className="filter">
                         <button className="btn-primary" style={{marginBottom:'10px'}} onClick={filterToggle}>{isFilterApplied ? 'Remove Filter' : 'Apply Filter'}</button>
                         <h3>Minimum Rating:</h3>
-                        <div className="slider"><span className="rating">{ratingValue}</span> <input type="range" id="slider" min="0" max="5" value={ratingValue} step="0.5" onInput={updateRatingValue}/></div>
+                        <div className="slider"><span className="filter-value">{ratingValue}</span> <input type="range" className="normal-slider" min="0" max="5" value={ratingValue} step="0.5" onInput={updateRatingValue}/></div>
 
                         <h3>Minimum Room Capacity:</h3>
-                        <div className="slider"><span className="rating">{roomCapacity}</span> <input type="range" id="slider" min="0" max="4" value={roomCapacity} step="1" onInput={updateCapacityValue}/></div>
+                        <div className="slider"><span className="filter-value">{roomCapacity}</span> <input type="range" className="normal-slider" min="0" max="4" value={roomCapacity} step="1" onInput={updateCapacityValue}/></div>
 
                         <h3>Minimum Accommodation Class:</h3>
-                        <div className="slider"><span className="rating">{accommodationClass}</span> <input type="range" id="slider" min="1" max="5" value={accommodationClass} step="1" onInput={updateClassValue}/></div>
+                        <div className="slider"><span className="filter-value">{accommodationClass}</span> <input type="range" className="normal-slider" min="1" max="5" value={accommodationClass} step="1" onInput={updateClassValue}/></div>
+
+                        <RangeSlider values={prices} funcs={{setValues: setPrices, setIsFilterApplied: setIsFilterApplied}}/>
 
                         <div style={{margin: '40px 0px 40px 0px'}}>
                             <h3>Choose Your Accommodation Preferences:</h3>
@@ -198,6 +212,7 @@ const Accommodations = ()=>{
                             <label><input type="checkbox" id="preference2" value="Parking" onChange={removeFilter}/>Parking</label><br/>
                             <label><input type="checkbox" id="preference3" value="Breakfast" onChange={removeFilter}/>Breakfast</label><br/>
                             <label><input type="checkbox" id="preference4" value="Pool" onChange={removeFilter}/>Pool</label><br/>
+                            <label><input type="checkbox" id="preference5" value="Accessible" onChange={removeFilter}/>Accessible</label><br/>
                         </div>
                     </div>
                     <div className='recommendation-container'>
@@ -210,7 +225,8 @@ const Accommodations = ()=>{
                     </div>
                 </div>
             }
-        </div>)
+        </div>
+    )
 }
 
 export default Accommodations;

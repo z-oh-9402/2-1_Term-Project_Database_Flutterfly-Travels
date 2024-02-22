@@ -173,7 +173,7 @@ const Destinations = ()=>{
 
                         <button className="btn-primary" style={{marginBottom:'10px'}} onClick={filterToggle}>{isFilterApplied ? 'Remove Filter' : 'Apply Filter'}</button>
                         <h3>Minimum Rating:</h3>
-                        <div className="slider"><span className="rating">{ratingValue}</span> <input type="range" id="slider" min="0" max="5" value={ratingValue} step="0.5" onInput={updateValue}/></div>
+                        <div className="slider"><span className="filter-value">{ratingValue}</span> <input type="range" className="normal-slider" min="0" max="5" value={ratingValue} step="0.5" onInput={updateValue}/></div>
 
                         <div style={{marginTop: '40px'}}>
                             <h3>Choose Your Destination Preferences:</h3>

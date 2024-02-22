@@ -1,32 +1,137 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import ImageSlider from "../Components/ImageSlider";
+import Rating from "../Components/Rating";
+import UserInfoContext from '../Context/UserInfoContext';
 
 const AccommodationProfile = () => {
+    const {userInfo} = useContext(UserInfoContext);
     const params = useParams();
     const [result, setResult] = useState(null);
     const [images,setImages] = useState([]);
+    const [review, setReview] = useState("");
+    const [rating, setRating] = useState(0);
+    const [allReviewRatings,setAllReviewRatings] = useState([{}]);
+
+
+    const handleReviewChange = (e) => {
+        if(e.target.value.length <= 1000)
+        {
+            setReview(e.target.value);
+        }
+    };
     
     useEffect(()=>{
         const fetchData = async () => {
-            const response = await fetch(`http://localhost:3000/accommodation/fetch/accommodation-name?name=${params.name}`, {
+            let response = await fetch(`http://localhost:3000/accommodation/fetch/accommodation-name?name=${params.name}`, {
                 method: "GET",
             });
 
-            const data = await response.json();
-            setResult(data);
+            let data = await response.json();
+
+            response = await fetch(`http://localhost:3000/accommodation/review-rating/${data.ACCOMMODATION_ID}`, {
+                method: "GET",
+            });
+            const data2 = await response.json();
+            setAllReviewRatings(data2);
+
+            if(userInfo!==null)
+            {
+                response = await fetch(`http://localhost:3000/accommodation/review-rating/${data.ACCOMMODATION_ID}/${userInfo.USER_ID}`, {
+                    method: "GET",
+                });
+
+                const data3 = await response.json();
+                setRating(data3);
+                console.log(data3);
+            }
+
             setImages([data.IMAGE1,data.IMAGE2,data.IMAGE3]);
+            setResult(data);
         };
         fetchData()}
     ,[]);
+
+    const handleSubmit = async () => {
+        let response = await fetch(`http://localhost:3000/accommodation/review-rating/${result.ACCOMMODATION_ID}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                review: review,
+                rating: rating,
+                customerId: userInfo.USER_ID
+            }),
+        });
+
+        response = await fetch(`http://localhost:3000/accommodation/review-rating/${result.ACCOMMODATION_ID}`, {
+            method: "GET",
+        });
+        let data = await response.json();
+        setAllReviewRatings(data);
+
+        if(userInfo!==null)
+        {
+            response = await fetch(`http://localhost:3000/accommodation/review-rating/${result.ACCOMMODATION_ID}/${userInfo.USER_ID}`, {
+                method: "GET",
+            });
+
+            data = await response.json();
+            setRating(data);
+        }
+        setReview("");
+    };
 
     return (
         <>
             {result && 
             <>
-                <h3>{result.NAME}</h3>
+                <h2 style={{paddingLeft: '40px'}}>{result.NAME}</h2>
+                
+                <div style={{marginLeft: '0px',padding: '40px', display: 'flex', justifyContent:'space-between'}}>
                 <ImageSlider images={images}/>
-                <iframe src={result.MAP} width="400" height="300" allowFullScreen="" loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
+                    <div className="information-container">
+                        <h3>Location: {result.LOCATION_NAME}, {result.DISTRICT_NAME}</h3><br/>
+                        <h3>Address: {result.ADDRESS}</h3><br/>
+                        <h3>Room Price: ৳ {result.ROOM_PRICE}</h3><br/>
+                        <h3>Rating: <Rating rating={result.RATING} state={0} setRating={null}/></h3><br/>
+                    </div>
+                </div>
+
+                <div style={{padding:'40px', display: "flex", justifyContent: 'space-between'}}>
+                    <iframe src={result.MAP} width="400" height="300" allowFullScreen="" loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
+
+                    {userInfo!==null &&
+                        <div className="review-section" style={{maxWidth: "400px"}}>
+                        <h2>Reviews</h2>
+                        <form>
+                            <div style={{display: 'inline-block'}}>
+                                <div style={{display: 'flex', alignItems: 'center'}}>
+                                    <label>Your Rating: </label>
+                                    {console.log(rating)}
+                                    <Rating rating={rating} state={1} setRating={setRating}/>
+                                </div>
+                            </div>
+
+                            <textarea value={review} placeholder="Write your review here..." onChange={handleReviewChange}/>
+                            <p>{review.length}/1000</p>
+                            <button className="btn-primary" onClick={handleSubmit}>Submit Review</button>
+                        </form>
+                    </div>}
+
+                    <div className="all-review" style={{maxWidth: "400px"}}>
+                        <h2>All Reviews</h2>
+                        {allReviewRatings.map((item,index) => (
+                            <div key={index}>
+                                <p>{item.USERNAME}</p>
+                                <Rating rating={item.RATING} state={0} setRating={null}/>
+                                <p>{item.REVIEW}</p>
+                                <p>{item.CREATED_AT}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
             </>}
         </>
     );

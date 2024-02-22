@@ -20,7 +20,7 @@ const UserInfoContextProvider = ({ children }) => {
   };
 
   return (
-    <UserInfoContext.Provider value={{ userInfo, setInfo}}>
+    <UserInfoContext.Provider value={{userInfo, setInfo}}>
       {children}
     </UserInfoContext.Provider>
   );

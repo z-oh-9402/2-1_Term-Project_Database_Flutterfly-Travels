@@ -3,8 +3,8 @@ const database = require('../database');
 const bcrypt = require('bcryptjs');
 
 router.get("/pending-agents",async(req,res)=>{
-    const query = `SELECT *
-                   FROM Agent 
+    const query = `SELECT U.*, A.EXPERIENCE_YEARS, A.FEE, A.ACC_STATUS
+                   FROM Users U RIGHT JOIN Agent A ON U.USER_ID = A.AGENT_ID
                    WHERE ACC_STATUS = 'PENDING'`;
     const params = [];
     const ans = await database.query(query,params);
@@ -13,6 +13,7 @@ router.get("/pending-agents",async(req,res)=>{
 });
 
 router.get("/:agentId",async(req,res)=>{
+    
     const query = `SELECT *
                    FROM Agent 
                    WHERE AGENT_ID=${req.params.agentId}`;
@@ -86,6 +87,7 @@ router.put("/:userId",async(req,res)=>{
 
     res.status(200).json(result);
 });
+
 router.delete("/:userId",async(req,res)=>{
     const query = `DELETE FROM Users 
                    WHERE USER_ID = ${req.params.userId}`;

@@ -12,6 +12,7 @@ import Title from './Components/Title.jsx';
 import Homepage from './Pages/Homepage.jsx';
 import Accommodations from './Pages/Accommodations.jsx';
 import AccommodationProfile from './Pages/AccommodationProfile.jsx';
+import Transports from './Pages/Transports.jsx';
 
 function App() {
   const [isLoginOrSignUpPageLoaded,setIsLoginOrSignUpPageLoaded] = useState(false);
@@ -56,6 +57,7 @@ function App() {
           <Route path=':name' element={<AccommodationProfile/>}/> 
         </Route>
         <Route path='restaurants' element={<Restaurants/>}/>
+        <Route path='transports' element={<Transports/>}/>
         <Route path='user' element={<ProfileHomePage setLogOut={handleUserInfo}/>}/>
         <Route path='*' element={<NoMatch/>}/>
       </Routes>

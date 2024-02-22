@@ -65,6 +65,7 @@ const Login = (props) => {
                         const result1 = await response.json();
                         result.data.EXPERIENCE_YEARS = result1.EXPERIENCE_YEARS;
                         result.data.FEE = result1.FEE;
+                        result.data.ACC_STATUS = result1.ACC_STATUS;
 
                         if (result1.ACC_STATUS === 'PENDING') {
                             alert("Your request is still being processed!!!");

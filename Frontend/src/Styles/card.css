@@ -19,6 +19,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    cursor: pointer;
 }
 
 .card:hover {
@@ -28,7 +29,6 @@
 .card img {
     width: 100%;
     min-height: 55%;
-    border: 1px solid #72cfe8;
     border-radius: 6px;
     object-fit: cover;
 }
@@ -40,19 +40,6 @@
 
 .card p {
     color: #4f4f4f;
-}
-
-.card .rating-container{
-    display: flex;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.card .rating{
-    border: none;
-    width: 18px;
-    height: 18px;
-    margin-left: 3px;
 }
 
 .popup {
