@@ -37,34 +37,6 @@ button {
     cursor: pointer;
 }
 
-.main-navbar {
-    background-color: rgba(161, 244, 250, 0.479);
-    padding: 16px 32px;
-    display: flex;
-    justify-content: space-between;
-}
-
-.main-navbar .basicInfo{
-    margin-right: 16px;
-    text-decoration: none;
-}
-
-.main-navbar .basicInfo:hover{
-    text-decoration: underline;
-}
-
-.main-navbar a{
-    color:black;
-}
-
-.main-navbar button{
-    margin-right: 10px;
-}
-
-.username{
-    margin: 0px;
-}
-
 .profile-page{
     display: flex;
 }

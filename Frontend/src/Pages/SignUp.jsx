@@ -226,11 +226,11 @@ const SignUp = (props) => {
                         </div>
                         <div style={{ display: 'flex', flexDirection: "column", alignItems: 'flex-end', marginBottom: '40px' }}>
                             <label>Username: <input value={username} placeholder='Enter username' onChange={handleUsernameChange} /><span style={{ color: "red" }}> *</span></label>
-                            {!isValidUsername ? <h5 style={{ color: "red" }}>username already exists</h5> : <><br /></>}
+                            {!isValidUsername ? <h5 style={{ color: "red" }}>username already exists</h5> : <br/>}
 
                             <div><PasswordInput Label="Enter Password: " setPass={handlePasswordChange} /><span style={{ color: "red" }}> *</span></div>
                             {!isValidPassword && !isPasswordStarting ? <h5 style={{ color: "red" }}>password must be at least 8 characters long</h5>
-                                : <><br /></>}
+                                : <br/>}
                             <div><PasswordInput Label="Confirm Password: " setPass={handleRePasswordChange} /><span style={{ color: "red" }}> *</span></div>
                         </div>
                         <button className="custom-btn" onClick={() => { handleForm(2) }}>Next</button>
@@ -239,16 +239,22 @@ const SignUp = (props) => {
                     (page === 2 ?
                         <>
                             <label>First Name: <input value={firstName} placeholder='Enter first name' onChange={handleFirstNameChange} /><span style={{ color: "red" }}> *</span></label><br /><br />
+
                             <label>Last Name: <input value={lastName} placeholder='Enter last name' onChange={handleLastNameChange} /><span style={{ color: "red" }}> *</span></label><br /><br />
+
                             <label>Email: <input value={email} placeholder='Enter email' onChange={handleEmailChange} /><span style={{ color: "red" }}> *</span></label><br /><br />
+
                             {userType === 'customer' ? <label>Passport Number: <input value={passportNumber} placeholder='Enter passport number' onChange={handlePassportNumberChange} /><span style={{ color: "red" }}> *</span></label>
                                 : <><label>Years of Experience: <input value={experience} placeholder='Enter years of experience' onChange={handleExperienceChange} /><span style={{ color: "red" }}> *</span></label><br /><br />
                                     <label>Fee: <input value={fee} placeholder='Enter expected fee' onChange={handleFee} /><span style={{ color: "red" }}> *</span></label></>}
+
                             {userType === "customer" && !isValidPassport && !isPassportStarting ? <h5 style={{ color: "red" }}>passport number must contain 12 characters</h5>
                                 : <><br /><br /></>}
+
                             <div><button className="custom-btn" onClick={() => { togglePage(1) }}>Prev</button>
-                                {userType === "customer" ? <button className="custom-btn" onClick={() => { handleForm(3) }}>Next</button> :
-                                    <><button className="custom-btn" onClick={handleDataSubmit}>Sign Up</button><br /><br /></>}
+
+                            {userType === "customer" ? <button className="custom-btn" onClick={() => { handleForm(3) }}>Next</button> :
+                                <><button className="custom-btn" onClick={handleDataSubmit}>Sign Up</button><br /><br /></>}
                             </div><br /><br />
                         </> :
                         userType === "customer" &&

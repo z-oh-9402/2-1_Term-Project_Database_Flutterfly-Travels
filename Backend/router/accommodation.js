@@ -160,15 +160,24 @@ router.get("/review-rating/:accommodationId/:customerId",async(req,res)=>{
     const customerId = req.params.customerId;
 
     const query = 
-     `
+    `
         SELECT RATING FROM RATING
         WHERE CUSTOMER_ID=${customerId} AND ITEM_ID=${id} AND ITEM_TYPE='accommodation'
-     `;
+    `;
 
     const params = [];
 
     const ans = await database.query(query,params);
-    const result = ans[0].RATING;
+
+    let result;
+    if(ans.length===0)
+    {
+        result = 0;
+    }
+    else
+    {
+        result = ans[0].RATING;
+    }
 
     res.status(200).json(result);
 });
@@ -177,12 +186,12 @@ router.get("/review-rating/:accommodationId",async(req,res)=>{
     const id = req.params.accommodationId;
 
     const query = 
-     `
+    `
         SELECT RE.REVIEW, RA.RATING, RE.CREATED_AT, U.USERNAME
         FROM REVIEW RE JOIN RATING RA ON RE.ITEM_ID=RA.ITEM_ID AND RE.ITEM_TYPE=RA.ITEM_TYPE AND RE.CUSTOMER_ID=RA.CUSTOMER_ID JOIN USERS U ON U.USER_ID=RE.CUSTOMER_ID
         WHERE RE.ITEM_ID=${id} AND RE.ITEM_TYPE='accommodation'
         ORDER BY RE.CREATED_AT DESC
-     `;
+    `;
 
     const params = [];
 
@@ -195,7 +204,6 @@ router.post("/review-rating/:id",async(req,res)=>{
     const review = req.body.review;
     const rating = req.body.rating;
     const customerId = req.body.customerId;
-    console.log("Hello "+id+" "+review+" "+rating+" "+customerId);
 
     const params = [];
     if(rating!==0)
@@ -211,8 +219,8 @@ router.post("/review-rating/:id",async(req,res)=>{
         {
             const query2 = 
             `
-                INSERT INTO RATING (ITEM_ID,ITEM_TYPE,REVIEW,CUSTOMER_ID)
-                VALUES (${id},'accommodation','${review}',${customerId})
+                INSERT INTO RATING (ITEM_ID,ITEM_TYPE,RATING,CUSTOMER_ID)
+                VALUES (${id},'accommodation','${rating}',${customerId})
             `
             await database.query(query2,params);
         }
@@ -223,15 +231,15 @@ router.post("/review-rating/:id",async(req,res)=>{
                 UPDATE RATING SET RATING=${rating} WHERE ITEM_ID=${id} AND ITEM_TYPE='accommodation' AND CUSTOMER_ID=${customerId}
             `
             await database.query(query2,params);
-
-            const ratingUpdateQuery = 
-            `
-                UPDATE ACCOMMODATION 
-                SET RATING=(SELECT ROUND(AVG(RATING),1) FROM RATING WHERE ITEM_ID=${id} AND ITEM_TYPE='accommodation') 
-                WHERE ACCOMMODATION_ID=${id}
-            `
-            await database.query(ratingUpdateQuery,params);
         }
+
+        const ratingUpdateQuery = 
+        `
+            UPDATE ACCOMMODATION 
+            SET RATING=(SELECT ROUND(AVG(RATING),1) FROM RATING WHERE ITEM_ID=${id} AND ITEM_TYPE='accommodation') 
+            WHERE ACCOMMODATION_ID=${id}
+        `
+        await database.query(ratingUpdateQuery,params);
     }
 
     if(review.length!==0)

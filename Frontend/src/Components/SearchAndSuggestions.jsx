@@ -11,6 +11,9 @@ const SearchAndSuggestions = (props) => {
     const setOnFocus = () =>{
         const blurBackground = document.getElementById("dim-background");
         blurBackground.style.display = "block";
+
+        const navbar = document.getElementById("main-nav");
+        navbar.style.zIndex = 1;
         
         if(data.suggestions)
         {
@@ -22,6 +25,9 @@ const SearchAndSuggestions = (props) => {
     const setOnBlur = () =>{
         const blurBackground = document.getElementById("dim-background");
         setTimeout(()=>{blurBackground.style.display = "none"}, 300);
+
+        const navbar = document.getElementById("main-nav");
+        navbar.style.zIndex = 100;
         
         if(data.suggestions)
         {

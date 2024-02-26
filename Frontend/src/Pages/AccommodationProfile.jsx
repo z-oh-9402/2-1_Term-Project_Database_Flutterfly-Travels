@@ -4,6 +4,8 @@ import ImageSlider from "../Components/ImageSlider";
 import Rating from "../Components/Rating";
 import UserInfoContext from '../Context/UserInfoContext';
 
+const max_review_length = 700;
+
 const AccommodationProfile = () => {
     const {userInfo} = useContext(UserInfoContext);
     const params = useParams();
@@ -15,7 +17,7 @@ const AccommodationProfile = () => {
 
 
     const handleReviewChange = (e) => {
-        if(e.target.value.length <= 1000)
+        if(e.target.value.length <= max_review_length)
         {
             setReview(e.target.value);
         }
@@ -43,7 +45,6 @@ const AccommodationProfile = () => {
 
                 const data3 = await response.json();
                 setRating(data3);
-                console.log(data3);
             }
 
             setImages([data.IMAGE1,data.IMAGE2,data.IMAGE3]);
@@ -91,7 +92,7 @@ const AccommodationProfile = () => {
                 
                 <div style={{marginLeft: '0px',padding: '40px', display: 'flex', justifyContent:'space-between'}}>
                 <ImageSlider images={images}/>
-                    <div className="information-container">
+                    <div className="information-container" style={{width: '500px'}}>
                         <h3>Location: {result.LOCATION_NAME}, {result.DISTRICT_NAME}</h3><br/>
                         <h3>Address: {result.ADDRESS}</h3><br/>
                         <h3>Room Price: ৳ {result.ROOM_PRICE}</h3><br/>
@@ -109,13 +110,12 @@ const AccommodationProfile = () => {
                             <div style={{display: 'inline-block'}}>
                                 <div style={{display: 'flex', alignItems: 'center'}}>
                                     <label>Your Rating: </label>
-                                    {console.log(rating)}
                                     <Rating rating={rating} state={1} setRating={setRating}/>
                                 </div>
                             </div>
 
                             <textarea value={review} placeholder="Write your review here..." onChange={handleReviewChange}/>
-                            <p>{review.length}/1000</p>
+                            <p>{review.length}/{max_review_length}</p>
                             <button className="btn-primary" onClick={handleSubmit}>Submit Review</button>
                         </form>
                     </div>}

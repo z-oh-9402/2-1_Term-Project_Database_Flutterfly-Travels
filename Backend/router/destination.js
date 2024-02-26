@@ -67,46 +67,6 @@ router.get("/search",async(req,res)=>{
     res.status(200).json(result);
 });
 
-
-
-router.get("/fetch",async(req,res)=>{
-    const keyword = req.query.keyword.replace(`'`,`''`).toLowerCase();
-
-    const query = `SELECT D.*,L.LOCATION_NAME,DIS.DISTRICT_NAME,DIV.DIVISION_NAME
-                        FROM DESTINATION D LEFT JOIN Location L ON D.LOCATION_ID=L.LOCATION_ID 
-                        LEFT JOIN District DIS ON DIS.DISTRICT_ID=L.DISTRICT_ID
-                        LEFT JOIN Division DIV ON DIV.DIVISION_ID=DIS.DIVISION_ID
-                   WHERE LOWER(D.NAME) LIKE '%${keyword}%'
-                   OR LOWER(L.LOCATION_NAME) LIKE '%${keyword}%'
-                   OR LOWER(DIS.DISTRICT_NAME) LIKE '%${keyword}%'
-                   OR LOWER(DIV.DIVISION_NAME) LIKE '%${keyword}%'
-                   ORDER BY D.RATING DESC`;
-    const params = [];
-    const ans = await database.query(query,params);
-
-    const result = {
-        status: false,
-        data: undefined
-    }
-
-    if(ans.length!==0)
-    {
-        for(let des of ans)
-        {
-            const query2 = `SELECT P.TYPE_NAME
-                    FROM DESTINATION_TYPE D LEFT JOIN PLACE_TYPE P ON D.PLACE_TYPE_ID = P.PLACE_TYPE_ID
-                    WHERE D.DESTINATION_ID = ${des.DESTINATION_ID}`;
-            const result2 = await database.query(query2,params);
-            des.TYPE = result2;
-        }
-
-        result.status = true;
-        result.data = ans;
-    }
-
-    res.status(200).json(result);
-});
-
 router.get("/fetch/destination-name",async(req,res)=>{
     const name = req.query.name.replace(`'`,`''`);
 
@@ -198,6 +158,146 @@ router.get("/fetch/division",async(req,res)=>{
     }
 
     res.status(200).json(ans);
+});
+
+router.get("/fetch",async(req,res)=>{
+    const keyword = req.query.keyword.replace(`'`,`''`).toLowerCase();
+
+    const query = `SELECT D.*,L.LOCATION_NAME,DIS.DISTRICT_NAME,DIV.DIVISION_NAME
+                        FROM DESTINATION D LEFT JOIN Location L ON D.LOCATION_ID=L.LOCATION_ID 
+                        LEFT JOIN District DIS ON DIS.DISTRICT_ID=L.DISTRICT_ID
+                        LEFT JOIN Division DIV ON DIV.DIVISION_ID=DIS.DIVISION_ID
+                   WHERE LOWER(D.NAME) LIKE '%${keyword}%'
+                   OR LOWER(L.LOCATION_NAME) LIKE '%${keyword}%'
+                   OR LOWER(DIS.DISTRICT_NAME) LIKE '%${keyword}%'
+                   OR LOWER(DIV.DIVISION_NAME) LIKE '%${keyword}%'
+                   ORDER BY D.RATING DESC`;
+    const params = [];
+    const ans = await database.query(query,params);
+
+    const result = {
+        status: false,
+        data: undefined
+    }
+
+    if(ans.length!==0)
+    {
+        for(let des of ans)
+        {
+            const query2 = `SELECT P.TYPE_NAME
+                    FROM DESTINATION_TYPE D LEFT JOIN PLACE_TYPE P ON D.PLACE_TYPE_ID = P.PLACE_TYPE_ID
+                    WHERE D.DESTINATION_ID = ${des.DESTINATION_ID}`;
+            const result2 = await database.query(query2,params);
+            des.TYPE = result2;
+        }
+
+        result.status = true;
+        result.data = ans;
+    }
+
+    res.status(200).json(result);
+});
+
+router.get("/review-rating/:destinationId/:customerId",async(req,res)=>{
+    const id = req.params.destinationId;
+    const customerId = req.params.customerId;
+
+    const query = 
+    `
+        SELECT RATING FROM RATING
+        WHERE CUSTOMER_ID=${customerId} AND ITEM_ID=${id} AND ITEM_TYPE='destination'
+    `;
+
+    const params = [];
+
+    const ans = await database.query(query,params);
+
+    let result;
+    if(ans.length===0)
+    {
+        result = 0;
+    }
+    else
+    {
+        result = ans[0].RATING;
+    }
+
+    res.status(200).json(result);
+});
+
+router.get("/review-rating/:destinationId",async(req,res)=>{
+    const id = req.params.destinationId;
+
+    const query = 
+    `
+        SELECT RE.REVIEW, RA.RATING, RE.CREATED_AT, U.USERNAME
+        FROM REVIEW RE JOIN RATING RA ON RE.ITEM_ID=RA.ITEM_ID AND RE.ITEM_TYPE=RA.ITEM_TYPE AND RE.CUSTOMER_ID=RA.CUSTOMER_ID JOIN USERS U ON U.USER_ID=RE.CUSTOMER_ID
+        WHERE RE.ITEM_ID=${id} AND RE.ITEM_TYPE='destination'
+        ORDER BY RE.CREATED_AT DESC
+    `;
+
+    const params = [];
+
+    const ans = await database.query(query,params);
+    res.status(200).json(ans);
+});
+
+router.post("/review-rating/:id",async(req,res)=>{
+    const id = req.params.id;
+    const review = req.body.review;
+    const rating = req.body.rating;
+    const customerId = req.body.customerId;
+
+    const params = [];
+    if(rating!==0)
+    {
+        const query1 = 
+        `
+            SELECT * FROM RATING
+            WHERE CUSTOMER_ID=${customerId} AND ITEM_ID=${id} AND ITEM_TYPE='destination'
+        `
+        const ans = await database.query(query1,params);
+
+        if(ans.length===0)
+        {
+            const query2 = 
+            `
+                INSERT INTO RATING (ITEM_ID,ITEM_TYPE,RATING,CUSTOMER_ID)
+                VALUES (${id},'destination','${rating}',${customerId})
+            `
+            await database.query(query2,params);
+        }
+        else
+        {
+            const query2 = 
+            `
+                UPDATE RATING SET RATING=${rating} WHERE ITEM_ID=${id} AND ITEM_TYPE='destination' AND CUSTOMER_ID=${customerId}
+            `
+            await database.query(query2,params);
+        }
+
+        const ratingUpdateQuery = 
+        `
+            UPDATE DESTINATION 
+            SET RATING=(SELECT ROUND(AVG(RATING),1) FROM RATING WHERE ITEM_ID=${id} AND ITEM_TYPE='destination') 
+            WHERE DESTINATION_ID=${id}
+        `
+        await database.query(ratingUpdateQuery,params);
+    }
+
+    if(review.length!==0)
+    {
+        const query3 = 
+        `
+            INSERT INTO REVIEW (ITEM_ID,ITEM_TYPE,REVIEW,CUSTOMER_ID)
+            VALUES (${id},'destination','${review}',${customerId})
+        `
+        await database.query(query3,params);
+    }
+
+    await database.query('commit',params);
+
+    res.status(200).json({status:'ok'});
 });
 
 router.post("/",async(req,res)=>{

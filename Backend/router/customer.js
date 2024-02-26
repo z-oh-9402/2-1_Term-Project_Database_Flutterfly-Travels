@@ -79,57 +79,47 @@ router.post("/",async(req,res)=>{
 router.put("/:userId",async(req,res)=>{
     const user = req.body;
 
-    let result = {
-        status: false,
-        data: undefined
-    }
-
     const check_query = `SELECT * FROM Users WHERE USERNAME='${user.username}'`;
     const params = [];
     let ans = await database.query(check_query,params);
+    
+    const plaintextPassword = user.password;
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(plaintextPassword, salt);
 
-    if(ans.length===0  || ans[0].USER_ID!==req.params.userId)
+    const query = `UPDATE Users
+                    SET USERNAME='${user.username}',PASSWORD='${hashedPassword}',FIRST_NAME='${user.firstName}',LAST_NAME='${user.lastName}',EMAIL='${user.email}'
+                    WHERE USER_ID=${req.params.userId}`;
+    await database.query(query,params);
+
+    const query2 = `UPDATE Customer
+                    SET PASSPORT_NUMBER='${user.passportNumber}'
+                    WHERE CUSTOMER_ID=${req.params.userId}`
+    await database.query(query2,params);
+
+    const query3 = `DELETE FROM Customer_Preference
+                    WHERE CUSTOMER_ID=${req.params.userId}`;
+    await database.query(query3,params);
+
+    for(let i=0;i<user.preferences.length;i++)
     {
-        const plaintextPassword = user.password;
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(plaintextPassword, salt);
+        const param_query = `SELECT place_type_id FROM Place_Type WHERE TYPE_NAME = '${user.preferences[i]}'`;
+        const id = await database.query(param_query,params);
 
-        const query = `UPDATE Users
-                       SET USERNAME='${user.username}',PASSWORD='${hashedPassword}',FIRST_NAME='${user.firstName}',LAST_NAME='${user.lastName}',EMAIL='${user.email}'
-                       WHERE USER_ID=${req.params.userId}`;
-        await database.query(query,params);
-
-        const query2 = `UPDATE Customer
-                        SET PASSPORT_NUMBER='${user.passportNumber}'
-                        WHERE CUSTOMER_ID=${req.params.userId}`
-        await database.query(query2,params);
-
-        const query3 = `DELETE FROM Customer_Preference
-                        WHERE CUSTOMER_ID=${req.params.userId}`;
-        await database.query(query3,params);
-
-        for(let i=0;i<user.preferences.length;i++)
-        {
-            const param_query = `SELECT place_type_id FROM Place_Type WHERE TYPE_NAME = '${user.preferences[i]}'`;
-            const id = await database.query(param_query,params);
-
-            const query4 = `INSERT INTO Customer_Preference (CUSTOMER_ID,PREFERENCE_ID) 
-                            VALUES (${req.params.userId},${id[0].PLACE_TYPE_ID})`;
-            await database.query(query4,params);
-        }
-        await database.query('commit',params);
-
-        const res_query = `SELECT U.*,C.PASSPORT_NUMBER,C.TRIP_BOOKED
-                           FROM Users U LEFT JOIN Customer C ON  U.USER_ID=C.CUSTOMER_ID
-                           WHERE USER_ID=${req.params.userId}`;
-        ans = await database.query(res_query,params);
-        ans[0].PREFERENCES = user.preferences;
-        ans[0].PASSWORD = user.password;
-        
-        result.status = true;
-        result.data = ans[0];
+        const query4 = `INSERT INTO Customer_Preference (CUSTOMER_ID,PREFERENCE_ID) 
+                        VALUES (${req.params.userId},${id[0].PLACE_TYPE_ID})`;
+        await database.query(query4,params);
     }
+    await database.query('commit',params);
 
+    const res_query = `SELECT U.*,C.PASSPORT_NUMBER,C.TRIP_BOOKED
+                        FROM Users U LEFT JOIN Customer C ON  U.USER_ID=C.CUSTOMER_ID
+                        WHERE USER_ID=${req.params.userId}`;
+    ans = await database.query(res_query,params);
+    ans[0].PREFERENCES = user.preferences;
+    ans[0].PASSWORD = user.password;
+    
+    result = ans[0];
     res.status(200).json(result);
 });
 

@@ -32,7 +32,12 @@ const ProfileHomePage = (props) => {
     const [email, setEmail] = useState(user.EMAIL);
     const [passportNumber, setPassportNumber] = useState(user.USER_TYPE === 'customer' ? user.PASSPORT_NUMBER : null);
     const [isValidPassword, setIsValidPassword] = useState(false);
-    const [isStarting, setIsStarting] = useState(true);
+    const [isValidUsername, setIsValidUsername] = useState(true);
+    const [isValidPassport, setIsValidPassport] = useState(true);
+    const [isPasswordStarting, setIsPasswordStarting] = useState(true);
+    const [isPassportStarting, setIsPassportStarting] = useState(true);
+
+    const [isPendingListSame, setIsPendingListSame] = useState(false);
 
     useEffect(()=>{
         const fetchData = async () => {
@@ -49,7 +54,8 @@ const ProfileHomePage = (props) => {
                 const data = await response.json();
                 setRecommendedDestinations(data);
             }
-            if(user.USER_TYPE === 'admin')
+
+            if(user.USER_TYPE === 'admin' && !isPendingListSame)
             {
                 const response = await fetch(`http://localhost:3000/agent/pending-agents/`, {
                     method: "GET"
@@ -57,18 +63,38 @@ const ProfileHomePage = (props) => {
 
                 const data = await response.json();
                 setPendingAgents(data);
+                setIsPendingListSame(true);
             }
         };
         fetchData()}
-    ,[]);
+    ,[user.PREFERENCES]);
 
-    const handleUsernameChange = (e) => {
+    const handleUsernameChange = async (e) => {
         setUsername(e.target.value);
+
+        if (e.target.value !== "") {
+            const response = await fetch(`http://localhost:3000/user/${e.target.value}`, {
+                method: "GET"
+            });
+            const result = await response.json();
+
+            if(result.status === 1)
+            {
+                setIsValidUsername(false);
+            }
+            else
+            {
+                setIsValidUsername(true);
+            }
+        }
+        else {
+            setIsValidUsername(true);
+        }
     }
 
     const handlePasswordChange = (text) => {
         setPassword(text);
-        setIsStarting(false);
+        setIsPasswordStarting(false);
         text.length >= 8 ? setIsValidPassword(true) : setIsValidPassword(false);
     }
 
@@ -90,6 +116,8 @@ const ProfileHomePage = (props) => {
 
     const handlePassportNumberChange = (e) => {
         setPassportNumber(e.target.value);
+        setIsPassportStarting(false);
+        e.target.value.length === 12 ? setIsValidPassport(true) : setIsValidPassport(false);
     }
 
     const goToUpdate = () => {
@@ -114,6 +142,7 @@ const ProfileHomePage = (props) => {
         setPassword("");
         setRePassword("");
     }
+
     const updateInfo2 = async () =>{
         if (username === user.USERNAME && firstName === user.FIRST_NAME && lastName === user.LAST_NAME && email === user.EMAIL  && (password.length === 0 || password === user.PASSWORD)) {
             alert("No data change was detected.");
@@ -149,12 +178,12 @@ const ProfileHomePage = (props) => {
             else {
                 setInfo(result.data);
                 setIsBeingUpdated(false);
-                navigate("/user");
             }
         }
     }
+
     const updateInfo = async () => {
-        let isPrefSame = true
+        let isPrefSame = true;
         let pref1 = []
         for (let i = 0; i < list.length; i++) {
             let check = document.getElementById("pref" + i);
@@ -168,7 +197,6 @@ const ProfileHomePage = (props) => {
         if (isPrefSame && pref1.length !== pref.length) {
             isPrefSame = false;
         }
-
 
         if (username === user.USERNAME && firstName === user.FIRST_NAME && lastName === user.LAST_NAME && email === user.EMAIL && passportNumber === user.PASSPORT_NUMBER && isPrefSame && (password.length === 0 || password === user.PASSWORD)) {
             alert("No data change was detected.");
@@ -199,25 +227,8 @@ const ProfileHomePage = (props) => {
             });
             const result = await response.json();
 
-            if (!result.status) {
-                setUsername("");
-                alert("This username is already taken. Use another one.");
-            }
-            else {
-                const response = await fetch(`http://localhost:3000/destination/`, {
-                    method: "POST",
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(result.data.PREFERENCES)
-                });
-
-                result.data.RECOMMENDED_DESTINATIONS = await response.json();
-
-                setInfo(result.data);
-                setIsBeingUpdated(false);
-                navigate("/user");
-            }
+            setInfo(result);
+            setIsBeingUpdated(false);
         }
     }
 
@@ -275,14 +286,16 @@ const ProfileHomePage = (props) => {
                 </div> :
                     <div>
                         <h2>Update Profile:</h2>
-                        <label>Username: <input value={username} placeholder='Enter username' onChange={handleUsernameChange} /><span style={{ color: "red" }}> *</span></label><br /><br />
+                        <label>Username: <input value={username} placeholder='Enter username' onChange={handleUsernameChange} /><span style={{ color: "red" }}> *</span></label>
+                        {!isValidUsername ? <h5 style={{ color: "red" }}>username already exists</h5> : <br/>}
                         <label>First Name: <input value={firstName} placeholder='Enter first name' onChange={handleFirstNameChange} /><span style={{ color: "red" }}> *</span></label><br /><br />
                         <label>Last Name: <input value={lastName} placeholder='Enter last name' onChange={handleLastNameChange} /><span style={{ color: "red" }}> *</span></label><br /><br />
                         <label>Email: <input value={email} placeholder='Enter email' onChange={handleEmailChange} /><span style={{ color: "red" }}> *</span></label><br /><br />
                         {
                             user.USER_TYPE === 'customer' && (
                                 <>
-                                    <label>Passport Number: <input value={passportNumber} placeholder='Enter passport number' onChange={handlePassportNumberChange} /><span style={{ color: "red" }}> *</span></label><br /><br />
+                                    <label>Passport Number: <input value={passportNumber} placeholder='Enter passport number' onChange={handlePassportNumberChange} /><span style={{ color: "red" }}> *</span></label>
+                                    {!isValidPassport && !isPassportStarting ? <h5 style={{ color: "red" }}>passport number must contain 12 characters</h5>: <><br/><br/></>}
 
                                     <h4>Edit Your Destination Preferences: (Optional)</h4>
                                     <label><input type="checkbox" id="pref0" checked={isPref1Checked} onChange={() => { setIsPref1Checked(!isPref1Checked) }} value={list[0]} />{list[0]}</label><br />
@@ -298,7 +311,7 @@ const ProfileHomePage = (props) => {
                         }
 
                         <PasswordInput Label="Enter Password: " setPass={handlePasswordChange} /><span style={{ color: "red" }}> *</span>
-                        {!isValidPassword && !isStarting ? <h5 style={{ color: "red" }}>password must be at least 8 characters long</h5> : <><br /><br /></>}
+                        {!isValidPassword && !isPasswordStarting ? <h5 style={{ color: "red" }}>password must be at least 8 characters long</h5> : <><br /><br /></>}
                         <PasswordInput Label="Confirm Password: " setPass={handleRePasswordChange} /><span style={{ color: "red" }}> *</span><br /><br />
 
                         <div>
