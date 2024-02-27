@@ -52,6 +52,37 @@ router.post("/",async(req,res)=>{
 
     res.status(200).json(ans[0]);
 });
+router.put("/acceptRequest/:agentId", async (req, res) => {
+    const agentId = req.params.agentId;
+
+    const query = `UPDATE Agent
+                   SET ACC_STATUS = 'OK'
+                   WHERE AGENT_ID = ${agentId}`;
+    const params = [];
+    await database.query(query, params);
+    await database.query('commit', params);
+
+    res.status(200).json({
+        status: 1,
+        message: `Agent with ID ${agentId} has been approved.`
+    });
+});
+router.put("/declineRequest/:agentId", async (req, res) => {
+    const agentId = req.params.agentId;
+
+    const query = `UPDATE Agent
+                   SET ACC_STATUS = 'DECLINED'
+                   WHERE AGENT_ID = ${agentId}`;
+    const params = [];
+    await database.query(query, params);
+    await database.query('commit', params);
+
+    res.status(200).json({
+        status: 1,
+        message: `Agent with ID ${agentId} has been declined.`
+    });
+});
+
 
 router.put("/:userId",async(req,res)=>{
     const user = req.body;

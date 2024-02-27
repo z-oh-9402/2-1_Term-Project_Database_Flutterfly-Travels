@@ -39,10 +39,9 @@ const ProfileHomePage = (props) => {
 
     const [isPendingListSame, setIsPendingListSame] = useState(false);
 
-    useEffect(()=>{
+    useEffect(() => {
         const fetchData = async () => {
-            if(user.USER_TYPE === 'customer')
-            {
+            if (user.USER_TYPE === 'customer') {
                 const response = await fetch(`http://localhost:3000/destination/`, {
                     method: "POST",
                     headers: {
@@ -55,8 +54,7 @@ const ProfileHomePage = (props) => {
                 setRecommendedDestinations(data);
             }
 
-            if(user.USER_TYPE === 'admin' && !isPendingListSame)
-            {
+            if (user.USER_TYPE === 'admin' && !isPendingListSame) {
                 const response = await fetch(`http://localhost:3000/agent/pending-agents/`, {
                     method: "GET"
                 });
@@ -66,8 +64,9 @@ const ProfileHomePage = (props) => {
                 setIsPendingListSame(true);
             }
         };
-        fetchData()}
-    ,[user.PREFERENCES]);
+        fetchData()
+    }
+        , [user.PREFERENCES]);
 
     const handleUsernameChange = async (e) => {
         setUsername(e.target.value);
@@ -78,12 +77,10 @@ const ProfileHomePage = (props) => {
             });
             const result = await response.json();
 
-            if(result.status === 1)
-            {
+            if (result.status === 1) {
                 setIsValidUsername(false);
             }
-            else
-            {
+            else {
                 setIsValidUsername(true);
             }
         }
@@ -122,8 +119,7 @@ const ProfileHomePage = (props) => {
 
     const goToUpdate = () => {
         setIsBeingUpdated(true);
-        if(user.USER_TYPE === 'customer')
-        {
+        if (user.USER_TYPE === 'customer') {
             setIsPref1Checked(pref.includes(list[0]));
             setIsPref2Checked(pref.includes(list[1]));
             setIsPref3Checked(pref.includes(list[2]));
@@ -143,8 +139,8 @@ const ProfileHomePage = (props) => {
         setRePassword("");
     }
 
-    const updateInfo2 = async () =>{
-        if (username === user.USERNAME && firstName === user.FIRST_NAME && lastName === user.LAST_NAME && email === user.EMAIL  && (password.length === 0 || password === user.PASSWORD)) {
+    const updateInfo2 = async () => {
+        if (username === user.USERNAME && firstName === user.FIRST_NAME && lastName === user.LAST_NAME && email === user.EMAIL && (password.length === 0 || password === user.PASSWORD)) {
             alert("No data change was detected.");
         }
         else if (password.length < 8 && password.length !== 0) {
@@ -232,14 +228,52 @@ const ProfileHomePage = (props) => {
         }
     }
 
+
+    const acceptRequest = async (agent) => {
+
+        const response = await fetch(`http://localhost:3000/agent/acceptRequest/${agent.USER_ID}`, {
+            method: "PUT",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ "acc_status": "OK" })
+        });
+        const result = await response.json();
+        if (result.status === 1) {
+            const response = await fetch(`http://localhost:3000/agent/pending-agents/`, {
+                method: "GET"
+            });
+
+            const data = await response.json();
+            setPendingAgents(data);
+        }
+    }
+    const declineRequest = async (agent) => {
+        const response = await fetch(`http://localhost:3000/agent/declineRequest/${agent.USER_ID}`, {
+            method: "PUT",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ "status": "" })
+        });
+        const result = await response.json();
+        if (result.status === 1) {
+            const response = await fetch(`http://localhost:3000/agent/pending-agents/`, {
+                method: "GET"
+            });
+
+            const data = await response.json();
+            setPendingAgents(data);
+        }
+    }
     const handleLogOutOrDeleteAccount = async (isDeletingAccount) => {
-        isDeletingAccount && (user.USER_TYPE==='customer' ?
-        await fetch(`http://localhost:3000/customer/${user.USER_ID}`, {
-            method: "DELETE"
-        }) : (user.USER_TYPE === 'agent' &&
-        await fetch(`http://localhost:3000/agent/${user.USER_ID}`, {
-            method: "DELETE"
-        })))
+        isDeletingAccount && (user.USER_TYPE === 'customer' ?
+            await fetch(`http://localhost:3000/customer/${user.USER_ID}`, {
+                method: "DELETE"
+            }) : (user.USER_TYPE === 'agent' &&
+                await fetch(`http://localhost:3000/agent/${user.USER_ID}`, {
+                    method: "DELETE"
+                })))
 
         setInfo(null);
         props.setLogOut(true);
@@ -250,6 +284,7 @@ const ProfileHomePage = (props) => {
         <div className='profile-page'>
             <div className='profile-container'>
                 {!isBeingUpdated ? <div>
+
                     <h1>User Details: </h1>
                     <p>
                         Username: {user.USERNAME}<br />
@@ -279,15 +314,25 @@ const ProfileHomePage = (props) => {
                             ))}
                         </ul>
                     )}
-
-                    <button className="btn-primary" onClick={() => { handleLogOutOrDeleteAccount(false) }}>Log Out</button><br /><br />
-                    {(user.USER_TYPE==='customer' || (user.USER_TYPE==='agent' && user.ACC_STATUS==='OK')) && <><button className="btn-primary" onClick={goToUpdate}>Update Account</button><br /><br />
-                    <button className="btn-primary" onClick={() => { handleLogOutOrDeleteAccount(true) }}>Delete Account</button></>}
+                    
+                    {(user.USER_TYPE === 'customer' || (user.USER_TYPE === 'agent' && user.ACC_STATUS === 'OK')) && <>
+                        <button className="btn-primary" onClick={() => { handleLogOutOrDeleteAccount(false) }}>Log Out</button><br /><br />
+                        <button className="btn-primary" onClick={goToUpdate}>Update Account</button><br /><br />
+                        <button className="btn-primary" onClick={() => { handleLogOutOrDeleteAccount(true) }}>Delete Account</button></>}
+                    {
+                        user.USER_TYPE === 'agent' && user.ACC_STATUS === 'PENDING' && <><h3>Your request is still being processed!!!</h3>
+                        <button className="btn-primary" onClick={() => { handleLogOutOrDeleteAccount(false) }}>Log Out</button><br /><br /></>
+                    }
+                    {
+                        user.USER_TYPE === 'agent' && user.ACC_STATUS === 'DECLINED' && <><h3>Your request has been declined!!!</h3>
+                            <button className="btn-primary" onClick={() => { handleLogOutOrDeleteAccount(false) }}>Back</button><br /><br />
+                            <button className="btn-primary" onClick={() => { handleLogOutOrDeleteAccount(true) }}>Delete request</button></>
+                    }
                 </div> :
-                    <div>
+                    <div >
                         <h2>Update Profile:</h2>
                         <label>Username: <input value={username} placeholder='Enter username' onChange={handleUsernameChange} /><span style={{ color: "red" }}> *</span></label>
-                        {!isValidUsername ? <h5 style={{ color: "red" }}>username already exists</h5> : <br/>}
+                        {!isValidUsername ? <h5 style={{ color: "red" }}>username already exists</h5> : <br />}
                         <label>First Name: <input value={firstName} placeholder='Enter first name' onChange={handleFirstNameChange} /><span style={{ color: "red" }}> *</span></label><br /><br />
                         <label>Last Name: <input value={lastName} placeholder='Enter last name' onChange={handleLastNameChange} /><span style={{ color: "red" }}> *</span></label><br /><br />
                         <label>Email: <input value={email} placeholder='Enter email' onChange={handleEmailChange} /><span style={{ color: "red" }}> *</span></label><br /><br />
@@ -295,7 +340,7 @@ const ProfileHomePage = (props) => {
                             user.USER_TYPE === 'customer' && (
                                 <>
                                     <label>Passport Number: <input value={passportNumber} placeholder='Enter passport number' onChange={handlePassportNumberChange} /><span style={{ color: "red" }}> *</span></label>
-                                    {!isValidPassport && !isPassportStarting ? <h5 style={{ color: "red" }}>passport number must contain 12 characters</h5>: <><br/><br/></>}
+                                    {!isValidPassport && !isPassportStarting ? <h5 style={{ color: "red" }}>passport number must contain 12 characters</h5> : <><br /><br /></>}
 
                                     <h4>Edit Your Destination Preferences: (Optional)</h4>
                                     <label><input type="checkbox" id="pref0" checked={isPref1Checked} onChange={() => { setIsPref1Checked(!isPref1Checked) }} value={list[0]} />{list[0]}</label><br />
@@ -320,27 +365,37 @@ const ProfileHomePage = (props) => {
                     </div>}
             </div>
             {
-                user.USER_TYPE === 'customer' && recommendedDestinations.length!==0 &&
+                user.USER_TYPE === 'customer' && recommendedDestinations.length !== 0 &&
                 <div className='recommendation-container'>
                     <h1>Recommended Destinations -</h1>
                     <CategorizedDestination destinationObj={recommendedDestinations} />
                 </div>
             }
+
             {
                 user.USER_TYPE === 'admin' &&
                 <div className='recommendation-container'>
                     <h1>Pending Tasks -</h1>
-                    <div style={{display: 'flex', flexDirection:'column'}}>
-                        <div style={{display: 'flex', flexDirection:'column'}}>
-                            {pendingAgents.length>0 && <h2>Agent accounts to be reviewed - </h2>}
-                            {pendingAgents.map((agent,index) =>
-                                <div key={index}>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                            {pendingAgents.length > 0 && <h2>Agent accounts to be reviewed - </h2>}
+                            {pendingAgents.map((agent, index) =>
+                                <div key={index} className="agent-box">
                                     <h3>{agent.USERNAME}</h3>
+                                    <p>Experience: {agent.EXPERIENCE_YEARS} years</p>
+                                    <p>Fee: {agent.FEE}</p>
+                                    <div className="button-container2">
+                                        <button className="btn-primary" onClick={() => acceptRequest(agent)}>Accept</button>
+                                        <span style={{ margin: '0 10px' }}></span>
+                                        <button className="btn-primary" onClick={() => declineRequest(agent)}>Decline</button>
+                                    </div>
+
                                 </div>
                             )}
                         </div>
                     </div>
                 </div>
+
             }
 
         </div>
