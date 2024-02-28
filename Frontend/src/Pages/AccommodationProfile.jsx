@@ -120,14 +120,19 @@ const AccommodationProfile = () => {
                         </form>
                     </div>}
 
-                    <div className="all-review" style={{maxWidth: "400px"}}>
-                        <h2>All Reviews</h2>
+                    <div className="all-review" style={{width: "300px"}}>
+                        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                            <h2>All Reviews ({allReviewRatings.length})</h2>
+                            {allReviewRatings.length>5 && <div className="see-all-link">see all</div>}
+                        </div>
                         {allReviewRatings.map((item,index) => (
+                            index<5 &&
                             <div key={index}>
                                 <p>{item.USERNAME}</p>
                                 <Rating rating={item.RATING} state={0} setRating={null}/>
                                 <p>{item.REVIEW}</p>
                                 <p>{item.CREATED_AT}</p>
+                                <br/>
                             </div>
                         ))}
                     </div>

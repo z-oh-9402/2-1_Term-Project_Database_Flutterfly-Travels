@@ -265,6 +265,8 @@ Table creation commands:
 		breakfast VARCHAR2(1),
 		pool VARCHAR2(1),
 		map VARCHAR2(1000),
+		address VARCHAR2(300),
+		phone_number VARCHAR2(11) CHECK (REGEXP_LIKE(phone_number, '^\d{11}$')),
 		FOREIGN KEY (location_id) REFERENCES Location(location_id) ON DELETE CASCADE
 	);
 
@@ -391,6 +393,8 @@ Table creation commands:
 		price_range VARCHAR2(50),
 		rating NUMBER check(rating<=5),
 		map VARCHAR2(1000),
+		address VARCHAR2(300),
+		phone_number VARCHAR2(11) CHECK (REGEXP_LIKE(phone_number, '^\d{11}$')),
 		FOREIGN KEY (location_id) REFERENCES Location(location_id) ON DELETE CASCADE
 	);
 

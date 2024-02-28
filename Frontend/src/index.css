@@ -159,3 +159,13 @@ form{
     width: 200px;
     display: inline-block;
 }
+
+.see-all-link{
+    color: gray;
+    cursor: pointer;
+}
+
+.see-all-link:hover{
+    color: rgb(65, 65, 65);
+    text-decoration: underline;
+}

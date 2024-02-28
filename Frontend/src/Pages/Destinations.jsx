@@ -10,14 +10,24 @@ const Destinations = ()=>{
     const [destinations,setDestinations] = useState([]);
     const [ratingValue, setRatingValue] = useState(0);
     const [isFilterApplied, setIsFilterApplied] = useState(false);
+    const [prefArray, setPrefArray] = useState([false,false,false,false,false,false,false]);
     const navigate = useNavigate();
 
-    const removeFilter = () => {
-        setIsFilterApplied(false);
+    const resetFilter = () => {
+        setRatingValue(0);
+        setPrefArray([false,false,false,false,false,false,false]);
+        isFilterApplied(false);
     }
 
     const updateValue = (e) => {
         setRatingValue(e.target.value);
+        setIsFilterApplied(true);
+    }
+
+    const checkPref = (index) => {
+        let temp = [...prefArray];
+        temp[index] = !temp[index];
+        setPrefArray(temp);
         setIsFilterApplied(true);
     }
 
@@ -105,10 +115,6 @@ const Destinations = ()=>{
         navigate(`${e.target.innerText}`);
     }
 
-    const filterToggle = () => {
-        setIsFilterApplied(!isFilterApplied);
-    }
-
     const filterCheck = (destination) => {
         let  isChecked = true;
         
@@ -122,11 +128,11 @@ const Destinations = ()=>{
         {
             let flag = false;
             let anySelected = false;
-            for(let i=1;i<7;i++)
+            for(let i=0;i<7;i++)
             {
-                const item = document.getElementById('preference'+i);
-                if(item.checked)
+                if(prefArray[i])
                 {
+                    const item = document.getElementById('preference'+(i+1));
                     anySelected = true;
                     for(let i=0;i<destination.TYPE.length;i++)
                     {
@@ -170,20 +176,19 @@ const Destinations = ()=>{
             {destinations.length!==0 &&
                 <div className='destination-search'>
                     <div className="filter">
-
-                        <button className="btn-primary" style={{marginBottom:'10px'}} onClick={filterToggle}>{isFilterApplied ? 'Remove Filter' : 'Apply Filter'}</button>
+                        <button className="btn-primary" style={{marginBottom:'10px'}} onClick={resetFilter}>Reset Filter</button>
                         <h3>Minimum Rating:</h3>
                         <div className="slider"><span className="filter-value">{ratingValue}</span> <input type="range" className="normal-slider" min="0" max="5" value={ratingValue} step="0.5" onInput={updateValue}/></div>
 
                         <div style={{marginTop: '40px'}}>
                             <h3>Choose Your Destination Preferences:</h3>
-                            <label><input type="checkbox" id="preference1" value="Mountains" onChange={removeFilter}/>Mountains</label><br/>
-                            <label><input type="checkbox" id="preference2" value="Lakes" onChange={removeFilter}/>Lakes</label><br/>
-                            <label><input type="checkbox" id="preference3" value="Beaches" onChange={removeFilter}/>Beaches</label><br/>
-                            <label><input type="checkbox" id="preference4" value="Forests" onChange={removeFilter}/>Forests</label><br/>
-                            <label><input type="checkbox" id="preference5" value="Hill Tracks" onChange={removeFilter}/>Hill Tracks</label><br/>
-                            <label><input type="checkbox" id="preference6" value="Tea Gardens" onChange={removeFilter}/>Tea Gardens</label><br/>
-                            <label><input type="checkbox" id="preference7" value="Historical Places" onChange={removeFilter}/>Historical Places</label><br/>
+                            <label><input type="checkbox" id="preference1" value="Mountains" checked={prefArray[0]} onChange={()=>checkPref(0)}/>Mountains</label><br/>
+                            <label><input type="checkbox" id="preference2" value="Lakes" checked={prefArray[1]} onChange={()=>checkPref(1)}/>Lakes</label><br/>
+                            <label><input type="checkbox" id="preference3" value="Beaches" checked={prefArray[2]} onChange={()=>checkPref(2)}/>Beaches</label><br/>
+                            <label><input type="checkbox" id="preference4" value="Forests" checked={prefArray[3]} onChange={()=>checkPref(3)}/>Forests</label><br/>
+                            <label><input type="checkbox" id="preference5" value="Hill Tracks" checked={prefArray[4]} onChange={()=>checkPref(4)}/>Hill Tracks</label><br/>
+                            <label><input type="checkbox" id="preference6" value="Tea Gardens" checked={prefArray[5]} onChange={()=>checkPref(5)}/>Tea Gardens</label><br/>
+                            <label><input type="checkbox" id="preference7" value="Historical Places" checked={prefArray[6]} onChange={()=>checkPref(6)}/>Historical Places</label><br/>
                         </div>
                     </div>
                     <div className='recommendation-container'>

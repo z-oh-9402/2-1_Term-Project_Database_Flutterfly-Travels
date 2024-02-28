@@ -21,3 +21,15 @@
     border: solid 1.5px blue;
     background-color: white;
 }
+
+.range-input{
+    border: none;
+    box-shadow: none;
+    width: 70px;
+    padding: 0px 0px 0px 2px;
+}
+
+.range-input:focus {
+    outline: none;
+    box-shadow: none;
+}

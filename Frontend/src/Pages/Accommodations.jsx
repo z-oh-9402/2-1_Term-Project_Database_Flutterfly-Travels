@@ -14,10 +14,16 @@ const Accommodations = ()=>{
     const [accommodationClass, setAccommodationClass] = useState(0);
     const [prices, setPrices] = useState([0, 20000]);
     const [isFilterApplied, setIsFilterApplied] = useState(false);
+    const [privArray, setPrivArray] = useState([false,false,false,false,false]);
     const navigate = useNavigate();
 
-    const removeFilter = () => {
-        setIsFilterApplied(false);
+    const resetFilter = () => {
+        setRatingValue(0);
+        setRoomCapacity(0);
+        setAccommodationClass(0);
+        setPrices([0, 20000]);
+        setPrivArray([false,false,false,false,false]);
+        isFilterApplied(false);
     }
 
     const updateRatingValue = (e) => {
@@ -32,6 +38,13 @@ const Accommodations = ()=>{
 
     const updateClassValue = (e) => {
         setAccommodationClass(e.target.value);
+        setIsFilterApplied(true);
+    }
+
+    const checkPriv = (index) => {
+        let temp = [...privArray];
+        temp[index] = !temp[index];
+        setPrivArray(temp);
         setIsFilterApplied(true);
     }
 
@@ -119,10 +132,6 @@ const Accommodations = ()=>{
         navigate(`${e.target.innerText}`);
     }
 
-    const filterToggle = () => {
-        setIsFilterApplied(!isFilterApplied);
-    }
-
     const filterCheck = (accommodation) => {
         let isChecked = true;
         
@@ -141,27 +150,27 @@ const Accommodations = ()=>{
             isChecked = false;
         }
 
-        if(isChecked && document.getElementById('preference1').checked && accommodation.FREE_WIFI==="N")
+        if(isChecked && privArray[0] && accommodation.FREE_WIFI==="N")
         {
             isChecked = false;
         }
 
-        if(isChecked && document.getElementById('preference2').checked && accommodation.PARKING==="N")
+        if(isChecked && privArray[1] && accommodation.PARKING==="N")
         {
             isChecked = false;
         }
 
-        if(isChecked && document.getElementById('preference3').checked && accommodation.BREAKFAST==="N")
+        if(isChecked && privArray[2] && accommodation.BREAKFAST==="N")
         {
             isChecked = false;
         }
 
-        if(isChecked && document.getElementById('preference4').checked && accommodation.POOL==="N")
+        if(isChecked && privArray[3] && accommodation.POOL==="N")
         {
             isChecked = false;
         }
 
-        if(isChecked && document.getElementById('preference5').checked && accommodation.ACCESSIBLE==="N")
+        if(isChecked && privArray[4] && accommodation.ACCESSIBLE==="N")
         {
             isChecked = false;
         }
@@ -194,7 +203,7 @@ const Accommodations = ()=>{
             {accommodations.length!==0 &&
                 <div className='destination-search'>
                     <div className="filter">
-                        <button className="btn-primary" style={{marginBottom:'10px'}} onClick={filterToggle}>{isFilterApplied ? 'Remove Filter' : 'Apply Filter'}</button>
+                        <button className="btn-primary" style={{marginBottom:'10px'}} onClick={resetFilter}>Reset Filter</button>
                         <h3>Minimum Rating:</h3>
                         <div className="slider"><span className="filter-value">{ratingValue}</span> <input type="range" className="normal-slider" min="0" max="5" value={ratingValue} step="0.5" onInput={updateRatingValue}/></div>
 
@@ -204,15 +213,15 @@ const Accommodations = ()=>{
                         <h3>Minimum Accommodation Class:</h3>
                         <div className="slider"><span className="filter-value">{accommodationClass}</span> <input type="range" className="normal-slider" min="1" max="5" value={accommodationClass} step="1" onInput={updateClassValue}/></div>
 
-                        <RangeSlider values={prices} funcs={{setValues: setPrices, setIsFilterApplied: setIsFilterApplied}}/>
+                        <RangeSlider values={prices} setValues={setPrices} setIsFilterApplied={setIsFilterApplied}/>
 
                         <div style={{margin: '40px 0px 40px 0px'}}>
                             <h3>Choose Your Accommodation Preferences:</h3>
-                            <label><input type="checkbox" id="preference1" value="Free WIFI" onChange={removeFilter}/>Free WIFI</label><br/>
-                            <label><input type="checkbox" id="preference2" value="Parking" onChange={removeFilter}/>Parking</label><br/>
-                            <label><input type="checkbox" id="preference3" value="Breakfast" onChange={removeFilter}/>Breakfast</label><br/>
-                            <label><input type="checkbox" id="preference4" value="Pool" onChange={removeFilter}/>Pool</label><br/>
-                            <label><input type="checkbox" id="preference5" value="Accessible" onChange={removeFilter}/>Accessible</label><br/>
+                            <label><input type="checkbox" id="preference1" value="Free WIFI" checked={privArray[0]} onChange={()=>checkPriv(0)}/>Free WIFI</label><br/>
+                            <label><input type="checkbox" id="preference2" value="Parking" checked={privArray[1]} onChange={()=>checkPriv(1)}/>Parking</label><br/>
+                            <label><input type="checkbox" id="preference3" value="Breakfast" checked={privArray[2]} onChange={()=>checkPriv(2)}/>Breakfast</label><br/>
+                            <label><input type="checkbox" id="preference4" value="Pool" checked={privArray[3]} onChange={()=>checkPriv(3)}/>Pool</label><br/>
+                            <label><input type="checkbox" id="preference5" value="Accessible" checked={privArray[4]} onChange={()=>checkPriv(4)}/>Accessible</label><br/>
                         </div>
                     </div>
                     <div className='recommendation-container'>

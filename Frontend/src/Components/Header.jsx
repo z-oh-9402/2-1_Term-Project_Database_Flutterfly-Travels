@@ -9,23 +9,32 @@ import UserInfoContext from "../Context/UserInfoContext";
 const Header = (props)=>{
     const {userInfo} = useContext(UserInfoContext);
     const navigate = useNavigate();
+    const [isBottomStyles, setIsBottomStyles] = useState(false);
     const [placeholderHeight, setPlaceholderHeight] = useState(0);
 
     useEffect(() => {
-        const getHeight = () => {
-            setPlaceholderHeight(document.getElementById('main-nav').offsetHeight);
+        const handleScroll = () => {
+            var scrollPosition = window.scrollY;
+            var scrollThreshold = document.getElementById('main-nav').offsetHeight;
+    
+            setIsBottomStyles(scrollPosition >= scrollThreshold);
+            setPlaceholderHeight(scrollThreshold);
         };
     
-        getHeight();
+        window.addEventListener('scroll', handleScroll);
+    
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+        };
     }, []);
     
 
     return(
         <>
-            <nav className='main-navbar' id='main-nav'>
+            <nav className={`main-navbar ${isBottomStyles && 'bottom-styles'}`} id='main-nav'>
                 <div className="main-section"><Link to='/' className="basicInfo">Home</Link> <Link to='/about' className="basicInfo">About</Link></div>
                 <div className="button-container">
-                    {(userInfo!==null && userInfo.USER_TYPE === 'customer') && <button className="btn-primary">Make Trip</button>}
+                    {(userInfo!==null && userInfo.USER_TYPE === 'customer') && <button className="btn-primary">My Trip</button>}
                     <button className="btn-primary" onClick={()=>{navigate('/destinations')}}>Destinations</button>
                     <button className="btn-primary" onClick={()=>{navigate('/accommodations');}}>Accommodations</button>
                     <button className="btn-primary" onClick={()=>{navigate('/restaurants');}}>Restaurants</button>
@@ -39,7 +48,7 @@ const Header = (props)=>{
                         <button className="custom-btn" onClick={()=>props.handleIsInLoginOrSignUpFromNavbar(false)}>Sign Up</button>
                     </div>}
             </nav>
-            <div style={{height: `${placeholderHeight}px`}}></div>
+            {isBottomStyles && <div style={{height: `${placeholderHeight}px`}}></div>}
         </>)
 }
 

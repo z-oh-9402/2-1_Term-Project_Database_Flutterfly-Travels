@@ -1,6 +1,4 @@
 .main-navbar {
-    position: fixed;
-    width: 100%;
     box-sizing: border-box;
     z-index: 100;
     background-color: rgb(216, 249, 251);
@@ -28,4 +26,9 @@
 
 .username{
     margin: 0px;
+}
+
+.bottom-styles{
+    position: fixed;
+    width: 100%;
 }
