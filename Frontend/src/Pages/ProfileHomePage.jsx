@@ -283,14 +283,15 @@ const ProfileHomePage = (props) => {
     return (
         <div className='profile-page'>
             <div className='profile-container'>
-                {!isBeingUpdated ? <div>
-
+                {!isBeingUpdated ? 
+                <div>
                     <h1>User Details: </h1>
                     <p>
                         Username: {user.USERNAME}<br />
                         First Name: {user.FIRST_NAME}<br />
                         Last Name: {user.LAST_NAME}<br />
                         Email: {user.EMAIL}<br /><br />
+
                         {user.USER_TYPE === 'customer' && (
                             <>
                                 Passport Number: {user.PASSPORT_NUMBER}<br /><br />
@@ -298,83 +299,104 @@ const ProfileHomePage = (props) => {
                                 {pref.length !== 0 && "Preferences:"}
                             </>
                         )}
-                        {
-                            user.USER_TYPE === 'agent' && (
-                                <>
-                                    Experience: {user.EXPERIENCE_YEARS}<br />
-                                    Fee: {user.FEE}<br /><br />
-                                </>
-                            )
-                        }
+
+                        {user.USER_TYPE === 'agent' && (
+                            <>
+                                Experience: {user.EXPERIENCE_YEARS}<br />
+                                Fee: {user.FEE}<br /><br />
+                            </>
+                        )}
                     </p>
-                    {user.USER_TYPE === 'customer' && pref.length !== 0 && (
-                        <ul>
-                            {pref.map((data, index) => (
-                                <li key={index}>{data}</li>
-                            ))}
-                        </ul>
-                    )}
-                    
-                    {(user.USER_TYPE === 'customer' || (user.USER_TYPE === 'agent' && user.ACC_STATUS === 'OK')) && <>
-                        <button className="btn-primary" onClick={() => { handleLogOutOrDeleteAccount(false) }}>Log Out</button><br /><br />
-                        <button className="btn-primary" onClick={goToUpdate}>Update Account</button><br /><br />
-                        <button className="btn-primary" onClick={() => { handleLogOutOrDeleteAccount(true) }}>Delete Account</button></>}
-                    {
-                        user.USER_TYPE === 'agent' && user.ACC_STATUS === 'PENDING' && <><h3>Your request is still being processed!!!</h3>
-                        <button className="btn-primary" onClick={() => { handleLogOutOrDeleteAccount(false) }}>Log Out</button><br /><br /></>
+
+                    {user.USER_TYPE === 'customer' && pref.length !== 0 &&
+                        <>
+                            <ul>
+                                {pref.map((data, index) => (
+                                    <li key={index}>{data}</li>
+                                ))}
+                            </ul>
+
+                            <button className="btn-primary" onClick={() => {handleLogOutOrDeleteAccount(false)}}>Log Out</button><br /><br />
+                            <button className="btn-primary" onClick={goToUpdate}>Update Account</button><br /><br />
+                            <button className="btn-primary" onClick={() => {handleLogOutOrDeleteAccount(true)}}>Delete Account</button>
+                        </>
                     }
-                    {
-                        user.USER_TYPE === 'agent' && user.ACC_STATUS === 'DECLINED' && <><h3>Your request has been declined!!!</h3>
-                            <button className="btn-primary" onClick={() => { handleLogOutOrDeleteAccount(false) }}>Back</button><br /><br />
-                            <button className="btn-primary" onClick={() => { handleLogOutOrDeleteAccount(true) }}>Delete request</button></>
+                    
+                    {user.USER_TYPE === 'agent' && 
+                        (user.ACC_STATUS === 'OK' ?
+                        <>
+                            <button className="btn-primary" onClick={() => {handleLogOutOrDeleteAccount(false)}}>Log Out</button><br /><br />
+                            <button className="btn-primary" onClick={goToUpdate}>Update Account</button><br/><br/>
+                            <button className="btn-primary" onClick={() => {handleLogOutOrDeleteAccount(true)}}>Delete Account</button>
+                        </> :
+                        (user.ACC_STATUS === 'PENDING' ?
+                            <>
+                                <h3>Your request is still being processed!!!</h3>
+                                <button className="btn-primary" onClick={() => {handleLogOutOrDeleteAccount(false)}}>Log Out</button><br /><br />
+                            </> :
+                            <>
+                                <h3>Your request has been declined!!!</h3>
+                                <button className="btn-primary" onClick={() => {handleLogOutOrDeleteAccount(false)}}>Back</button><br /><br />
+                                <button className="btn-primary" onClick={() => {handleLogOutOrDeleteAccount(true)}}>Delete request</button>
+                            </>
+                        ))
+                    }
+
+                    {user.USER_TYPE === 'admin' && 
+                        <>
+                            <button className="btn-primary" onClick={() => {handleLogOutOrDeleteAccount(false)}}>Log Out</button><br /><br />
+                            <button className="btn-primary">Add Destination</button><br /><br />
+                            <button className="btn-primary">Add Accommodation</button><br /><br />
+                            <button className="btn-primary">Add Restaurant</button><br /><br />
+                            <button className="btn-primary">Add Flight</button><br /><br />
+                            <button className="btn-primary">Add Transport</button><br /><br />
+                        </>
                     }
                 </div> :
-                    <div >
-                        <h2>Update Profile:</h2>
-                        <label>Username: <input value={username} placeholder='Enter username' onChange={handleUsernameChange} /><span style={{ color: "red" }}> *</span></label>
-                        {!isValidUsername ? <h5 style={{ color: "red" }}>username already exists</h5> : <br />}
-                        <label>First Name: <input value={firstName} placeholder='Enter first name' onChange={handleFirstNameChange} /><span style={{ color: "red" }}> *</span></label><br /><br />
-                        <label>Last Name: <input value={lastName} placeholder='Enter last name' onChange={handleLastNameChange} /><span style={{ color: "red" }}> *</span></label><br /><br />
-                        <label>Email: <input value={email} placeholder='Enter email' onChange={handleEmailChange} /><span style={{ color: "red" }}> *</span></label><br /><br />
-                        {
-                            user.USER_TYPE === 'customer' && (
-                                <>
-                                    <label>Passport Number: <input value={passportNumber} placeholder='Enter passport number' onChange={handlePassportNumberChange} /><span style={{ color: "red" }}> *</span></label>
-                                    {!isValidPassport && !isPassportStarting ? <h5 style={{ color: "red" }}>passport number must contain 12 characters</h5> : <><br /><br /></>}
 
-                                    <h4>Edit Your Destination Preferences: (Optional)</h4>
-                                    <label><input type="checkbox" id="pref0" checked={isPref1Checked} onChange={() => { setIsPref1Checked(!isPref1Checked) }} value={list[0]} />{list[0]}</label><br />
-                                    <label><input type="checkbox" id="pref1" checked={isPref2Checked} onChange={() => { setIsPref2Checked(!isPref2Checked) }} value={list[1]} />{list[1]}</label><br />
-                                    <label><input type="checkbox" id="pref2" checked={isPref3Checked} onChange={() => { setIsPref3Checked(!isPref3Checked) }} value={list[2]} />{list[2]}</label><br />
-                                    <label><input type="checkbox" id="pref3" checked={isPref4Checked} onChange={() => { setIsPref4Checked(!isPref4Checked) }} value={list[3]} />{list[3]}</label><br />
-                                    <label><input type="checkbox" id="pref4" checked={isPref5Checked} onChange={() => { setIsPref5Checked(!isPref5Checked) }} value={list[4]} />{list[4]}</label><br />
-                                    <label><input type="checkbox" id="pref5" checked={isPref6Checked} onChange={() => { setIsPref6Checked(!isPref6Checked) }} value={list[5]} />{list[5]}</label><br />
-                                    <label><input type="checkbox" id="pref6" checked={isPref7Checked} onChange={() => { setIsPref7Checked(!isPref7Checked) }} value={list[6]} />{list[6]}</label><br />
-                                    <br />
-                                </>
-                            )
-                        }
+                <div>
+                    <h2>Update Profile:</h2>
+                    <label>Username: <input value={username} placeholder='Enter username' onChange={handleUsernameChange} /><span style={{ color: "red" }}> *</span></label>
+                    {!isValidUsername ? <h5 style={{ color: "red" }}>username already exists</h5> : <br />}
+                    <label>First Name: <input value={firstName} placeholder='Enter first name' onChange={handleFirstNameChange} /><span style={{ color: "red" }}> *</span></label><br /><br />
+                    <label>Last Name: <input value={lastName} placeholder='Enter last name' onChange={handleLastNameChange} /><span style={{ color: "red" }}> *</span></label><br /><br />
+                    <label>Email: <input value={email} placeholder='Enter email' onChange={handleEmailChange} /><span style={{ color: "red" }}> *</span></label><br /><br />
+                    
+                    {user.USER_TYPE === 'customer' && 
+                    <>
+                        <label>Passport Number: <input value={passportNumber} placeholder='Enter passport number' onChange={handlePassportNumberChange} /><span style={{ color: "red" }}> *</span></label>
+                        {!isValidPassport && !isPassportStarting ? <h5 style={{ color: "red" }}>passport number must contain 12 characters</h5> : <><br /><br /></>}
 
-                        <PasswordInput Label="Enter Password: " setPass={handlePasswordChange} /><span style={{ color: "red" }}> *</span>
-                        {!isValidPassword && !isPasswordStarting ? <h5 style={{ color: "red" }}>password must be at least 8 characters long</h5> : <><br /><br /></>}
-                        <PasswordInput Label="Confirm Password: " setPass={handleRePasswordChange} /><span style={{ color: "red" }}> *</span><br /><br />
+                        <h4>Edit Your Destination Preferences: (Optional)</h4>
+                        <label><input type="checkbox" id="pref0" checked={isPref1Checked} onChange={() => { setIsPref1Checked(!isPref1Checked) }} value={list[0]} />{list[0]}</label><br />
+                        <label><input type="checkbox" id="pref1" checked={isPref2Checked} onChange={() => { setIsPref2Checked(!isPref2Checked) }} value={list[1]} />{list[1]}</label><br />
+                        <label><input type="checkbox" id="pref2" checked={isPref3Checked} onChange={() => { setIsPref3Checked(!isPref3Checked) }} value={list[2]} />{list[2]}</label><br />
+                        <label><input type="checkbox" id="pref3" checked={isPref4Checked} onChange={() => { setIsPref4Checked(!isPref4Checked) }} value={list[3]} />{list[3]}</label><br />
+                        <label><input type="checkbox" id="pref4" checked={isPref5Checked} onChange={() => { setIsPref5Checked(!isPref5Checked) }} value={list[4]} />{list[4]}</label><br />
+                        <label><input type="checkbox" id="pref5" checked={isPref6Checked} onChange={() => { setIsPref6Checked(!isPref6Checked) }} value={list[5]} />{list[5]}</label><br />
+                        <label><input type="checkbox" id="pref6" checked={isPref7Checked} onChange={() => { setIsPref7Checked(!isPref7Checked) }} value={list[6]} />{list[6]}</label><br />
+                        <br />
+                    </>}
 
-                        <div>
-                            <button className="custom-btn" onClick={user.USER_TYPE === 'customer' ? updateInfo : updateInfo2}>Update Profile</button>
-                            <button className="custom-btn" onClick={() => { setIsBeingUpdated(false) }}>Cancel</button></div>
-                    </div>}
+                    <PasswordInput Label="Enter Password: " setPass={handlePasswordChange} /><span style={{ color: "red" }}> *</span>
+                    {!isValidPassword && !isPasswordStarting ? <h5 style={{ color: "red" }}>password must be at least 8 characters long</h5> : <><br /><br /></>}
+                    <PasswordInput Label="Confirm Password: " setPass={handleRePasswordChange} /><span style={{ color: "red" }}> *</span><br /><br />
+
+                    <div>
+                        <button className="custom-btn" onClick={user.USER_TYPE === 'customer' ? updateInfo : updateInfo2}>Update Profile</button>
+                        <button className="custom-btn" onClick={() => { setIsBeingUpdated(false) }}>Cancel</button></div>
+                </div>}
             </div>
-            {
-                user.USER_TYPE === 'customer' && recommendedDestinations.length !== 0 &&
-                <div className='recommendation-container'>
+            
+            <div className='recommendation-container'>
+                {user.USER_TYPE === 'customer' && recommendedDestinations.length !== 0 &&
+                <>
                     <h1>Recommended Destinations -</h1>
                     <CategorizedDestination destinationObj={recommendedDestinations} />
-                </div>
-            }
+                </>}
 
-            {
-                user.USER_TYPE === 'admin' &&
-                <div className='recommendation-container'>
+                {user.USER_TYPE === 'admin' &&
+                <>
                     <h1>Pending Tasks -</h1>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -389,15 +411,12 @@ const ProfileHomePage = (props) => {
                                         <span style={{ margin: '0 10px' }}></span>
                                         <button className="btn-primary" onClick={() => declineRequest(agent)}>Decline</button>
                                     </div>
-
                                 </div>
                             )}
                         </div>
                     </div>
-                </div>
-
-            }
-
+                </>}
+            </div>
         </div>
     )
 }
