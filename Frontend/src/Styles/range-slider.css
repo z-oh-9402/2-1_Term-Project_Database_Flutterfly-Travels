@@ -10,6 +10,7 @@
     background-color: rgb(91, 206, 244);
     opacity: 1;
     border: none;
+    z-index: 0;
 }
 
 .rc-slider-dot {

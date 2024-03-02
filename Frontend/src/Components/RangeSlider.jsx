@@ -4,16 +4,8 @@ import '../Styles/range-slider.css';
 import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
 
-const marks = {
-    0: '৳0',
-    5000: '৳5,000',
-    10000: '৳10.000',
-    15000: '৳15,000',
-    20000: '৳20,000'
-};
-
 const RangeSlider = (props) => {
-    const {values, setValues, setIsFilterApplied} = props;
+    const {marks, minValue, maxValue, values, setValues, setIsFilterApplied} = props;
     const [min, setMin] = useState(values[0]);
     const [max, setMax] = useState(values[1]);
 
@@ -85,41 +77,45 @@ const RangeSlider = (props) => {
     };
 
     return (
-        <div>
-            <h3>Price Range</h3>
-            <Slider range
-                className="range-slider"
-                value={values}
-                onChange={handleChange}
-                allowCross={false}
-                step={100}
-                marks={marks}
-                min={0}
-                max={20000}
-            />
-            <label>Min: ৳<input 
-                            className='range-input' 
-                            id='min-input' 
-                            type="text" 
-                            value={min} 
-                            onChange={(e)=>handleTextChange(e,0)} 
-                            onKeyDown={(e)=>handleEnterPress(e,0)} 
-                            onBlur={() => handleBlur(0)}/>
-            </label><br/>
-            <label>Max: ৳<input 
-                            className='range-input' 
-                            id='max-input' 
-                            type="text" 
-                            value={max} 
-                            onChange={(e)=>handleTextChange(e,1)} 
-                            onKeyDown={(e)=>handleEnterPress(e,1)} 
-                            onBlur={() => handleBlur(1)}/>
-            </label>
+        <div style={{paddingLeft: "10px"}}>
+            <div style={{display: "block", width: "90%"}}>
+                <Slider range
+                    className="range-slider"
+                    value={values}
+                    onChange={handleChange}
+                    allowCross={false}
+                    step={100}
+                    marks={marks}
+                    min={minValue}
+                    max={maxValue}
+                />
+                <label>Min: ৳<input 
+                                className='range-input' 
+                                id='min-input' 
+                                type="text" 
+                                value={min} 
+                                onChange={(e)=>handleTextChange(e,0)} 
+                                onKeyDown={(e)=>handleEnterPress(e,0)} 
+                                onBlur={() => handleBlur(0)}/>
+                </label><br/>
+                <label>Max: ৳<input 
+                                className='range-input' 
+                                id='max-input' 
+                                type="text" 
+                                value={max} 
+                                onChange={(e)=>handleTextChange(e,1)} 
+                                onKeyDown={(e)=>handleEnterPress(e,1)} 
+                                onBlur={() => handleBlur(1)}/>
+                </label>
+            </div>
         </div>
     );
 };
 
 RangeSlider.propTypes = {
+    marks: PropTypes.object,
+    minValue: PropTypes.number,
+    maxValue: PropTypes.number,
     values: PropTypes.array,
     setValues: PropTypes.func,
     setIsFilterApplied: PropTypes.func

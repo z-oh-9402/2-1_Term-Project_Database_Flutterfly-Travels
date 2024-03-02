@@ -3,8 +3,7 @@ import { useParams } from "react-router-dom";
 import ImageSlider from "../Components/ImageSlider";
 import Rating from "../Components/Rating";
 import UserInfoContext from "../Context/UserInfoContext";
-
-const max_review_length = 700;
+import ReviewsAndRatings from "../Components/ReviewsAndRatings";
 
 const DestinationProfile = () => {
     const {userInfo} = useContext(UserInfoContext);
@@ -12,16 +11,10 @@ const DestinationProfile = () => {
     const [result, setResult] = useState(null);
     const [images,setImages] = useState([]);
     const [review, setReview] = useState("");
+    const personalReview = {review, setReview};
     const [rating, setRating] = useState(0);
+    const personalRating = {rating, setRating};
     const [allReviewRatings,setAllReviewRatings] = useState([{}]);
-
-
-    const handleReviewChange = (e) => {
-        if(e.target.value.length <= max_review_length)
-        {
-            setReview(e.target.value);
-        }
-    };
     
     useEffect(()=>{
         const fetchData = async () => {
@@ -37,7 +30,7 @@ const DestinationProfile = () => {
             const data2 = await response.json();
             setAllReviewRatings(data2);
 
-            if(userInfo!==null)
+            if(userInfo!==null && userInfo.USER_TYPE==='customer')
             {
                 response = await fetch(`http://localhost:3000/destination/review-rating/${data.DESTINATION_ID}/${userInfo.USER_ID}`, {
                     method: "GET",
@@ -54,34 +47,39 @@ const DestinationProfile = () => {
     ,[]);
 
     const handleSubmit = async () => {
-        let response = await fetch(`http://localhost:3000/destination/review-rating/${result.DESTINATION_ID}`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                review: review,
-                rating: rating,
-                customerId: userInfo.USER_ID
-            }),
-        });
-
-        response = await fetch(`http://localhost:3000/destination/review-rating/${result.DESTINATION_ID}`, {
-            method: "GET",
-        });
-        let data = await response.json();
-        setAllReviewRatings(data);
-
-        if(userInfo!==null)
+        if(rating!==0)
         {
+            let response = await fetch(`http://localhost:3000/destination/review-rating/${result.DESTINATION_ID}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    review: review,
+                    rating: rating,
+                    customerId: userInfo.USER_ID
+                }),
+            });
+
+            response = await fetch(`http://localhost:3000/destination/review-rating/${result.DESTINATION_ID}`, {
+                method: "GET",
+            });
+            let data = await response.json();
+            setAllReviewRatings(data);
+
             response = await fetch(`http://localhost:3000/destination/review-rating/${result.DESTINATION_ID}/${userInfo.USER_ID}`, {
                 method: "GET",
             });
 
             data = await response.json();
             setRating(data);
+            setReview("");
+            window.location.reload();
         }
-        setReview("");
+        else
+        {
+            alert("Please provide a rating!");
+        }
     };
 
     return (
@@ -103,40 +101,7 @@ const DestinationProfile = () => {
 
                 <div style={{padding:'40px', display: "flex", justifyContent: 'space-between'}}>
                     <iframe src={result.MAP} width="400" height="300" allowFullScreen="" loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
-
-                    {userInfo!==null &&
-                        <div className="review-section" style={{maxWidth: "400px"}}>
-                        <h2>Reviews</h2>
-                        <form>
-                            <div style={{display: 'inline-block'}}>
-                                <div style={{display: 'flex', alignItems: 'center'}}>
-                                    <label>Your Rating: </label>
-                                    <Rating rating={rating} state={1} setRating={setRating}/>
-                                </div>
-                            </div>
-
-                            <textarea value={review} placeholder="Write your review here..." onChange={handleReviewChange}/>
-                            <p>{review.length}/{max_review_length}</p>
-                            <button className="btn-primary" onClick={handleSubmit}>Submit Review</button>
-                        </form>
-                    </div>}
-
-                    <div className="all-review" style={{width: "300px"}}>
-                        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                            <h2>All Reviews ({allReviewRatings.length})</h2>
-                            {allReviewRatings.length>5 && <div className="see-all-link">see all</div>}
-                        </div>
-                        {allReviewRatings.map((item,index) => (
-                            index<5 &&
-                            <div key={index}>
-                                <p>{item.USERNAME}</p>
-                                <Rating rating={item.RATING} state={0} setRating={null}/>
-                                <p>{item.REVIEW}</p>
-                                <p>{item.CREATED_AT}</p>
-                                <br/>
-                            </div>
-                        ))}
-                    </div>
+                    <ReviewsAndRatings personalRating={personalRating} personalReview={personalReview} reviews={allReviewRatings} handleSubmit={handleSubmit}/>
                 </div>
             </>}
         </>

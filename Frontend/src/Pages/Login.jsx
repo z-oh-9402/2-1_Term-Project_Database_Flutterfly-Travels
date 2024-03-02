@@ -3,7 +3,6 @@ import "../Styles/login-signup.css"
 
 import PropTypes from 'prop-types'
 import { useContext, useState } from 'react'
-import { useNavigate } from 'react-router-dom';
 import PasswordInput from '../Components/PasswordInput';
 import { ImCross } from "react-icons/im";
 import UserInfoContext from '../Context/UserInfoContext';
@@ -12,14 +11,9 @@ const Login = (props) => {
     const { setInfo } = useContext(UserInfoContext);
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
-    const navigate = useNavigate();
 
     const handleUsernameChange = (e) => {
         setUsername(e.target.value);
-    }
-
-    const handlePasswordChange = (text) => {
-        setPassword(text);
     }
 
     const handleChangeToSignUp = () => {
@@ -43,9 +37,6 @@ const Login = (props) => {
                 });
                 result = await response.json();
                 if (result.status === 1) {
-                    setUsername("");
-                    setPassword("");
-
                     if (result.data.USER_TYPE === 'customer') {
                         response = await fetch(`http://localhost:3000/customer/fetch?customerId=${result.data.USER_ID}`, {
                             method: "GET"
@@ -74,7 +65,6 @@ const Login = (props) => {
 
                     setInfo(result.data);
                     props.setUserInfo(false);
-                    navigate("/");
                 }
                 else {
                     alert("Wrong password");
@@ -82,6 +72,9 @@ const Login = (props) => {
             }
         }
         else alert("Important field(s) empty!");
+
+        setUsername("");
+        setPassword("");
     }
 
     const handleGoToHomePage = () => {
@@ -101,7 +94,7 @@ const Login = (props) => {
                 <h1>Login Page</h1>
                 <div style={{ display: 'flex', flexDirection: "column", alignItems: 'flex-end' }}>
                     <label>Username: <input value={username} placeholder='Enter username' onChange={handleUsernameChange} /></label><br />
-                    <PasswordInput Label="Password: " setPass={handlePasswordChange} /><br />
+                    <PasswordInput Label="Password: " password={password} setPassword={setPassword} /><br />
                 </div>
                 <button className="custom-btn" onClick={handleDataSubmit}>Login</button><br /><br />
                 <p style={{ textAlign: "center" }}>Don{"'"}t have an account? <span className='go-to' onClick={handleChangeToSignUp} style={{ color: "red" }}>Sign up now!</span></p>

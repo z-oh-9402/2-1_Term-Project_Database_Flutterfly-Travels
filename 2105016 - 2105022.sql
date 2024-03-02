@@ -171,7 +171,7 @@ Table creation commands:
 		agent_id NUMBER,
 		customer_id NUMBER,
 		departure_date DATE,
-		trip_duration NUMBER,
+		return_date DATE,
 		total_cost NUMBER,
 		discount NUMBER,
 		rating NUMBER CHECK(rating<=5),
@@ -201,7 +201,6 @@ Table creation commands:
 		customer_id NUMBER,
 		trip_id NUMBER,
 		agent_id NUMBER,
-		booking_date DATE,
 		cost NUMBER,
 		booking_type VARCHAR2(100),
 		FOREIGN KEY (customer_id) REFERENCES Customer(customer_id) ON DELETE CASCADE,
@@ -291,8 +290,8 @@ Table creation commands:
 		accommodation_booking_id NUMBER PRIMARY KEY,
 		accommodation_id NUMBER,
 		number_of_rooms NUMBER,
-		check_in DATE,
-		check_out DATE,
+		check_in TIMESTAMP,
+		check_out TIMESTAMP,
 		FOREIGN KEY (accommodation_booking_id) REFERENCES Booking(booking_id) ON DELETE CASCADE,
 		FOREIGN KEY (accommodation_id) REFERENCES Accommodation(accommodation_id) ON DELETE CASCADE
 	);
@@ -331,8 +330,6 @@ Table creation commands:
 	CREATE TABLE Transport_Booking (
 		transport_booking_id NUMBER PRIMARY KEY,
 		transport_id NUMBER,
-		departure_time INTERVAL DAY TO SECOND,
-		departure_location VARCHAR2(100),
 		number_of_seats NUMBER,
 		FOREIGN KEY (transport_booking_id) REFERENCES Booking(booking_id) ON DELETE CASCADE,
 		FOREIGN KEY (transport_id) REFERENCES Transport(transport_id) ON DELETE CASCADE
@@ -345,12 +342,12 @@ Table creation commands:
 		rating NUMBER CHECK(rating<=5),
 		seat_class VARCHAR2(50),
 		ticket_price NUMBER,
-		departure_location_id NUMBER,
-		arrival_location_id NUMBER,
+		departure_airport_id NUMBER,
+		arrival_airport_id NUMBER,
 		departure_time INTERVAL DAY TO SECOND,
 		arrival_time INTERVAL DAY TO SECOND,
-		FOREIGN KEY (departure_location_id) REFERENCES Location(location_id) ON DELETE CASCADE,
-		FOREIGN KEY (arrival_location_id) REFERENCES Location(location_id) ON DELETE CASCADE
+		FOREIGN KEY (departure_airport_id) REFERENCES Airport(airport_id) ON DELETE CASCADE,
+		FOREIGN KEY (arrival_airport_id) REFERENCES Airport(airport_id) ON DELETE CASCADE
 	);
 
 	CREATE SEQUENCE flight_id_sequence
@@ -373,11 +370,7 @@ Table creation commands:
 	CREATE TABLE Flight_Booking (
 		flight_booking_id NUMBER PRIMARY KEY,
 		flight_id NUMBER,
-		seat_class VARCHAR2(50),
-		airline_name VARCHAR2(200),
 		number_of_seats NUMBER,
-		departure_time INTERVAL DAY TO SECOND,
-		departure_location VARCHAR2(100),
 		FOREIGN KEY (flight_booking_id) REFERENCES Booking(booking_id) ON DELETE CASCADE,
 		FOREIGN KEY (flight_id) REFERENCES Flight(flight_id) ON DELETE CASCADE
 	);
@@ -418,9 +411,9 @@ Table creation commands:
 	CREATE TABLE Restaurant_Booking (
 		restaurant_booking_id NUMBER PRIMARY KEY,
 		restaurant_id NUMBER,
-		seat_class VARCHAR2(50),
 		number_of_seats NUMBER,
-		arrival_time DATE,
+		arrival_time TIMESTAMP,
+		departure_time TIMESTAMP,
 		FOREIGN KEY (restaurant_booking_id) REFERENCES Booking(booking_id) ON DELETE CASCADE,
 		FOREIGN KEY (restaurant_id) REFERENCES Restaurant(restaurant_id) ON DELETE CASCADE
 	);
@@ -431,16 +424,6 @@ Table creation commands:
 		trip_id NUMBER,
 		payment_type VARCHAR2(100),
 		payment_status VARCHAR2(10),
-		FOREIGN KEY (customer_id) REFERENCES Customer(customer_id) ON DELETE CASCADE,
-		FOREIGN KEY (trip_id) REFERENCES Trip(trip_id) ON DELETE CASCADE
-	);
-
---19. Feedback
-	CREATE TABLE Feedback (
-		customer_id NUMBER,
-		trip_id NUMBER,
-		review VARCHAR2(200),
-		rating NUMBER CHECK(rating<=5),
 		FOREIGN KEY (customer_id) REFERENCES Customer(customer_id) ON DELETE CASCADE,
 		FOREIGN KEY (trip_id) REFERENCES Trip(trip_id) ON DELETE CASCADE
 	);
@@ -540,7 +523,31 @@ Table creation commands:
 	END;
 	/
 
---24. Rating
+--24. Airport
+	CREATE TABLE Airport(
+		airport_id NUMBER PRIMARY KEY,
+		name VARCHAR2(100),
+		code VARCHAR2(5) UNIQUE,
+		location_id NUMBER,
+		FOREIGN KEY (location_id) REFERENCES Location(location_id) ON DELETE CASCADE
+	);
+
+	CREATE SEQUENCE airport_id_sequence
+		START WITH 1
+		INCREMENT BY 1
+		NOMAXVALUE;
+
+	CREATE OR REPLACE TRIGGER airport_id_trigger
+	BEFORE INSERT ON Airport
+	FOR EACH ROW
+	BEGIN
+		SELECT airport_id_sequence.NEXTVAL
+		INTO :NEW.AIRPORT_ID
+		FROM DUAL;
+	END;
+	/
+
+--25. Rating
 	CREATE TABLE Rating(
 		rating_id NUMBER PRIMARY KEY,
 		customer_id NUMBER,
@@ -566,7 +573,7 @@ Table creation commands:
 	END;
 	/
 
---25. Review
+--26. Review
 	CREATE TABLE Review(
 		review_id NUMBER PRIMARY KEY,
 		customer_id NUMBER,

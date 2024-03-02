@@ -378,9 +378,9 @@ const ProfileHomePage = (props) => {
                         <br />
                     </>}
 
-                    <PasswordInput Label="Enter Password: " setPass={handlePasswordChange} /><span style={{ color: "red" }}> *</span>
+                    <PasswordInput Label="Enter Password: " password={password} setPassword={handlePasswordChange} /><span style={{ color: "red" }}> *</span>
                     {!isValidPassword && !isPasswordStarting ? <h5 style={{ color: "red" }}>password must be at least 8 characters long</h5> : <><br /><br /></>}
-                    <PasswordInput Label="Confirm Password: " setPass={handleRePasswordChange} /><span style={{ color: "red" }}> *</span><br /><br />
+                    <PasswordInput Label="Confirm Password: " password={rePassword} setPassword={handleRePasswordChange} /><span style={{ color: "red" }}> *</span><br /><br />
 
                     <div>
                         <button className="custom-btn" onClick={user.USER_TYPE === 'customer' ? updateInfo : updateInfo2}>Update Profile</button>

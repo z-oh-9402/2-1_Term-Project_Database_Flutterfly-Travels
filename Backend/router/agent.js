@@ -23,6 +23,8 @@ router.get("/:agentId",async(req,res)=>{
     res.status(200).json(ans[0]);
 });
 
+
+
 router.post("/",async(req,res)=>{
     const user = req.body;
 
@@ -52,6 +54,9 @@ router.post("/",async(req,res)=>{
 
     res.status(200).json(ans[0]);
 });
+
+
+
 router.put("/acceptRequest/:agentId", async (req, res) => {
     const agentId = req.params.agentId;
 
@@ -67,6 +72,7 @@ router.put("/acceptRequest/:agentId", async (req, res) => {
         message: `Agent with ID ${agentId} has been approved.`
     });
 });
+
 router.put("/declineRequest/:agentId", async (req, res) => {
     const agentId = req.params.agentId;
 
@@ -82,7 +88,6 @@ router.put("/declineRequest/:agentId", async (req, res) => {
         message: `Agent with ID ${agentId} has been declined.`
     });
 });
-
 
 router.put("/:userId",async(req,res)=>{
     const user = req.body;
@@ -118,6 +123,8 @@ router.put("/:userId",async(req,res)=>{
 
     res.status(200).json(result);
 });
+
+
 
 router.delete("/:userId",async(req,res)=>{
     const query = `DELETE FROM Users 

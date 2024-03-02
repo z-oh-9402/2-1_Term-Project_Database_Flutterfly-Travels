@@ -3,7 +3,7 @@ import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import PropTypes from 'prop-types'
 
 const PasswordInput = (props) => {
-  const [password, setPassword] = useState('');
+  const {Label, password, setPassword} = props;
   const [showPassword, setShowPassword] = useState(false);
 
   const handleTogglePassword = () => {
@@ -17,11 +17,11 @@ const PasswordInput = (props) => {
   return (
     <>
         <div style={{ position: 'relative', display:'inline-block'}}>
-            <label>{props.Label}
+            <label>{Label}
             <input style={{position: 'relative'}}
                 type={showPassword ? 'text' : 'password'}
                 value={password}
-                onChange={(e) => {setPassword(e.target.value); props.setPass(e.target.value)}}
+                onChange={(e) => {setPassword(e.target.value)}}
             /></label>
             <div
                 style={{
@@ -33,7 +33,7 @@ const PasswordInput = (props) => {
                 }}
                 onClick={handleTogglePassword}
             >
-                {showPassword ? <FaEyeSlash /> : <FaEye />}
+                {password.length!==0 && (showPassword ? <FaEyeSlash /> : <FaEye />)}
             </div>
         </div>
     </>
@@ -41,7 +41,8 @@ const PasswordInput = (props) => {
 };
 
 PasswordInput.propTypes = {
-    setPass: PropTypes.func,
+    password: PropTypes.string,
+    setPassword: PropTypes.func,
     Label: PropTypes.string
 }
 

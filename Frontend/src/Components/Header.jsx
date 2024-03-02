@@ -7,6 +7,7 @@ import { useContext, useEffect, useState } from "react";
 import UserInfoContext from "../Context/UserInfoContext";
  
 const Header = (props)=>{
+    const {handleIsInLoginOrSignUpFromNavbar, setShowTrips} = props;
     const {userInfo} = useContext(UserInfoContext);
     const navigate = useNavigate();
     const [isBottomStyles, setIsBottomStyles] = useState(false);
@@ -16,9 +17,12 @@ const Header = (props)=>{
         const handleScroll = () => {
             var scrollPosition = window.scrollY;
             var scrollThreshold = document.getElementById('main-nav').offsetHeight;
+
+            document.getElementById('main-nav').style.zIndex = 1;
     
             setIsBottomStyles(scrollPosition >= scrollThreshold);
             setPlaceholderHeight(scrollThreshold);
+            
         };
     
         window.addEventListener('scroll', handleScroll);
@@ -34,7 +38,7 @@ const Header = (props)=>{
             <nav className={`main-navbar ${isBottomStyles && 'bottom-styles'}`} id='main-nav'>
                 <div className="main-section"><Link to='/' className="basicInfo">Home</Link> <Link to='/about' className="basicInfo">About</Link></div>
                 <div className="button-container">
-                    {(userInfo!==null && userInfo.USER_TYPE === 'customer') && <button className="btn-primary">My Trip</button>}
+                    {(userInfo!==null && userInfo.USER_TYPE === 'customer') && <button className="btn-primary" onClick={()=>setShowTrips(true)}>My Trips</button>}
                     <button className="btn-primary" onClick={()=>{navigate('/destinations')}}>Destinations</button>
                     <button className="btn-primary" onClick={()=>{navigate('/accommodations');}}>Accommodations</button>
                     <button className="btn-primary" onClick={()=>{navigate('/restaurants');}}>Restaurants</button>
@@ -44,8 +48,8 @@ const Header = (props)=>{
                 {userInfo!==null ? 
                     <div><h4 className="username">Hello <Link to='user'>{userInfo.USERNAME}</Link></h4></div> : 
                     <div>
-                        <button className="custom-btn" onClick={()=>props.handleIsInLoginOrSignUpFromNavbar(true)}>Login</button>
-                        <button className="custom-btn" onClick={()=>props.handleIsInLoginOrSignUpFromNavbar(false)}>Sign Up</button>
+                        <button className="custom-btn" onClick={()=>handleIsInLoginOrSignUpFromNavbar(true)}>Login</button>
+                        <button className="custom-btn" onClick={()=>handleIsInLoginOrSignUpFromNavbar(false)}>Sign Up</button>
                     </div>}
             </nav>
             {isBottomStyles && <div style={{height: `${placeholderHeight}px`}}></div>}
@@ -54,6 +58,7 @@ const Header = (props)=>{
 
 Header.propTypes = {
     handleIsInLoginOrSignUpFromNavbar: PropTypes.func,
+    setShowTrips: PropTypes.func
 }
 
 export default Header;

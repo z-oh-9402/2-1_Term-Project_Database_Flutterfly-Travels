@@ -3,14 +3,12 @@ import "../Styles/login-signup.css"
 
 import { useContext, useState } from "react";
 import PropTypes from 'prop-types'
-import { useNavigate } from "react-router-dom";
 import PasswordInput from "../Components/PasswordInput";
 import { ImCross } from "react-icons/im";
 import UserInfoContext from "../Context/UserInfoContext";
 
 const SignUp = (props) => {
     const { setInfo } = useContext(UserInfoContext);
-    const navigate = useNavigate();
     const [userType, setUserType] = useState("");
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
@@ -30,6 +28,7 @@ const SignUp = (props) => {
 
     const handleUserTypeChange = (e) => {
         setUserType(e.target.value);
+        console.log(e.target.value);
     }
 
     const handleUsernameChange = async (e) => {
@@ -59,10 +58,6 @@ const SignUp = (props) => {
         setPassword(text);
         setIsPasswordStarting(false);
         text.length >= 8 ? setIsValidPassword(true) : setIsValidPassword(false);
-    }
-
-    const handleRePasswordChange = (text) => {
-        setRePassword(text);
     }
 
     const handleFirstNameChange = (e) => {
@@ -108,17 +103,17 @@ const SignUp = (props) => {
     const handleForm = (page) => {
         let correct = false;
 
-        if (page === 2 && !isValidPassword) {
-            alert("Invalid Password");
-        }
-        else if (page === 2 && password !== rePassword) {
-            alert("Password and Confirmed Password don't match.");
-        }
-        else if (page === 2 && (username === "" || userType === "")) {
+        if (page === 2 && (username === "" || userType === "" || password ==="" || rePassword === "")) {
             alert("Important field(s) empty!");
+        }
+        else if (page === 2 && !isValidPassword) {
+            alert("Invalid Password");
         }
         else if (page === 2 && !isValidUsername) {
             alert("Username already exists.");
+        }
+        else if (page === 2 && password !== rePassword) {
+            alert("Password and Confirmed Password don't match.");
         }
         else if (page === 3 && (username === "" || firstName === "" || lastName === "" || email === "" || (userType === "customer" && passportNumber === "") || (userType === "agent" && (experience === "" || fee === "")))) {
             alert("Important field(s) empty!");
@@ -193,7 +188,6 @@ const SignUp = (props) => {
         
         setInfo(result);
         props.setUserInfo(false);
-        navigate("/");
     }
 
     const handleGoToHomePage = () => {
@@ -228,10 +222,10 @@ const SignUp = (props) => {
                             <label>Username: <input value={username} placeholder='Enter username' onChange={handleUsernameChange} /><span style={{ color: "red" }}> *</span></label>
                             {!isValidUsername ? <h5 style={{ color: "red" }}>username already exists</h5> : <br/>}
 
-                            <div><PasswordInput Label="Enter Password: " setPass={handlePasswordChange} /><span style={{ color: "red" }}> *</span></div>
+                            <div><PasswordInput Label="Enter Password: " password={password} setPassword={handlePasswordChange} /><span style={{ color: "red" }}> *</span></div>
                             {!isValidPassword && !isPasswordStarting ? <h5 style={{ color: "red" }}>password must be at least 8 characters long</h5>
                                 : <br/>}
-                            <div><PasswordInput Label="Confirm Password: " setPass={handleRePasswordChange} /><span style={{ color: "red" }}> *</span></div>
+                            <div><PasswordInput Label="Confirm Password: " password={rePassword} setPassword={setRePassword} /><span style={{ color: "red" }}> *</span></div>
                         </div>
                         <button className="custom-btn" onClick={() => { handleForm(2) }}>Next</button>
                         <br /><br />

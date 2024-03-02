@@ -4,16 +4,35 @@ import { IoIosRestaurant } from "react-icons/io";
 import { FaHotel } from "react-icons/fa";
 import PropTypes from 'prop-types';
 import "../Styles/search.css"
+import { useEffect } from "react";
 
 const SearchAndSuggestions = (props) => {
     const {data, functions} = props;
+
+    useEffect(() => {
+        const handleScroll = () => {
+            const element = document.getElementById('search-items');
+            const rect = element.getBoundingClientRect();
+
+            if(rect.bottom<30)
+            {
+                document.getElementById('search-bar').blur();
+            }
+        };
+    
+        window.addEventListener('scroll', handleScroll);
+    
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+        };
+    }, []);
 
     const setOnFocus = () =>{
         const blurBackground = document.getElementById("dim-background");
         blurBackground.style.display = "block";
 
-        const navbar = document.getElementById("main-nav");
-        navbar.style.zIndex = 1;
+        const searchItems = document.getElementById("search-items");
+        searchItems.style.zIndex = 3;
         
         if(data.suggestions)
         {
@@ -26,8 +45,8 @@ const SearchAndSuggestions = (props) => {
         const blurBackground = document.getElementById("dim-background");
         setTimeout(()=>{blurBackground.style.display = "none"}, 300);
 
-        const navbar = document.getElementById("main-nav");
-        navbar.style.zIndex = 100;
+        const searchItems = document.getElementById("search-items");
+        setTimeout(()=>{searchItems.style.zIndex = 0}, 300);
         
         if(data.suggestions)
         {
@@ -39,9 +58,9 @@ const SearchAndSuggestions = (props) => {
     return (
         <>
             <span id="dim-background"></span>
-            <div className="search-div-container" style={{position: "relative", zIndex: 99}}>
+            <div id='search-items' style={{position: "relative", zIndex: "0"}}>
                 <div className="search-container">
-                    <input type="text" onFocus={setOnFocus} onBlur={setOnBlur} className="search-input" value={data.search} placeholder="Search destination name or area..." onChange={functions.handleSearch}/>
+                    <input id="search-bar" type="text" onFocus={setOnFocus} onBlur={setOnBlur} className="search-input" value={data.search} placeholder="Search destination name or area..." onChange={functions.handleSearch}/>
                     <button className="search-button custom-btn" onClick={functions.handleSubmit}>
                         <h1>🔍</h1>
                     </button>
@@ -53,7 +72,7 @@ const SearchAndSuggestions = (props) => {
                                 {data.category==='destination' ? <FaLocationArrow size={30} style={{paddingRight: "8px"}}/> 
                                                           : (data.category ==='accommodation' ? <FaHotel size={30} style={{paddingRight: "8px"}}/> 
                                                                                  : <IoIosRestaurant size={30} style={{paddingRight: "8px"}}/>)}
-                                <div><h3 onClick={functions.showDestination}>{item.NAME}</h3>
+                                <div><h3 onClick={functions.showItem}>{item.NAME}</h3>
                                 {item.LOCATION_NAME}, {item.DISTRICT_NAME}</div>
                             </div>
                         )}

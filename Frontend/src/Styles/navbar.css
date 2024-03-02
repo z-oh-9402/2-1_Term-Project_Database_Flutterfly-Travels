@@ -1,6 +1,5 @@
 .main-navbar {
     box-sizing: border-box;
-    z-index: 100;
     background-color: rgb(216, 249, 251);
     padding: 16px 32px;
     display: flex;
@@ -26,6 +25,11 @@
 
 .username{
     margin: 0px;
+}
+
+.username a:hover{
+    cursor: pointer;
+    color: blue
 }
 
 .bottom-styles{

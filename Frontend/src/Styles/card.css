@@ -26,9 +26,9 @@
     transform: scale(1.05);
 }
 
-.card img {
+.card .cover-img {
     width: 100%;
-    min-height: 55%;
+    height: 55%;
     border-radius: 6px;
     object-fit: cover;
 }

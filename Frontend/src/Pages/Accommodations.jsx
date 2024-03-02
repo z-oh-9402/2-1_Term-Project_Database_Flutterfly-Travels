@@ -2,8 +2,16 @@ import {useState } from "react";
 import "../Styles/card.css"
 import { useNavigate } from "react-router-dom";
 import SearchAndSuggestions from "../Components/SearchAndSuggestions";
-import ItemCard from "../Components/ItemCard";
 import RangeSlider from "../Components/RangeSlider";
+import ItemBar from "../Components/ItemBar";
+
+const marks = {
+    0: '৳0',
+    5000: '৳5,000',
+    10000: '৳10,000',
+    15000: '৳15,000',
+    20000: '৳20,000'
+};
 
 const Accommodations = ()=>{
     const [search,setSearch] = useState("");
@@ -94,6 +102,7 @@ const Accommodations = ()=>{
                 setAccommodations([]);
             }
         }
+        setSearch("");
     }
 
     const placeSelected = async (category,text) =>{
@@ -128,7 +137,7 @@ const Accommodations = ()=>{
         setSearch("");
     }
 
-    const showDestination = async (e) => {
+    const showAccommodation = async (e) => {
         navigate(`${e.target.innerText}`);
     }
 
@@ -193,7 +202,7 @@ const Accommodations = ()=>{
         placeSelected: placeSelected,
         handleSearch: handleSearch,
         handleSubmit: handleSubmit,
-        showDestination: showDestination
+        showItem: showAccommodation
     }
 
     return(
@@ -213,7 +222,8 @@ const Accommodations = ()=>{
                         <h3>Minimum Accommodation Class:</h3>
                         <div className="slider"><span className="filter-value">{accommodationClass}</span> <input type="range" className="normal-slider" min="1" max="5" value={accommodationClass} step="1" onInput={updateClassValue}/></div>
 
-                        <RangeSlider values={prices} setValues={setPrices} setIsFilterApplied={setIsFilterApplied}/>
+                        <h3>Price Range</h3>
+                        <RangeSlider marks={marks} minValue={0} maxValue={20000} values={prices} setValues={setPrices} setIsFilterApplied={setIsFilterApplied}/>
 
                         <div style={{margin: '40px 0px 40px 0px'}}>
                             <h3>Choose Your Accommodation Preferences:</h3>
@@ -226,9 +236,9 @@ const Accommodations = ()=>{
                     </div>
                     <div className='recommendation-container'>
                         <h1>Searched Accommodations -</h1>
-                        <div className='card-container'>
+                        <div className='bar-container'>
                             {accommodations.map((accommodation,index)=>
-                                (isFilterApplied ? filterCheck(accommodation) : true) && <ItemCard key={index} itemType='accommodation' item={accommodation} index={`${index}`}/>
+                                (isFilterApplied ? filterCheck(accommodation) : true) && <ItemBar key={index} itemType='accommodation' item={accommodation} index={`${index}`}/>
                             )}
                         </div>
                     </div>

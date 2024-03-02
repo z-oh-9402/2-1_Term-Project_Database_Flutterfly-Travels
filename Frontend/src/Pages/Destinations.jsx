@@ -1,8 +1,8 @@
 import {useState } from "react";
-import "../Styles/card.css"
+import "../Styles/item-bar.css"
 import { useNavigate } from "react-router-dom";
 import SearchAndSuggestions from "../Components/SearchAndSuggestions";
-import ItemCard from "../Components/ItemCard";
+import ItemBar from "../Components/ItemBar";
 
 const Destinations = ()=>{
     const [search,setSearch] = useState("");
@@ -77,6 +77,7 @@ const Destinations = ()=>{
                 setDestinations([]);
             }
         }
+        setSearch("");
     }
 
     const placeSelected = async (category,text) =>{
@@ -166,7 +167,7 @@ const Destinations = ()=>{
         placeSelected: placeSelected,
         handleSearch: handleSearch,
         handleSubmit: handleSubmit,
-        showDestination: showDestination
+        showItem: showDestination
     }
 
     return(
@@ -193,9 +194,9 @@ const Destinations = ()=>{
                     </div>
                     <div className='recommendation-container'>
                         <h1>Searched Destinations -</h1>
-                        <div className='card-container'>
+                        <div className='bar-container'>
                             {destinations.map((destination,index)=>
-                                (isFilterApplied ? filterCheck(destination) : true) && <ItemCard key={index} itemType='destination' item={destination} index={`${index}`}/>
+                                (isFilterApplied ? filterCheck(destination) : true) && <ItemBar key={index} itemType='destination' item={destination} index={`${index}`}/>
                             )}
                         </div>
                     </div>

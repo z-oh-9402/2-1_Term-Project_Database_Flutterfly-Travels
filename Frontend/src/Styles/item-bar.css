@@ -1,0 +1,90 @@
+.bar-container{
+    display: flex;
+    flex-direction: column;
+    padding: 0px 20px;
+}
+
+.bar{
+    box-sizing: border-box;
+    padding: 12px;
+    min-width: 100%;
+    margin-right: 12px;
+    margin-top: 12px;
+    height: 150px;
+    background-color: #9edaf1;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    border: 1px solid #bde8f5;
+    transition: transform 0.15s ease-in-out;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.bar:hover {
+    transform: scale(1.02);
+}
+
+.main-info-container{
+    display: flex;
+    align-items: center;
+    height: 100%;
+    width: 80%;
+}
+
+.main-info-container .cover-img {
+    width: 35%;
+    height: 100%;
+    border-radius: 6px;
+    object-fit: cover;
+    margin-right: 30px;
+}
+
+.bar .title {
+    margin-top: 0px;
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
+.bar p {
+    color: #4f4f4f;
+    font-size: 18px;
+}
+
+.popup {
+    position: absolute;
+    width: 60%;
+    top: 80%;
+    left: 70%;
+    transform: translate(-50%, -50%);
+    background-color: #fffffff5;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    padding: 20px;
+    display: none;
+    flex-direction: column;
+}
+
+.popup p {
+    margin: 0;
+    font-size: 16px;
+}
+
+.flight-popup{
+    width: 20%;
+    left: 85%;
+}
+
+.item-rating-container label{
+    font-size: 22px;
+}
+
+.item-rating .rating{
+    height: 22px;
+    width: 22px;
+}
+
+.item-rating .rating-container span{
+    font-size: 20px;
+    font-weight: bold;
+}

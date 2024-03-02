@@ -1,6 +1,5 @@
 const router = require("express-promise-router")();
 const database = require('../database');
-const bcrypt = require('bcryptjs');
 
 router.get("/search",async(req,res)=>{
     const keyword = req.query.keyword.replace(`'`,`''`).toLowerCase();
@@ -187,7 +186,7 @@ router.get("/review-rating/:accommodationId",async(req,res)=>{
 
     const query = 
     `
-        SELECT RE.REVIEW, RA.RATING, RE.CREATED_AT, U.USERNAME
+        SELECT RE.REVIEW, RA.RATING, TO_CHAR(RE.CREATED_AT, 'DD Mon, YYYY ... HH12:MI:SS AM') AS CREATED_AT, U.USERNAME
         FROM REVIEW RE JOIN RATING RA ON RE.ITEM_ID=RA.ITEM_ID AND RE.ITEM_TYPE=RA.ITEM_TYPE AND RE.CUSTOMER_ID=RA.CUSTOMER_ID JOIN USERS U ON U.USER_ID=RE.CUSTOMER_ID
         WHERE RE.ITEM_ID=${id} AND RE.ITEM_TYPE='accommodation'
         ORDER BY RE.CREATED_AT DESC

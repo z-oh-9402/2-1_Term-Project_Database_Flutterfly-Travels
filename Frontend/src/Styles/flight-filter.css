@@ -1,0 +1,92 @@
+.flight-filter-container{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+    min-width: 100%;
+    height: 100px;
+    padding: 0px 40px;
+    box-sizing: border-box;
+}
+
+.top-filter{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.flight-details-container{
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+}
+
+.select input:focus{
+    outline: none;
+    border: none;
+    box-shadow: none;
+}
+
+.datepicker-container{
+    position: relative;
+    display: inline-block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.react-datepicker-wrapper{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.react-datepicker__input-container input{
+    transition: none;
+    width: 200px;
+    height: 38px;
+    box-sizing: border-box;
+    margin: 0px;
+    border-radius: 5px;
+    box-shadow: none;
+}
+
+.calendar-img{
+    position: absolute;
+    font-size: 20px;
+    right: 10px;
+    color: rgb(90, 90, 90);
+}
+
+.seat-number{
+    border-radius: 5px;
+    box-shadow: none;
+    width: 130px;
+    box-sizing: border-box;
+    height: 38px;
+    text-align: center;
+    padding-left: 10px;
+    padding-right: 10px;
+    cursor: text;
+}
+
+.seat-number:focus{
+    outline: none;
+    box-shadow: none;
+}
+
+.seat-number-buttons{
+    position: absolute;
+    top: 10px;
+    color: rgb(154, 154, 154);
+    cursor: pointer;
+}
+
+.plus{
+    right: 10px;
+}
+
+.minus{
+    left: 10px;
+}

@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types'
 import { useState } from 'react';
+import "../Styles/rating.css"
 
 const Rating = ({rating, state, setRating}) => {
     const [fullStars, setFullStars] = useState(Math.floor(rating));
@@ -23,7 +24,7 @@ const Rating = ({rating, state, setRating}) => {
     ));
 
     return(
-        <div style={{display: 'inline-block'}}>
+        <div className='item-rating' style={{display: 'inline-block'}}>
             <div className='rating-container'>
                 {state === 0 ? <span>{rating}</span> : null}
                 {fullStarsArray}
