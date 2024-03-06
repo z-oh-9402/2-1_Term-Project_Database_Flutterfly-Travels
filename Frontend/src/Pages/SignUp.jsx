@@ -28,7 +28,6 @@ const SignUp = (props) => {
 
     const handleUserTypeChange = (e) => {
         setUserType(e.target.value);
-        console.log(e.target.value);
     }
 
     const handleUsernameChange = async (e) => {
@@ -162,6 +161,13 @@ const SignUp = (props) => {
             });
 
             result = await response.json();
+
+            response = await fetch(`http://localhost:3000/trip/for-customer?customerId=${result.USER_ID}`, {
+                method: "GET"
+            });
+
+            const result2 = await response.json();
+            result.TRIPS = result2;
         }
         else {
             const info = {

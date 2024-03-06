@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import PropTypes from 'prop-types';
 import { useContext, useEffect, useState } from "react";
 import UserInfoContext from "../Context/UserInfoContext";
+import { IoMdNotifications } from "react-icons/io";
  
 const Header = (props)=>{
     const {handleIsInLoginOrSignUpFromNavbar, setShowTrips} = props;
@@ -46,7 +47,12 @@ const Header = (props)=>{
                     <button className="btn-primary" onClick={()=>{navigate('/transports');}}>Transports</button>
                 </div>
                 {userInfo!==null ? 
-                    <div><h4 className="username">Hello <Link to='user'>{userInfo.USERNAME}</Link></h4></div> : 
+                    <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+                        <IoMdNotifications className="notification-icon"/>
+                        <img src="/wishlist.png" className="wishlist"/>
+                        <h4 className="username">Hello <Link to='user'>{userInfo.USERNAME}</Link></h4>
+                    </div> 
+                    : 
                     <div>
                         <button className="custom-btn" onClick={()=>handleIsInLoginOrSignUpFromNavbar(true)}>Login</button>
                         <button className="custom-btn" onClick={()=>handleIsInLoginOrSignUpFromNavbar(false)}>Sign Up</button>

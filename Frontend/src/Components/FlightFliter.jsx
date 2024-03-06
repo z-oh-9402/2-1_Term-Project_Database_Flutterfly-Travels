@@ -44,6 +44,37 @@ const FlightFliter = (props) => {
         })
     };
 
+    const handleDepartureDateChange = (date) =>
+    {
+        const sysdate = new Date();
+
+        if(departureDate<sysdate+1)
+        {
+            alert("Departure Date cannot be in the past");
+        }
+        else
+        {
+            setDepartureDate(date);
+            
+            if(flightStyle==="Round Trip" && returnDate<date)
+            {
+                setReturnDate(date);
+            }
+        }
+    }
+
+    const handleReturnDateChange = (date) =>
+    {
+        if(flightStyle==="Round Trip" && date<departureDate)
+        {
+            setReturnDate(departureDate);
+        }
+        else
+        {
+            setReturnDate(date);
+        }
+    }
+
     const changeSeatNumber = (increase) => {
         
         if(increase)
@@ -112,7 +143,7 @@ const FlightFliter = (props) => {
                     <div className='datepicker-container'>
                         <DatePicker
                             selected={departureDate}
-                            onChange={(e)=>setDepartureDate(e)}
+                            onChange={(e)=>handleDepartureDateChange(e)}
                             dateFormat="dd/MM/yyyy"
                             placeholderText="Departure Date"
                         />
@@ -123,7 +154,7 @@ const FlightFliter = (props) => {
                     <div className='datepicker-container'>
                         <DatePicker
                             selected={returnDate}
-                            onChange={(e)=>setReturnDate(e)}
+                            onChange={(e)=>handleReturnDateChange(e)}
                             dateFormat="dd/MM/yyyy"
                             placeholderText="Return Date"
                         />

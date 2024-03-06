@@ -43,9 +43,16 @@ const Login = (props) => {
                         });
 
                         const result1 = await response.json();
+
+                        response = await fetch(`http://localhost:3000/trip/for-customer?customerId=${result.data.USER_ID}`, {
+                            method: "GET"
+                        });
+
+                        const result2 = await response.json();
                         result.data.PASSPORT_NUMBER = result1.PASSPORT_NUMBER;
                         result.data.TRIP_BOOKED = result1.TRIP_BOOKED;
                         result.data.PREFERENCES = result1.PREFERENCES;
+                        result.data.TRIPS = result2;
                     }
 
                     if (result.data.USER_TYPE === 'agent') {
@@ -54,13 +61,23 @@ const Login = (props) => {
                         });
 
                         const result1 = await response.json();
+
                         result.data.EXPERIENCE_YEARS = result1.EXPERIENCE_YEARS;
                         result.data.FEE = result1.FEE;
                         result.data.ACC_STATUS = result1.ACC_STATUS;
 
                         if (result1.ACC_STATUS === 'PENDING') {
                             alert("Your request is still being processed!!!");
-                        }   
+                        }
+                        
+                        if(result1.ACC_STATUS === 'OK') {
+                            response = await fetch(`http://localhost:3000/trip/for-agent?agentId=${result.data.USER_ID}`, {
+                                method: "GET"
+                            });
+
+                            const result2 = await response.json();
+                            result.data.TRIPS = result2;
+                        }
                     }
 
                     setInfo(result.data);

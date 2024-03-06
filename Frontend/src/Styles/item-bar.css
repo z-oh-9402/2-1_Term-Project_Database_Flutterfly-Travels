@@ -42,7 +42,7 @@
 
 .bar .title {
     margin-top: 0px;
-    font-size: 24px;
+    font-size: 20px;
     margin-bottom: 8px;
 }
 
@@ -76,7 +76,7 @@
 }
 
 .item-rating-container label{
-    font-size: 22px;
+    font-size: 18px;
 }
 
 .item-rating .rating{
@@ -85,6 +85,6 @@
 }
 
 .item-rating .rating-container span{
-    font-size: 20px;
+    font-size: 18px;
     font-weight: bold;
 }

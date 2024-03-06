@@ -18,7 +18,8 @@ const RestaurantProfile = () => {
     
     useEffect(()=>{
         const fetchData = async () => {
-            let response = await fetch(`http://localhost:3000/restaurant/fetch/restaurant-name?name=${params.name}`, {
+            const name = encodeURIComponent(params.name);
+            let response = await fetch(`http://localhost:3000/restaurant/fetch/restaurant-name?name=${name}`, {
                 method: "GET",
             });
 
@@ -49,7 +50,7 @@ const RestaurantProfile = () => {
     const handleSubmit = async () => {
         if(rating!==0)
         {
-            let response = await fetch(`http://localhost:3000/restaurant/review-rating/${result.RESTAURANT_ID}`, {
+            await fetch(`http://localhost:3000/restaurant/review-rating/${result.RESTAURANT_ID}`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -61,18 +62,6 @@ const RestaurantProfile = () => {
                 }),
             });
 
-            response = await fetch(`http://localhost:3000/restaurant/review-rating/${result.RESTAURANT_ID}`, {
-                method: "GET",
-            });
-            let data = await response.json();
-            setAllReviewRatings(data);
-
-            response = await fetch(`http://localhost:3000/restaurant/review-rating/${result.RESTAURANT_ID}/${userInfo.USER_ID}`, {
-                method: "GET",
-            });
-
-            data = await response.json();
-            setRating(data);
             setReview("");
             window.location.reload();
         }
@@ -82,11 +71,33 @@ const RestaurantProfile = () => {
         }
     };
 
+    const bookAccommodation = async () => {
+        if(userInfo!==null && userInfo.USER_TYPE==='customer')
+        {
+            await fetch(`http://localhost:3000/restaurant/book-restaurant/${result.RESTAURANT_ID}/${userInfo.USER_ID}`, {
+                method: "POST",
+            });
+
+            alert("Restaurant booked successfully!");
+        }
+        else
+        {
+            alert("Please login as a customer to book a restaurant!");
+        }
+    };
+
     return (
         <>
             {result && 
             <div>
-                <h2 style={{paddingLeft: '40px'}}>{result.NAME}</h2>
+                <div 
+                    style={{display: 'flex', 
+                            justifyContent: userInfo && userInfo.USER_TYPE!=='admin' ? 'space-between' : 'start', 
+                            padding: '0px 40px'}}
+                >
+                    <h2 style={{margin: '0px'}}>{result.NAME}</h2>
+                    {userInfo && userInfo.USER_TYPE!=='admin' && <button className="custom-btn" onClick={bookAccommodation}>Book Now!</button>}
+                </div>
                 
                 <div style={{marginLeft: '0px',padding: '40px', display: 'flex', justifyContent:'space-between'}}>
                 <ImageSlider images={images}/>

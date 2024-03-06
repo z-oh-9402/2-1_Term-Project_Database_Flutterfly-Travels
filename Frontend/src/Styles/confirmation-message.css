@@ -1,0 +1,83 @@
+.close2{
+    position: absolute;
+    font-size: 18px;
+    top: 10px;
+    right: 10px;
+}
+
+.blur-background{
+    z-index: 9;
+}
+
+.confirmation-message-container{
+    width: 400px;
+    height: 150px;
+    animation: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 50px 40px 40px 40px;
+    align-items: center;
+}
+
+.blurry-background{
+    background-color: rgba(0, 0, 0, 0.468);
+    backdrop-filter: blur(0px);
+}
+
+.message-title{
+    width: 100%;
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    text-align: left;
+}
+
+.message-content{
+    width: 100%;
+    font-size: 16px;
+    text-align: center;
+}
+
+.trips-container{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    overflow: auto;
+}
+
+.trip-item{
+    box-sizing: border-box;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    border: 1px solid gray;
+    border-radius: 4px;
+    padding: 5px;
+    background-color: rgb(208, 243, 255);
+}
+
+.trip-item:hover{
+    background-color: #f2f2f2;
+}
+
+.trip-name{
+    font-size: 15px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.plus-button{
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 25px;
+    width: 25px;
+    margin-right: 0px;
+}

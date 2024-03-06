@@ -356,7 +356,7 @@ const ProfileHomePage = (props) => {
 
                 <div>
                     <h2>Update Profile:</h2>
-                    <label>Username: <input value={username} placeholder='Enter username' onChange={handleUsernameChange} /><span style={{ color: "red" }}> *</span></label>
+                    <label>Username: <input value={username} placeholder='Enter username' onChange={handleUsernameChange} /><span style={{ color: "red" }}> *</span></label><br/>
                     {!isValidUsername ? <h5 style={{ color: "red" }}>username already exists</h5> : <br />}
                     <label>First Name: <input value={firstName} placeholder='Enter first name' onChange={handleFirstNameChange} /><span style={{ color: "red" }}> *</span></label><br /><br />
                     <label>Last Name: <input value={lastName} placeholder='Enter last name' onChange={handleLastNameChange} /><span style={{ color: "red" }}> *</span></label><br /><br />

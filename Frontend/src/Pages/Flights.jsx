@@ -52,8 +52,8 @@ const Flights = () => {
     const [flightStyle, setFlightStyle] = useState("One Way");
     const flightStyleSet = {flightStyle, setFlightStyle};
 
-    const [departureDate, setDepartureDate] = useState(null);
-    const [returnDate, setReturnDate] = useState(null);
+    const [departureDate, setDepartureDate] = useState(new Date());
+    const [returnDate, setReturnDate] = useState(new Date());
     const dateSet = {departureDate, returnDate, setDepartureDate, setReturnDate};
 
     const [numberOfSeats, setNumberOfSeats] = useState(1);
@@ -109,6 +109,17 @@ const Flights = () => {
         setIsFilterApplied(true);
     }
 
+    const compareWithSystemTime = (time) => {
+        const currentTime = new Date();
+
+        const currentHour = currentTime.getHours();
+        const currentMinute = currentTime.getMinutes();
+        const targetHour = time.getHours();
+        const targetMinute = time.getMinutes();
+
+        return targetHour >= currentHour+2 || (targetHour >= currentHour+1 && targetMinute >= currentMinute);
+    }
+
     const filterCheck = (flight) => {
         let isChecked = true;
 
@@ -131,7 +142,7 @@ const Flights = () => {
         if(isChecked && departureTime!==-1)
         {
             let time = new Date(flight.DEPARTURE_TIME)
-            isChecked = time>=times[departureTime].start && time<=times[departureTime].end;
+            isChecked = compareWithSystemTime(time) && time>=times[departureTime].start && time<=times[departureTime].end;
         }
 
         if(isChecked && arrivalTime!==-1)
@@ -236,7 +247,7 @@ const Flights = () => {
                         <h1>Searched Accommodations -</h1>
                         <div className='card-container'>
                             {filteredFlights.map((flight,index)=>
-                                (isFilterApplied ? filterCheck(flight) : true) && <ItemBar key={index} itemType='flight' item={flight} index={`${index}`}/>
+                                (isFilterApplied ? filterCheck(flight) : compareWithSystemTime(new Date(flight.DEPARTURE_TIME))) && <ItemBar key={index} itemType='flight' item={flight} index={`${index}`}/>
                             )}
                         </div>
                     </div>

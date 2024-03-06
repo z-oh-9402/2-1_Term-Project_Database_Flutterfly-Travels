@@ -12,6 +12,30 @@ router.get("/pending-agents",async(req,res)=>{
     res.status(200).json(ans);
 });
 
+router.get("/search",async(req,res)=>{
+    const query = `SELECT U.*, A.EXPERIENCE_YEARS, A.FEE
+                   FROM USERS U JOIN Agent A ON U.USER_ID = A.AGENT_ID 
+                   WHERE U.USERNAME LIKE '%${req.query.keyword}%' AND A.ACC_STATUS='OK'`;
+    const params = [];
+    const ans = await database.query(query,params);
+
+    res.status(200).json({
+        status: ans.length>0,
+        data: ans
+    });
+});
+
+router.get("/fetch/:agentId",async(req,res)=>{
+    
+    const query = `SELECT U.*, A.EXPERIENCE_YEARS, A.FEE
+                   FROM USERS U JOIN Agent A ON U.USER_ID = A.AGENT_ID 
+                   WHERE A.AGENT_ID=${req.params.agentId}`;
+    const params = [];
+    const ans = await database.query(query,params);
+
+    res.status(200).json(ans[0]);
+});
+
 router.get("/:agentId",async(req,res)=>{
     
     const query = `SELECT *
@@ -22,8 +46,6 @@ router.get("/:agentId",async(req,res)=>{
 
     res.status(200).json(ans[0]);
 });
-
-
 
 router.post("/",async(req,res)=>{
     const user = req.body;
@@ -123,8 +145,6 @@ router.put("/:userId",async(req,res)=>{
 
     res.status(200).json(result);
 });
-
-
 
 router.delete("/:userId",async(req,res)=>{
     const query = `DELETE FROM Users 

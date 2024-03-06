@@ -17,19 +17,22 @@ router.post('/filtered-flights', async (req, res) => {
     {
         query = `SELECT FLIGHT_ID, AIRLINE_NAME, IMAGE, TO_CHAR(DEPARTURE_TIME, 'YYYY-MM-DD')||'T'||TO_CHAR(DEPARTURE_TIME, 'HH24:MI:SS')||'Z' DEPARTURE_TIME, TO_CHAR(ARRIVAL_TIME, 'YYYY-MM-DD')||'T'||TO_CHAR(ARRIVAL_TIME, 'HH24:MI:SS')||'Z' ARRIVAL_TIME, ECONOMY_SEAT_PRICE
                  FROM FLIGHT
-                 WHERE departure_airport_id=${departureAirportId} AND arrival_airport_id=${arrivalAirportId}`;
+                 WHERE departure_airport_id=${departureAirportId} AND arrival_airport_id=${arrivalAirportId}
+                 ORDER BY DEPARTURE_TIME`;
     }
     else if(seatClass === "Business")
     {
         query = `SELECT FLIGHT_ID, AIRLINE_NAME, IMAGE, TO_CHAR(DEPARTURE_TIME, 'YYYY-MM-DD')||'T'||TO_CHAR(DEPARTURE_TIME, 'HH24:MI:SS')||'Z' DEPARTURE_TIME, TO_CHAR(ARRIVAL_TIME, 'YYYY-MM-DD')||'T'||TO_CHAR(ARRIVAL_TIME, 'HH24:MI:SS')||'Z' ARRIVAL_TIME, BUSINESS_SEAT_PRICE
                  FROM FLIGHT
-                 WHERE departure_airport_id=${departureAirportId} AND arrival_airport_id=${arrivalAirportId}`;
+                 WHERE departure_airport_id=${departureAirportId} AND arrival_airport_id=${arrivalAirportId}
+                 ORDER BY DEPARTURE_TIME`;
     }
     else
     {
         query = `SELECT FLIGHT_ID, AIRLINE_NAME, IMAGE, TO_CHAR(DEPARTURE_TIME, 'YYYY-MM-DD')||'T'||TO_CHAR(DEPARTURE_TIME, 'HH24:MI:SS')||'Z' DEPARTURE_TIME, TO_CHAR(ARRIVAL_TIME, 'YYYY-MM-DD')||'T'||TO_CHAR(ARRIVAL_TIME, 'HH24:MI:SS')||'Z' ARRIVAL_TIME, FIRST_SEAT_PRICE
                  FROM FLIGHT
-                 WHERE departure_airport_id=${departureAirportId} AND arrival_airport_id=${arrivalAirportId}`;
+                 WHERE departure_airport_id=${departureAirportId} AND arrival_airport_id=${arrivalAirportId}
+                 ORDER BY DEPARTURE_TIME`;
     }
     
     result = await database.query(query, params);

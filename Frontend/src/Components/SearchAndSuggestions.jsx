@@ -60,7 +60,7 @@ const SearchAndSuggestions = (props) => {
             <span id="dim-background"></span>
             <div id='search-items' style={{position: "relative", zIndex: "0"}}>
                 <div className="search-container">
-                    <input id="search-bar" type="text" onFocus={setOnFocus} onBlur={setOnBlur} className="search-input" value={data.search} placeholder="Search destination name or area..." onChange={functions.handleSearch}/>
+                    <input id="search-bar" type="text" onFocus={setOnFocus} onBlur={setOnBlur} className="search-input" value={data.search} placeholder={`Search ${data.category} name or area...`} onChange={functions.handleSearch}/>
                     <button className="search-button custom-btn" onClick={functions.handleSubmit}>
                         <h1>🔍</h1>
                     </button>
@@ -68,11 +68,11 @@ const SearchAndSuggestions = (props) => {
                 {data.suggestions!==undefined &&
                     <div id="suggestions-container">
                         {data.suggestions.destination.map((item,index)=>
-                            <div key={index} className="suggested-items">
+                            <div key={index} className="suggested-items" onClick={functions.showItem}>
                                 {data.category==='destination' ? <FaLocationArrow size={30} style={{paddingRight: "8px"}}/> 
                                                           : (data.category ==='accommodation' ? <FaHotel size={30} style={{paddingRight: "8px"}}/> 
                                                                                  : <IoIosRestaurant size={30} style={{paddingRight: "8px"}}/>)}
-                                <div><h3 onClick={functions.showItem}>{item.NAME}</h3>
+                                <div><h3>{item.NAME}</h3>
                                 {item.LOCATION_NAME}, {item.DISTRICT_NAME}</div>
                             </div>
                         )}

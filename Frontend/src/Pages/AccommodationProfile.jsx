@@ -4,6 +4,7 @@ import ImageSlider from "../Components/ImageSlider";
 import Rating from "../Components/Rating";
 import UserInfoContext from '../Context/UserInfoContext';
 import ReviewsAndRatings from "../Components/ReviewsAndRatings";
+import AccommodationBooking from "../Components/AccommodationBooking";
 
 const AccommodationProfile = () => {
     const {userInfo} = useContext(UserInfoContext);
@@ -15,10 +16,12 @@ const AccommodationProfile = () => {
     const [rating, setRating] = useState(0);
     const personalRating = {rating, setRating};
     const [allReviewRatings,setAllReviewRatings] = useState([]);
+    const [showConfirmationMessage, setShowConfirmationMessage] = useState(false);
     
     useEffect(()=>{
         const fetchData = async () => {
-            let response = await fetch(`http://localhost:3000/accommodation/fetch/accommodation-name?name=${params.name}`, {
+            const name = encodeURIComponent(params.name);
+            let response = await fetch(`http://localhost:3000/accommodation/fetch/accommodation-name?name=${name}`, {
                 method: "GET",
             });
 
@@ -49,7 +52,7 @@ const AccommodationProfile = () => {
     const handleSubmit = async () => {
         if(rating!==0)
         {
-            let response = await fetch(`http://localhost:3000/accommodation/review-rating/${result.ACCOMMODATION_ID}`, {
+            await fetch(`http://localhost:3000/accommodation/review-rating/${result.ACCOMMODATION_ID}`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -61,18 +64,6 @@ const AccommodationProfile = () => {
                 }),
             });
 
-            response = await fetch(`http://localhost:3000/accommodation/review-rating/${result.ACCOMMODATION_ID}`, {
-                method: "GET",
-            });
-            let data = await response.json();
-            setAllReviewRatings(data);
-
-            response = await fetch(`http://localhost:3000/accommodation/review-rating/${result.ACCOMMODATION_ID}/${userInfo.USER_ID}`, {
-                method: "GET",
-            });
-
-            data = await response.json();
-            setRating(data);
             setReview("");
             window.location.reload();
         }
@@ -82,18 +73,30 @@ const AccommodationProfile = () => {
         }
     };
 
+    const bookAccommodation = async () => {
+        setShowConfirmationMessage(true);
+    };
+
     return (
         <>
             {result && 
             <div>
-                <h2 style={{paddingLeft: '40px'}}>{result.NAME}</h2>
+                {showConfirmationMessage && <AccommodationBooking header='Book accommodation -' accommodation={result} setShowConfirmationMessage={setShowConfirmationMessage}/>}
+                <div 
+                    style={{display: 'flex', 
+                            justifyContent: userInfo && userInfo.USER_TYPE!=='admin' ? 'space-between' : 'start', 
+                            padding: '0px 40px'}}
+                >
+                    <h2 style={{margin: '0px'}}>{result.NAME}</h2>
+                    {userInfo && userInfo.USER_TYPE!=='admin' && <button className="custom-btn" onClick={bookAccommodation}>Book Now!</button>}
+                </div>
                 
                 <div style={{marginLeft: '0px',padding: '40px', display: 'flex', justifyContent:'space-between'}}>
                 <ImageSlider images={images}/>
                     <div className="information-container" style={{width: '500px'}}>
                         <h3>Location: {result.LOCATION_NAME}, {result.DISTRICT_NAME}</h3><br/>
                         <h3>Address: {result.ADDRESS}</h3><br/>
-                        <h3>Room Price: ৳ {result.ROOM_PRICE}</h3><br/>
+                        <h3>Room Price Per Night: ৳ {result.ROOM_PRICE.toLocaleString('en-US')}</h3><br/>
                         <h3>Rating: <Rating rating={result.RATING} state={0} setRating={null}/></h3><br/>
                     </div>
                 </div>

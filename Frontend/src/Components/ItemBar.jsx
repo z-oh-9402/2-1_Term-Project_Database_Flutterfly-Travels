@@ -2,10 +2,14 @@ import PropTypes from 'prop-types'
 import Rating from './Rating';
 import "../Styles/card.css"
 import { useNavigate } from 'react-router-dom';
+import { useContext } from 'react';
+import UserInfoContext from '../Context/UserInfoContext';
 
 const ItemBar = (props) => {
+    const {userInfo} = useContext(UserInfoContext);
     const {item, index, itemType} = props;
     const navigate = useNavigate();
+
     const departureTime = itemType==='flight' ? 
         new Date(item.DEPARTURE_TIME).toLocaleTimeString('en-US', {
             hour: '2-digit',
@@ -21,11 +25,17 @@ const ItemBar = (props) => {
         }) : null;
 
     const showPopup = () => {
-        document.getElementById(`${props.index}`).style.display = 'flex';
+        if(itemType!=='flight' || userInfo===null || userInfo.USER_TYPE!=='admin')
+        {
+            document.getElementById(`${props.index}`).style.display = 'flex';
+        }
     }
 
     const hidePopup = () => {
-        document.getElementById(`${props.index}`).style.display = 'none';
+        if(itemType!=='flight' || userInfo===null || userInfo.USER_TYPE!=='admin')
+        {
+            document.getElementById(`${props.index}`).style.display = 'none';
+        }
     }
 
     const bookFlight = () => {
