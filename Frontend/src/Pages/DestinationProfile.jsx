@@ -94,7 +94,7 @@ const DestinationProfile = () => {
                             justifyContent: userInfo && userInfo.USER_TYPE!=='admin' ? 'space-between' : 'start', 
                             padding: '0px 40px'}}
                 >
-                    <h2 style={{margin: '0px'}}>{result.NAME}</h2>
+                    <h2 style={{margin: '0px', color:"white"}}>{result.NAME}</h2>
                     {userInfo && userInfo.USER_TYPE!=='admin' && <button className="custom-btn" onClick={bookAccommodation}>Book Now!</button>}
                 </div>
                 
@@ -109,7 +109,7 @@ const DestinationProfile = () => {
                     </div>
                 </div>
 
-                <div style={{padding:'40px', display: "flex", justifyContent: 'space-between'}}>
+                <div style={{padding:'40px', display: "flex", justifyContent: 'space-between',color:"white"}}>
                     <iframe src={result.MAP} width="400" height="300" allowFullScreen="" loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
                     <ReviewsAndRatings personalRating={personalRating} personalReview={personalReview} reviews={allReviewRatings} handleSubmit={handleSubmit}/>
                 </div>

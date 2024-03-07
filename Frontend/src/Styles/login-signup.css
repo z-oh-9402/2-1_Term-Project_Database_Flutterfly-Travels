@@ -39,6 +39,11 @@
     border-color: #46cdd7;
     animation: slideToCenter 0.5s ease;
     z-index: 4;
+    background-color: rgba(178, 203, 215, 0.868);
+    background-image: radial-gradient(ellipse at center, rgba(15, 173, 173, 0.1) 0%,rgba(21, 95, 173, 0.9) 100%); /* Add radial gradient for texture */
+    background-size: cover; /* Ensure background covers entire viewport */
+    background-attachment: fixed; /* Fix background position */
+    background-blend-mode: overlay; 
 }
 
 .slide-away {
@@ -48,7 +53,8 @@
 .close{
     position: absolute;
     color:white;
-    background-color: black;
+    background-color: rgb(240, 9, 9);
+    border: oldlace;
     top: -10px;
     right: -10px;
     border-radius: 30px;

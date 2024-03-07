@@ -233,7 +233,7 @@ const SignUp = (props) => {
                                 : <br/>}
                             <div><PasswordInput Label="Confirm Password: " password={rePassword} setPassword={setRePassword} /><span style={{ color: "red" }}> *</span></div>
                         </div>
-                        <button className="custom-btn" onClick={() => { handleForm(2) }}>Next</button>
+                        <button className="custom-btn" style={{color: "black"}} onClick={() => { handleForm(2) }}>Next</button>
                         <br /><br />
                     </> :
                     (page === 2 ?
@@ -251,9 +251,9 @@ const SignUp = (props) => {
                             {userType === "customer" && !isValidPassport && !isPassportStarting ? <h5 style={{ color: "red" }}>passport number must contain 12 characters</h5>
                                 : <><br /><br /></>}
 
-                            <div><button className="custom-btn" onClick={() => { togglePage(1) }}>Prev</button>
+                            <div><button className="custom-btn" style={{color: "black"}} onClick={() => { togglePage(1) }}>Prev</button>
 
-                            {userType === "customer" ? <button className="custom-btn" onClick={() => { handleForm(3) }}>Next</button> :
+                            {userType === "customer" ? <button className="custom-btn" style={{color: "black"}} onClick={() => { handleForm(3) }}>Next</button> :
                                 <><button className="custom-btn" onClick={handleDataSubmit}>Sign Up</button><br /><br /></>}
                             </div><br /><br />
                         </> :

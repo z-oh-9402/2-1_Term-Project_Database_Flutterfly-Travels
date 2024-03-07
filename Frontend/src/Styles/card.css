@@ -5,13 +5,20 @@
 }
 
 .card{
+    background-color: #000; /* Set solid black background color */
+    background-image: radial-gradient(ellipse at center, rgba(255,255,255,0.1) 0%,rgba(0,0,0,0.9) 100%); /* Add radial gradient for texture */
+    background-size: cover; /* Ensure background covers entire viewport */
+    background-attachment: fixed; /* Fix background position */
+    background-blend-mode: overlay; /* Blend mode for gradient */
+    margin: 0; /* Reset default margin */
+    height: 100vh; 
     min-width: 21%;
     max-width: 21%;
     margin-right: 12px;
     margin-top: 12px;
     padding: 8px;
     height: 250px;
-    background-color: #9edaf1;
+    background-color: transparent;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     border-radius: 8px;
     border: 1px solid #bde8f5;
@@ -23,7 +30,7 @@
 }
 
 .card:hover {
-    transform: scale(1.05);
+    transform: scale(1.025);
 }
 
 .card .cover-img {
@@ -39,7 +46,7 @@
 }
 
 .card p {
-    color: #4f4f4f;
+    color: #d2c4c4;
 }
 
 .popup {
@@ -47,15 +54,21 @@
     top: 100%;
     left: 90%;
     transform: translate(-50%, -50%);
-    background-color: #fffffff5;
+    background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.7)); 
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     border-radius: 8px;
     padding: 20px;
     display: none;
     flex-direction: column;
     width: 100%
-}
+} 
 
 .popup p {
     margin: 0;
+}
+.description {
+   /* Gradient from 90% black to 70% black */
+    color: #ffffff; /* Set the text color to white */
+
+    text-align: center;
 }

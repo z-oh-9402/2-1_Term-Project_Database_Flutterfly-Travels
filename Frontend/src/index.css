@@ -15,7 +15,13 @@
         transform: translateX(-100%);
     }
 }
-
+body{
+    background-color:rgb(37, 36, 36);
+    background-image: radial-gradient(ellipse at center, rgba(255,255,255,0.1) 0%,rgba(0,0,0,0.9) 100%); /* Add radial gradient for texture */
+    background-size: cover; /* Ensure background covers entire viewport */
+    background-attachment: fixed; /* Fix background position */
+    background-blend-mode: overlay; 
+}
 body, p {
     margin: 0;
     padding: 0;
@@ -28,6 +34,7 @@ body, p {
     justify-content: center;
     align-items: center;
     flex-direction: column;
+    color: #30c5d2;
 }
 
 .main-section{
@@ -41,6 +48,7 @@ button {
 
 .profile-page{
     display: flex;
+    background-color: rgb(37, 36, 36);
 }
 
 .radio-group {
@@ -54,8 +62,15 @@ button {
 }
 
 .profile-container{
+    
     padding: 0px 20px 0px 40px;
     width: 320px;
+    color:white;
+    background-color: rgb(37, 36, 36);
+    background-image: radial-gradient(ellipse at center, rgba(255,255,255,0.1) 0%,rgba(0,0,0,0.9) 100%); /* Add radial gradient for texture */
+    background-size: cover; /* Ensure background covers entire viewport */
+    background-attachment: fixed; /* Fix background position */
+    background-blend-mode: overlay; /* Blend mode for gradient */    
 }
 
 .destination-search{
@@ -63,19 +78,30 @@ button {
     min-width: 100%;
     padding: 40px;
     box-sizing: border-box;
+    color: white;
 }
 
-.recommendation-container{
-    margin-bottom: 50px;
+.recommendation-container{ 
+    
+    background-color: rgb(37, 36, 36);
+    background-image: radial-gradient(ellipse at center, rgba(255,255,255,0.1) 0%,rgba(0,0,0,0.9) 100%); /* Add radial gradient for texture */
+    background-size: cover; /* Ensure background covers entire viewport */
+    background-attachment: fixed; /* Fix background position */
+    background-blend-mode: overlay; 
+    
     width: 70%;
-    display: flex;
-    flex-direction: column;
+    /* display: flex;
+    flex-direction: column; */
+    color:white;
+    
 }
 
 .destination-info-container{
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    margin-top: auto; /* Pushes the container to the bottom */
+    padding-bottom: 50px; /
 }
 
 .filter{
@@ -104,7 +130,7 @@ button {
     appearance: none;
     width: 80%;
     height: 10px;
-    background: #eeecec;
+    background: #806c6c;
     outline: none;
     opacity: 0.7;
     transition: opacity .2s;
@@ -125,7 +151,7 @@ input{
     border-radius: 8px;
     width: 30px;
     height: 17px;
-    background: #30c5d2;
+    background:  #25afe6;
 }
 
 iframe{
@@ -139,11 +165,13 @@ input[type="radio"]{
 
 .information-container{
     display: inline-block;
+    color:white;
 }
 
 .information-container h3{
     display: inline-block;
     margin-top: 5px;
+    color:white;
 }
 
 .review-section{
@@ -153,12 +181,12 @@ input[type="radio"]{
 }
 
 .see-all-link{
-    color: gray;
+    color: #25afe6;
     cursor: pointer;
 }
 
 .see-all-link:hover{
-    color: rgb(65, 65, 65);
+    color: #46cdd7;
     text-decoration: underline;
 }
 

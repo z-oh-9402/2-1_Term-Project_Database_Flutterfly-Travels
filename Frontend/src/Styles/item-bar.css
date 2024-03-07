@@ -12,6 +12,12 @@
     margin-top: 12px;
     height: 150px;
     background-color: #9edaf1;
+    background-color: #00000052; /* Set solid black background color */
+    background-image: radial-gradient(ellipse at center, rgba(255,255,255,0.1) 0%,rgba(0,0,0,0.9) 100%); /* Add radial gradient for texture */
+    background-size: cover; /* Ensure background covers entire viewport */
+    background-attachment: fixed; /* Fix background position */
+    background-blend-mode: overlay; /* Blend mode for gradient */
+    margin: 0; 
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     border-radius: 8px;
     border: 1px solid #bde8f5;
@@ -19,6 +25,7 @@
     display: flex;
     align-items: center;
     cursor: pointer;
+    margin-bottom: 20px;
 }
 
 .bar:hover {
@@ -33,7 +40,7 @@
 }
 
 .main-info-container .cover-img {
-    width: 35%;
+    width: 250px;
     height: 100%;
     border-radius: 6px;
     object-fit: cover;
@@ -47,7 +54,7 @@
 }
 
 .bar p {
-    color: #4f4f4f;
+    color: #d2c4c4;
     font-size: 18px;
 }
 

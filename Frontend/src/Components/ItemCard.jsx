@@ -28,7 +28,7 @@ const ItemCard = (props) => {
       <Rating rating={item.RATING} state={0} setRating={null}/>
 
       <div className="popup" id={index}>
-          <p className="description"><span style={{fontWeight:"bold",color:"black"}}>Description: </span><br/>{item.DESCRIPTION}</p>
+          <p className="description"><span style={{fontWeight:"bold",color:"white"}}>Description: </span><br/>{item.DESCRIPTION}</p>
           <p></p>
       </div>
     </div>

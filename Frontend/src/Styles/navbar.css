@@ -1,6 +1,11 @@
 .main-navbar {
     box-sizing: border-box;
-    background-color: rgb(216, 249, 251);
+    background-color:rgb(37, 36, 36);
+    background-image: radial-gradient(ellipse at center, rgba(255,255,255,0.1) 0%,rgba(0,0,0,0.9) 100%); /* Add radial gradient for texture */
+    background-size: cover; /* Ensure background covers entire viewport */
+    background-attachment: fixed; /* Fix background position */
+    background-blend-mode: overlay; 
+    
     padding: 16px 32px;
     display: flex;
     justify-content: space-between;
@@ -9,10 +14,12 @@
 .main-navbar .basicInfo{
     margin-right: 16px;
     text-decoration: none;
+    color: white;
 }
 
 .main-navbar .basicInfo:hover{
     text-decoration: underline;
+    color:rgba(220, 220, 220, 0.773);
 }
 
 .main-navbar a{
@@ -25,11 +32,14 @@
 
 .username{
     margin: 0px;
+    color:#d2c4c4;
 }
-
+.username a{
+    color:#d2c4c4;
+}
 .username a:hover{
     cursor: pointer;
-    color: blue
+    color:  #d2c4c4ca;
 }
 
 .bottom-styles{
@@ -40,6 +50,7 @@
 .notification-icon{
     margin-right: 20px;
     font-size: 30px;
+    color:white;
 }
 
 .wishlist {

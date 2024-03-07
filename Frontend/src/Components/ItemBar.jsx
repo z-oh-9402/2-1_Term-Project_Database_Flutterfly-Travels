@@ -85,12 +85,12 @@ const ItemBar = (props) => {
             </div>
 
             {itemType==='destination' && <div className="popup" id={index}>
-                <p className="description"><span style={{fontWeight:"bold",color:"black"}}>Description: </span><br/>{item.DESCRIPTION}</p>
+                <p className="description"><span style={{fontWeight:"bold",color:"white"}}>Description: </span><br/>{item.DESCRIPTION}</p>
                 <p></p>
             </div>}
 
             {(itemType==='accommodation' || itemType==='restaurant') && <div className="popup" id={index}>
-                <p className="description"><span style={{fontWeight:"bold",color:"black"}}>Address: </span><br/>{item.ADDRESS}</p>
+                <p className="description"><span style={{fontWeight:"bold",color:"white"}}>Address: </span><br/>{item.ADDRESS}</p>
                 <p></p>
             </div>}
 
