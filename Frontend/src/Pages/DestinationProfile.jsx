@@ -92,13 +92,13 @@ const DestinationProfile = () => {
                 <div 
                     style={{display: 'flex', 
                             justifyContent: userInfo && userInfo.USER_TYPE!=='admin' ? 'space-between' : 'start', 
-                            padding: '0px 40px'}}
+                            padding: '0px 40px',fontFamily: 'Brush Script, cursive'}}
                 >
                     <h2 style={{margin: '0px', color:"white"}}>{result.NAME}</h2>
                     {userInfo && userInfo.USER_TYPE!=='admin' && <button className="custom-btn" onClick={bookAccommodation}>Book Now!</button>}
                 </div>
                 
-                <div style={{marginLeft: '0px',padding: '40px', display: 'flex', justifyContent:'space-between'}}>
+                <div style={{marginLeft: '0px',padding: '40px', display: 'flex', justifyContent:'space-between', fontFamily: 'Brush Script, cursive'}}>
                 <ImageSlider images={images}/>
                     <div className="information-container" style={{width: '500px'}}>
                         <h3>Location: {result.LOCATION_NAME}, {result.DISTRICT_NAME}</h3><br/>
