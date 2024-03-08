@@ -54,7 +54,7 @@ router.get('/for-customer', async (req, res) => {
 router.get('/for-agent', async (req, res) => {
     const id = req.query.agentId;
     const query = `SELECT T.*, U.*, C.PASSPORT_NUMBER
-                   FROM Trip T LEFT JOIN USERS U ON U.USER_ID=T.CUSTOMER_ID JOIN CUSTOMER C ON C.CUSTOMER_ID_ID=U.USER_ID
+                   FROM Trip T LEFT JOIN USERS U ON U.USER_ID=T.CUSTOMER_ID JOIN CUSTOMER C ON C.CUSTOMER_ID=U.USER_ID
                    WHERE T.AGENT_ID = ${id}`;
     const params = [];
     const result = await database.query(query,params);

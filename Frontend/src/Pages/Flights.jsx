@@ -214,7 +214,7 @@ const Flights = () => {
                         <div className='all-times-container'>
                             {times.map((time,index)=>
                                 <div key={index} style={{display: "flex", flexDirection: "column", justifyContent: "space-between"}}>
-                                    <div className='time-container' onClick={()=>selectDepartureTime(index)} style={{backgroundColor: departureTime===index ? 'rgb(143, 222, 249)' : 'rgb(236, 236, 236)'}}>
+                                    <div className='time-container' onClick={()=>selectDepartureTime(index)} style={{backgroundColor: departureTime===index ? 'gray' : 'black'}}>
                                         {time.icon}
                                     </div>
                                     <label className='time-label'>{time.label}</label>
@@ -226,7 +226,7 @@ const Flights = () => {
                         <div className='all-times-container'>
                             {times.map((time,index)=>
                                 <div key={index} style={{display: "flex", flexDirection: "column", justifyContent: "space-between"}}>
-                                    <div className='time-container' onClick={()=>selectArrivalTime(index)} style={{backgroundColor: arrivalTime===index ? 'rgb(143, 222, 249)' : 'rgb(236, 236, 236)'}}>
+                                    <div className='time-container' onClick={()=>selectArrivalTime(index)} style={{backgroundColor: arrivalTime===index ? 'gray' : 'black'}}>
                                         {time.icon}
                                     </div>
                                     <label className='time-label'>{time.label}</label>

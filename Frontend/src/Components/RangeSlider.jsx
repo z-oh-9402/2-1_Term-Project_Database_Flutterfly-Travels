@@ -89,7 +89,7 @@ const RangeSlider = (props) => {
                     min={minValue}
                     max={maxValue}
                 />
-                <label>Min: ৳<input 
+                <label>Min: ৳ <input 
                                 className='range-input' 
                                 id='min-input' 
                                 type="text" 
@@ -98,7 +98,7 @@ const RangeSlider = (props) => {
                                 onKeyDown={(e)=>handleEnterPress(e,0)} 
                                 onBlur={() => handleBlur(0)}/>
                 </label><br/>
-                <label>Max: ৳<input 
+                <label>Max: ৳ <input 
                                 className='range-input' 
                                 id='max-input' 
                                 type="text" 
