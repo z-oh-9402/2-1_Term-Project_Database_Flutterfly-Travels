@@ -96,6 +96,8 @@ input:focus {
     border-radius: 8px;
     overflow: auto;
     max-height: 325px;
+    color:black;
+    background-color: rgba(71, 62, 49, 0.527);
 }
 
 ::-webkit-scrollbar {
@@ -117,7 +119,11 @@ input:focus {
 .suggested-items{
     display: flex;
     align-items: center;
-    background-color: rgb(242, 233, 233);
+    background-color: rgba(178, 203, 215, 0.868);
+    background-image: radial-gradient(ellipse at center, rgba(15, 173, 173, 0.1) 0%,rgba(21, 95, 173, 0.9) 100%); /* Add radial gradient for texture */
+    background-size: cover; /* Ensure background covers entire viewport */
+    background-attachment: fixed; /* Fix background position */
+    background-blend-mode: overlay; 
     padding: 10px 0px 10px 10px;
     height: 45px;
 }

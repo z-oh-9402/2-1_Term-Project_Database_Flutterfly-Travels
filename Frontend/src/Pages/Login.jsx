@@ -115,7 +115,7 @@ const Login = (props) => {
                     <label>Username: <input value={username} placeholder='Enter username' onChange={handleUsernameChange} /></label><br />
                     <PasswordInput Label="Password: " password={password} setPassword={setPassword} /><br />
                 </div>
-                <button className="custom-btn" onClick={handleDataSubmit}>Login</button><br /><br />
+                <button className="custom-btn" style={{color: "black"}} onClick={handleDataSubmit}>Login</button><br /><br />
                 <p style={{ textAlign: "center" }}>Don{"'"}t have an account? <span className='go-to' onClick={handleChangeToSignUp} style={{ color: "red" }}>Sign up now!</span></p>
             </div>
         </div>

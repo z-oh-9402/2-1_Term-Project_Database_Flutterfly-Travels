@@ -111,9 +111,11 @@ const Flights = () => {
 
     const compareWithSystemTime = (time) => {
         const currentTime = new Date();
+        // console.log(currentTime, time);
 
         const currentHour = currentTime.getHours();
         const currentMinute = currentTime.getMinutes();
+
         const targetHour = time.getHours();
         const targetMinute = time.getMinutes();
 
@@ -139,10 +141,15 @@ const Flights = () => {
             }
         }
 
-        if(isChecked && departureTime!==-1)
+        if(isChecked)
         {
-            let time = new Date(flight.DEPARTURE_TIME)
-            isChecked = compareWithSystemTime(time) && time>=times[departureTime].start && time<=times[departureTime].end;
+            let time = new Date(flight.DEPARTURE_TIME);
+            isChecked = compareWithSystemTime(time);
+
+            if(departureTime!==-1)
+            {
+                isChecked = isChecked && time>=times[departureTime].start && time<=times[departureTime].end;
+            }
         }
 
         if(isChecked && arrivalTime!==-1)
@@ -177,6 +184,7 @@ const Flights = () => {
                 departureAirport,
                 arrivalAirport,
                 seatClass,
+                flightStyle
             };
 
             let response = await fetch(`http://localhost:3000/flight/filtered-flights`, {
@@ -194,6 +202,7 @@ const Flights = () => {
                 ARRIVAL_AIRPORT: arrivalAirport,
                 SEAT_CLASS: seatClass
             }));
+
             setFilteredFlights(result);
         }
     }
@@ -214,7 +223,7 @@ const Flights = () => {
                         <div className='all-times-container'>
                             {times.map((time,index)=>
                                 <div key={index} style={{display: "flex", flexDirection: "column", justifyContent: "space-between"}}>
-                                    <div className='time-container' onClick={()=>selectDepartureTime(index)} style={{backgroundColor: departureTime===index ? 'rgb(143, 222, 249)' : 'rgb(236, 236, 236)'}}>
+                                    <div className='time-container' onClick={()=>selectDepartureTime(index)} style={{backgroundColor: departureTime===index ? 'gray' : 'black'}}>
                                         {time.icon}
                                     </div>
                                     <label className='time-label'>{time.label}</label>
@@ -226,7 +235,7 @@ const Flights = () => {
                         <div className='all-times-container'>
                             {times.map((time,index)=>
                                 <div key={index} style={{display: "flex", flexDirection: "column", justifyContent: "space-between"}}>
-                                    <div className='time-container' onClick={()=>selectArrivalTime(index)} style={{backgroundColor: arrivalTime===index ? 'rgb(143, 222, 249)' : 'rgb(236, 236, 236)'}}>
+                                    <div className='time-container' onClick={()=>selectArrivalTime(index)} style={{backgroundColor: arrivalTime===index ? 'gray' : 'black'}}>
                                         {time.icon}
                                     </div>
                                     <label className='time-label'>{time.label}</label>

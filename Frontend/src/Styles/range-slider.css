@@ -1,33 +1,35 @@
 .rc-slider{
     padding-bottom: 35px;
 }
-
 .rc-slider-track {
-    background-color: rgb(91, 206, 244);
+    background-color: #25afe6;/* Dark gray */
 }
-
+/* #1a1a1a #666 */
 .rc-slider-handle {
-    background-color: rgb(91, 206, 244);
+    background-color: #666; /* Medium gray */
     opacity: 1;
-    border: none;
+    border: 2px solid #fff; /* White border */
     z-index: 0;
 }
 
 .rc-slider-dot {
-    background-color: blue;
+    background-color: #666; /* Medium gray */
     border: none;
 }
   
 .rc-slider-dot-active {
-    border: solid 1.5px blue;
-    background-color: white;
+    border: solid 1.5px #fff; /* White border */
+    background-color: #1a1a1a; /* Dark gray */
 }
+
 
 .range-input{
     border: none;
     box-shadow: none;
-    width: 70px;
-    padding: 0px 0px 0px 2px;
+    width: 45px;
+    padding: 2px 0px 0px 2px;
+    background-color: #333; /* Dark shade background color */
+    color: white;
 }
 
 .range-input:focus {

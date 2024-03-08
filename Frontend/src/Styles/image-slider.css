@@ -22,3 +22,26 @@
 .pic-slide-away {
     animation: picSlideAway 0.9s ease;
 }
+/* Customize the appearance of the arrow buttons */
+.slick-prev,
+.slick-next {
+    font-size: 24px; /* Adjust the font size */
+    color: #000; /* Change the color */
+    background-color: transparent; /* Set background color */
+    border: none; /* Remove border */
+}
+
+/* Style the arrow buttons on hover */
+.slick-prev:hover,
+.slick-next:hover {
+    color: #ff0000; /* Change color on hover */
+}
+.text-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 24px;
+    text-align: center;
+}
