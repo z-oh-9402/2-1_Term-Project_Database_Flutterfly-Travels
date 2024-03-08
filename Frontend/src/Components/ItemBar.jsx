@@ -79,7 +79,7 @@ const ItemBar = (props) => {
             
             <div className='item-rating-container'>
                 {itemType!=='flight' ?
-                <label>Rating: <Rating  rating={item.RATING} state={0} setRating={null}/></label>
+                <label>Rating: <Rating rating={item.RATING} state={0} setRating={null}/></label>
                 :
                 <label>{item.SEAT_CLASS} Class: ${item.ECONOMY_SEAT_PRICE}</label>}
             </div>

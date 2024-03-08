@@ -8,7 +8,7 @@ import { ImCross } from "react-icons/im";
 import UserInfoContext from '../Context/UserInfoContext';
 
 const Login = (props) => {
-    const { setInfo } = useContext(UserInfoContext);
+    const { setInfo, setShowDetailedNotification } = useContext(UserInfoContext);
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
 
@@ -79,7 +79,9 @@ const Login = (props) => {
                             result.data.TRIPS = result2;
                         }
                     }
-
+                    
+                    props.setNotifications([]);
+                    setShowDetailedNotification(true);
                     setInfo(result.data);
                     props.setUserInfo(false);
                 }
@@ -124,7 +126,8 @@ const Login = (props) => {
 Login.propTypes = {
     setUserInfo: PropTypes.func,
     goToSignUp: PropTypes.func,
-    goToHome: PropTypes.func
+    goToHome: PropTypes.func,
+    setNotifications: PropTypes.func
 }
 
 export default Login;

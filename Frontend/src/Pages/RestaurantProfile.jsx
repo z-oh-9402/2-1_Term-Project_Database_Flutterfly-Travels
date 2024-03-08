@@ -4,6 +4,7 @@ import ReviewsAndRatings from "../Components/ReviewsAndRatings";
 import Rating from "../Components/Rating";
 import ImageSlider from "../Components/ImageSlider";
 import { useParams } from "react-router-dom";
+import RestaurantBooking from "../Components/RestaurantBooking";
 
 const RestaurantProfile = () => {
     const {userInfo} = useContext(UserInfoContext);
@@ -15,6 +16,7 @@ const RestaurantProfile = () => {
     const [rating, setRating] = useState(0);
     const personalRating = {rating, setRating};
     const [allReviewRatings,setAllReviewRatings] = useState([]);
+    const [showConfirmationMessage, setShowConfirmationMessage] = useState(false);
     
     useEffect(()=>{
         const fetchData = async () => {
@@ -71,32 +73,18 @@ const RestaurantProfile = () => {
         }
     };
 
-    const bookAccommodation = async () => {
-        if(userInfo!==null && userInfo.USER_TYPE==='customer')
-        {
-            await fetch(`http://localhost:3000/restaurant/book-restaurant/${result.RESTAURANT_ID}/${userInfo.USER_ID}`, {
-                method: "POST",
-            });
-
-            alert("Restaurant booked successfully!");
-        }
-        else
-        {
-            alert("Please login as a customer to book a restaurant!");
-        }
-    };
-
     return (
         <>
             {result && 
             <div>
+                 {showConfirmationMessage && <RestaurantBooking header='Book destination -' destination={result} setShowConfirmationMessage={setShowConfirmationMessage}/>}
                 <div 
                     style={{display: 'flex', 
                             justifyContent: userInfo && userInfo.USER_TYPE!=='admin' ? 'space-between' : 'start', 
                             padding: '0px 40px'}}
                 >
                     <h2 style={{margin: '0px'}}>{result.NAME}</h2>
-                    {userInfo && userInfo.USER_TYPE!=='admin' && <button className="custom-btn" onClick={bookAccommodation}>Book Now!</button>}
+                    {userInfo && userInfo.USER_TYPE!=='admin' && <button className="custom-btn" onClick={()=>setShowConfirmationMessage(true)}>Book Now!</button>}
                 </div>
                 
                 <div style={{marginLeft: '0px',padding: '40px', display: 'flex', justifyContent:'space-between'}}>

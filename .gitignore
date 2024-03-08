@@ -5,7 +5,6 @@ package.json
 
 Backend/.env
 Backend/node_modules
-Backend/package.json
 Backend/package-lock.json
 
 
@@ -36,7 +35,6 @@ Frontend/*.sln
 Frontend/*.sw?
 
 Frontend/.eslintrc.cjs
-Frontend/package.json
 Frontend/package-lock.json
 Frontend/vite.config.js
 Frontend/README.md

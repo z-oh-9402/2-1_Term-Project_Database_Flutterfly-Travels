@@ -200,9 +200,11 @@ router.get("/review-rating/:restaurantId",async(req,res)=>{
 
 router.post("/review-rating/:id",async(req,res)=>{
     const id = req.params.id;
-    const review = req.body.review;
+    const reviews = req.body.review;
     const rating = req.body.rating;
     const customerId = req.body.customerId;
+
+    const review = reviews.replace(`'`,`''`);
 
     const params = [];
     if(rating!==0)

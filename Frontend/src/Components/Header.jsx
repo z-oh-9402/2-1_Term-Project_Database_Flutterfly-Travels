@@ -9,7 +9,7 @@ import { IoMdNotifications } from "react-icons/io";
  
 const Header = (props)=>{
     const {handleIsInLoginOrSignUpFromNavbar, setShowTrips} = props;
-    const {userInfo} = useContext(UserInfoContext);
+    const {userInfo, showDetailedNotification, setShowDetailedNotification} = useContext(UserInfoContext);
     const navigate = useNavigate();
     const [isBottomStyles, setIsBottomStyles] = useState(false);
     const [placeholderHeight, setPlaceholderHeight] = useState(0);
@@ -39,16 +39,15 @@ const Header = (props)=>{
             <nav className={`main-navbar ${isBottomStyles && 'bottom-styles'}`} id='main-nav'>
                 <div className="main-section"><Link to='/' className="basicInfo">Home</Link> <Link to='/about' className="basicInfo">About</Link></div>
                 <div className="button-container">
-                    {(userInfo!==null && userInfo.USER_TYPE === 'customer') && <button className="btn-primary" onClick={()=>setShowTrips(true)}>My Trips</button>}
+                    {(userInfo!==null && userInfo.USER_TYPE !== 'admin') && <button className="btn-primary" onClick={()=>setShowTrips(true)}>My Trips</button>}
                     <button className="btn-primary" onClick={()=>{navigate('/destinations')}}>Destinations</button>
                     <button className="btn-primary" onClick={()=>{navigate('/accommodations');}}>Accommodations</button>
                     <button className="btn-primary" onClick={()=>{navigate('/restaurants');}}>Restaurants</button>
                     <button className="btn-primary" onClick={()=>{navigate('/flights');}}>Flights</button>
-                    <button className="btn-primary" onClick={()=>{navigate('/transports');}}>Transports</button>
                 </div>
                 {userInfo!==null ? 
                     <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
-                        <IoMdNotifications className="notification-icon"/>
+                        <IoMdNotifications className="notification-icon" onClick={()=>setShowDetailedNotification(!showDetailedNotification)}/>
                         <img src="/wishlist.png" className="wishlist"/>
                         <h4 className="username">Hello <Link to='user'>{userInfo.USERNAME}</Link></h4>
                     </div> 

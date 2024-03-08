@@ -1,4 +1,5 @@
 const router = require("express-promise-router")();
+const { query } = require("express");
 const database = require('../database');
 
 router.post("/add-accommodation-booking", async (req, res) => {
@@ -24,6 +25,42 @@ router.post("/add-accommodation-booking", async (req, res) => {
 
     await database.query(query,[]);
     await database.query("COMMIT",[]);
+
+    res.status(200).json({status: "ok"});
+});
+
+router.post("/add-destination-booking", async (req, res) => {
+    const { itemId, tripId, checkInDate, checkOutDate, bookingType } = req.body;
+
+    const query = `INSERT INTO TRIP_DESTINATION (TRIP_ID, DESTINATION_ID, DEPARTURE_DATE, RETURN_DATE)
+                VALUES (${tripId}, ${itemId}, TO_TIMESTAMP('${checkInDate}', 'MM/DD/YYYY, HH24:MI:SS'), TO_TIMESTAMP('${checkOutDate}', 'MM/DD/YYYY, HH24:MI:SS'))`;
+    const params = [];
+    
+    const ans = await database.query(query,params);
+    await database.query("COMMIT",params);
+
+    res.status(200).json({status: "ok"});
+});
+
+router.delete("/delete-booking", async (req, res) => {
+    const { bookingId } = req.query;
+
+    let query = `SELECT COST, TRIP_ID FROM BOOKING WHERE BOOKING_ID = ${bookingId}`;
+    const params = []
+    const ans = await database.query(query,params);
+
+    const cost = ans[0].COST;
+    const tripId = ans[0].TRIP_ID;
+
+    query = `DELETE FROM BOOKING WHERE BOOKING_ID = ${bookingId}`;
+    await database.query(query,params);
+
+    query = `UPDATE TRIP
+             SET TOTAL_COST = TOTAL_COST - ${cost}
+             WHERE TRIP_ID = ${tripId}`;
+    await database.query(query,params);
+
+    await database.query("COMMIT",params);
 
     res.status(200).json({status: "ok"});
 });

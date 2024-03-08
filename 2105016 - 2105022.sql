@@ -296,46 +296,7 @@ Table creation commands:
 		FOREIGN KEY (accommodation_id) REFERENCES Accommodation(accommodation_id) ON DELETE CASCADE
 	);
 
---13. Transport
-	CREATE TABLE Transport (
-		transport_id NUMBER PRIMARY KEY,
-		name VARCHAR2(200),
-		rating NUMBER CHECK(rating<=5),
-		ticket_price NUMBER,
-		departure_location_id NUMBER,
-		arrival_location_id NUMBER,
-		departure_time INTERVAL DAY TO SECOND,
-		transport_type VARCHAR2(100),
-		FOREIGN KEY (departure_location_id) REFERENCES Location(location_id) ON DELETE CASCADE,
-		FOREIGN KEY (arrival_location_id) REFERENCES Location(location_id) ON DELETE CASCADE
-	);
-
-	CREATE SEQUENCE transport_id_sequence
-		START WITH 1
-		INCREMENT BY 1
-		NOMAXVALUE;
-
-
-	CREATE OR REPLACE TRIGGER transport_id_trigger
-    BEFORE INSERT ON Transport
-    FOR EACH ROW
-	BEGIN
-		SELECT transport_id_sequence.NEXTVAL
-		INTO :NEW.TRANSPORT_ID
-		FROM DUAL;
-	END;
-	/
-
---14. Transport_Booking
-	CREATE TABLE Transport_Booking (
-		transport_booking_id NUMBER PRIMARY KEY,
-		transport_id NUMBER,
-		number_of_seats NUMBER,
-		FOREIGN KEY (transport_booking_id) REFERENCES Booking(booking_id) ON DELETE CASCADE,
-		FOREIGN KEY (transport_id) REFERENCES Transport(transport_id) ON DELETE CASCADE
-	);
-
---15. Flight
+--13. Flight
 	CREATE TABLE Flight (
 		flight_id NUMBER PRIMARY KEY,
 		airline_name VARCHAR2(200),
@@ -366,7 +327,7 @@ Table creation commands:
 	END;
 	/
 
---16. Flight_Booking
+--14. Flight_Booking
 	CREATE TABLE Flight_Booking (
 		flight_booking_id NUMBER PRIMARY KEY,
 		flight_id NUMBER,
@@ -375,7 +336,7 @@ Table creation commands:
 		FOREIGN KEY (flight_id) REFERENCES Flight(flight_id) ON DELETE CASCADE
 	);
 
---17. Restaurant
+--15. Restaurant
 	CREATE TABLE Restaurant(
 		restaurant_id NUMBER PRIMARY KEY,
 		name VARCHAR2(150),
@@ -407,7 +368,7 @@ Table creation commands:
 	END;
 	/
 
---18. Restaurant_Booking
+--16. Restaurant_Booking
 	CREATE TABLE Restaurant_Booking (
 		restaurant_booking_id NUMBER PRIMARY KEY,
 		restaurant_id NUMBER,
@@ -418,17 +379,34 @@ Table creation commands:
 		FOREIGN KEY (restaurant_id) REFERENCES Restaurant(restaurant_id) ON DELETE CASCADE
 	);
 
---19. Payment
+--17. Payment
 	CREATE TABLE Payment (
+		payment_id NUMBER PRIMARY KEY,
 		customer_id NUMBER,
 		trip_id NUMBER,
 		payment_type VARCHAR2(100),
 		payment_status VARCHAR2(10),
+		account_id VARCHAR2(20),
 		FOREIGN KEY (customer_id) REFERENCES Customer(customer_id) ON DELETE CASCADE,
 		FOREIGN KEY (trip_id) REFERENCES Trip(trip_id) ON DELETE CASCADE
 	);
 
---20. Gifts and Coupons
+	CREATE SEQUENCE payment_id_sequence
+		START WITH 1
+		INCREMENT BY 1
+		NOMAXVALUE;
+
+	CREATE OR REPLACE TRIGGER payment_id_trigger
+	BEFORE INSERT ON Payment
+	FOR EACH ROW
+	BEGIN
+		SELECT payment_id_sequence.NEXTVAL
+		INTO :NEW.PAYMENT_ID
+		FROM DUAL;
+	END;
+	/
+
+--18. Gifts and Coupons
 	CREATE TABLE Gifts_and_Coupons (
 		coupon_id NUMBER PRIMARY KEY,
 		customer_id NUMBER,
@@ -453,7 +431,7 @@ Table creation commands:
 	END;
 	/
 
---21. Division
+--19. Division
 	CREATE TABLE Division(
 		division_id NUMBER PRIMARY KEY,
 		division_name VARCHAR2(100)
@@ -475,7 +453,7 @@ Table creation commands:
 	END;
 	/
 
---22. District
+--20. District
 	CREATE TABLE District(
 		district_id NUMBER PRIMARY KEY,
 		district_name VARCHAR2(100),
@@ -499,7 +477,7 @@ Table creation commands:
 	END;
 	/
 
---23. Location 
+--21. Location 
 	CREATE TABLE Location(
 		location_id NUMBER PRIMARY KEY,
 		location_name VARCHAR2(100),
@@ -523,7 +501,7 @@ Table creation commands:
 	END;
 	/
 
---24. Airport
+--22. Airport
 	CREATE TABLE Airport(
 		airport_id NUMBER PRIMARY KEY,
 		name VARCHAR2(100),
@@ -547,7 +525,7 @@ Table creation commands:
 	END;
 	/
 
---25. Rating
+--23. Rating
 	CREATE TABLE Rating(
 		rating_id NUMBER PRIMARY KEY,
 		customer_id NUMBER,
@@ -573,7 +551,7 @@ Table creation commands:
 	END;
 	/
 
---26. Review
+--24. Review
 	CREATE TABLE Review(
 		review_id NUMBER PRIMARY KEY,
 		customer_id NUMBER,
@@ -595,6 +573,31 @@ Table creation commands:
 	BEGIN
 		SELECT review_id_sequence.NEXTVAL
 		INTO :NEW.REVIEW_ID
+		FROM DUAL;
+	END;
+	/
+
+--25. Notification
+	CREATE TABLE Notification(
+		notification_id NUMBER PRIMARY KEY,
+		user_id NUMBER,
+		content VARCHAR2(1000),
+		created_at TIMESTAMP DEFAULT SYSDATE,
+		notification_status VARCHAR2(20),
+		FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
+	);
+
+	CREATE SEQUENCE notification_id_sequence
+		START WITH 1
+		INCREMENT BY 1
+		NOMAXVALUE;
+
+	CREATE OR REPLACE TRIGGER notification_id_trigger
+	BEFORE INSERT ON Notification
+	FOR EACH ROW
+	BEGIN
+		SELECT notification_id_sequence.NEXTVAL
+		INTO :NEW.NOTIFICATION_ID
 		FROM DUAL;
 	END;
 	/

@@ -7,7 +7,7 @@ import PropTypes from 'prop-types';
 import { useContext, useEffect, useState } from 'react';
 import { FaMinus, FaPlus, FaRegCalendarAlt } from 'react-icons/fa';
 import UserInfoContext from '../Context/UserInfoContext';
-import AgentSearch from './AgentSearch';
+import CreateTrip from './CreateTrip';
 
 const AccommodationBooking = ({ header, accommodation, setShowConfirmationMessage }) => {
     const {userInfo, setInfo} = useContext(UserInfoContext);
@@ -16,13 +16,20 @@ const AccommodationBooking = ({ header, accommodation, setShowConfirmationMessag
     const filterTrips = (trip) => {
         let found = false;
 
-        for(let a of trip.ACCOMMODATIONS)
+        if(trip.TRIP_STATUS==='UPDATING')
         {
-            if(a.ACCOMMODATION_ID === accommodation.ACCOMMODATION_ID)
+            for(let a of trip.ACCOMMODATIONS)
             {
-                found = true;
-                break;
+                if(a.ACCOMMODATION_ID === accommodation.ACCOMMODATION_ID)
+                {
+                    found = true;
+                    break;
+                }
             }
+        }
+        else
+        {
+            found = true;
         }
 
         return found;
@@ -46,12 +53,6 @@ const AccommodationBooking = ({ header, accommodation, setShowConfirmationMessag
     const [checkOutDate, setCheckOutDate] = useState(new Date(date.setDate(date.getDate()+1)));
     const [numberOfDays, setNumberOfDays] = useState(1);
     const [totalCost, setTotalCost] = useState(roomPrice);
-
-    const [tripName, setTripName] = useState('New Trip');
-    const [departureDate, setDepartureDate] = useState(new Date());
-    const [returnDate, setReturnDate] = useState(new Date());
-
-    const [agent, setAgent] = useState(undefined);
 
     useEffect(() => {
         const resizeComponent = () => {
@@ -130,7 +131,9 @@ const AccommodationBooking = ({ header, accommodation, setShowConfirmationMessag
             }
             else
             {
-                setNumberOfDays(Math.round((checkOutDate-date)/86400000));
+                const days = Math.round((checkOutDate-date)/86400000);
+                setNumberOfDays(days);
+                setTotalCost(roomPrice*numberOfRooms*days)
             }
         }
     }
@@ -146,93 +149,14 @@ const AccommodationBooking = ({ header, accommodation, setShowConfirmationMessag
         }
         else
         {
+            const days = Math.round((date-checkInDate)/86400000);
             setCheckOutDate(new Date(date));
-            setNumberOfDays(Math.round((date-checkInDate)/86400000));
+            setNumberOfDays(days);
+            setTotalCost(roomPrice*numberOfRooms*days);
         }
     }
 
-    const handleDepartureDateChange = (date) =>
-    {
-        const sysdate = new Date();
-
-        if(date<sysdate)
-        {
-            alert("Departure Date cannot be in the past");
-        }
-        else
-        {
-            setDepartureDate(date);
-            
-            if(returnDate<date)
-            {
-                setReturnDate(date);
-            }
-        }
-    }
-
-    const handleReturnDateChange = (date) =>
-    {
-        if(date<departureDate)
-        {
-            setReturnDate(departureDate);
-        }
-        else
-        {
-            setReturnDate(date);
-        }
-    }
-
-    const createTripPackage = async () => {
-        const options = {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit'
-        };
-
-        const inDate = new Intl.DateTimeFormat('en-US', options).format(departureDate);
-        const outDate = new Intl.DateTimeFormat('en-US', options).format(returnDate);
-
-        const response = await fetch(`http://localhost:3000/trip/`, {
-            method: "POST",
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                customerId: userInfo.USER_ID,
-                agentId: agent!==undefined ? agent.USER_ID : null,
-                name: tripName,
-                departureDate: inDate,
-                returnDate: outDate,
-                totalCost: 0,
-                discount: 0,
-                tripStatus: 'UPDATING',
-                rating: 0
-            }),
-        });
-
-        await response.json();
-
-        if(userInfo.USER_TYPE === 'customer')
-        {
-            const response = await fetch(`http://localhost:3000/trip/for-customer?customerId=${userInfo.USER_ID}`, {
-                method: "GET"
-            });
-
-            const result = await response.json();
-            userInfo.TRIPS = result;
-        }
-        if(userInfo.USER_TYPE === 'agent')
-        {
-            const response = await fetch(`http://localhost:3000/trip/for-agent?agentId=${userInfo.USER_ID}`, {
-                method: "GET"
-            });
-
-            const result = await response.json();
-            userInfo.TRIPS = result;
-        }
-        setInfo(userInfo);
-        setPage(5);
-    }   
+      
 
     const addBooking = async (tripId) => {
         const options = {
@@ -245,8 +169,15 @@ const AccommodationBooking = ({ header, accommodation, setShowConfirmationMessag
             hour12: false
         };
 
-        const inDate = new Intl.DateTimeFormat('en-US', options).format(checkInDate);
-        const outDate = new Intl.DateTimeFormat('en-US', options).format(checkOutDate);
+        let inDate = new Intl.DateTimeFormat('en-US', options).format(checkInDate);
+        if(inDate.includes(', 24:')) {
+            inDate = inDate.replace(', 24:', ', 00:');
+        }
+
+        let outDate = new Intl.DateTimeFormat('en-US', options).format(checkOutDate);
+        if(outDate.includes(', 24:')) {
+            outDate = outDate.replace(', 24:', ', 00:');
+        }
 
         const response = await fetch(`http://localhost:3000/booking/add-accommodation-booking`, {
             method: "POST",
@@ -288,6 +219,13 @@ const AccommodationBooking = ({ header, accommodation, setShowConfirmationMessag
             }
             setInfo(userInfo);
             setShowConfirmationMessage(false);
+        }
+    }
+
+    const setCreateTrip = (param) => {
+        if(!param)
+        {
+            setPage(5);
         }
     }
 
@@ -350,7 +288,7 @@ const AccommodationBooking = ({ header, accommodation, setShowConfirmationMessag
                         <div style={{width: '100%', display: 'flex', justifyContent: 'flex-end'}}>
                             <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
                                 <div>Staying: {numberOfDays} {numberOfDays===1 ? 'night' : 'nights'}</div>
-                                <div>Total Room Price: ৳ {(numberOfDays*numberOfRooms*roomPrice).toLocaleString('en-US')}</div>
+                                <div>Total Room Price: ৳ {totalCost.toLocaleString('en-US')}</div>
                             </div>
                         </div>
                         
@@ -408,41 +346,7 @@ const AccommodationBooking = ({ header, accommodation, setShowConfirmationMessag
 
                     {page===6 &&
                     <>
-                        <div className='message-title'>{header}</div>
-                        <div className='trip-creation-container'>
-                            <label>Trip Name: <input type='text' value={tripName} placeholder='Enter a name' onChange={(e)=>setTripName(e.target.value)}/></label><br/>
-
-                            {userInfo.USER_TYPE==='customer' && <label>Search for an agent: (Optional) <AgentSearch setProfile={setAgent}/></label>}
-
-                            <label> Departure Date:
-                                <div style={{display: 'inline-block', marginLeft: '5px'}}>
-                                    <div className='datepicker-container'>
-                                        <DatePicker
-                                            selected={departureDate}
-                                            onChange={(e)=>handleDepartureDateChange(e)}
-                                            dateFormat="dd/MM/yyyy"
-                                            placeholderText="Departure Date"
-                                        />
-                                        <FaRegCalendarAlt className='calendar-img'/>
-                                    </div>
-                                </div>
-                            </label><br/>
-
-                            <label> Return Date:
-                                <div style={{display: 'inline-block', marginLeft: '5px'}}>
-                                    <div className='datepicker-container'>
-                                        <DatePicker
-                                            selected={returnDate}
-                                            onChange={(e)=>handleReturnDateChange(e)}
-                                            dateFormat="dd/MM/yyyy"
-                                            placeholderText="Return Date"
-                                        />
-                                        <FaRegCalendarAlt className='calendar-img'/>
-                                    </div>
-                                </div>
-                            </label>
-                        </div>
-                        <button className='custom-btn' onClick={createTripPackage}>Create Trip</button>
+                        <CreateTrip setCreateTrip={setCreateTrip}/>
                     </>}
                 </div>
             </div>

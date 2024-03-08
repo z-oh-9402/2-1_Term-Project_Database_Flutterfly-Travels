@@ -5,22 +5,27 @@ import UserInfoContext from './UserInfoContext';
 const UserInfoContextProvider = ({ children }) => {
   const storedInfo = localStorage.getItem('userInfo');
   const [userInfo, setUserInfo] = useState(storedInfo===null ? null : JSON.parse(storedInfo));
+  const [showDetailedNotification, setShowDetailedNotification] = useState(storedInfo!==null);
 
-  const setInfo = (info) => {
+  const setInfo = (info, notif) => {
     setUserInfo(info);
 
     if(info)
     {
+      setShowDetailedNotification(true);
       localStorage.setItem('userInfo',JSON.stringify(info))
+      localStorage.setItem('notification',JSON.stringify(notif))
     }
     else
     {
+      setShowDetailedNotification(false);
       localStorage.removeItem('userInfo');
+      localStorage.removeItem('notification');
     }
   };
 
   return (
-    <UserInfoContext.Provider value={{userInfo, setInfo}}>
+    <UserInfoContext.Provider value={{userInfo, setInfo, showDetailedNotification, setShowDetailedNotification}}>
       {children}
     </UserInfoContext.Provider>
   );

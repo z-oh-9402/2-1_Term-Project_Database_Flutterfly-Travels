@@ -73,10 +73,6 @@ const AccommodationProfile = () => {
         }
     };
 
-    const bookAccommodation = async () => {
-        setShowConfirmationMessage(true);
-    };
-
     return (
         <>
             {result && 
@@ -88,7 +84,7 @@ const AccommodationProfile = () => {
                             padding: '0px 40px'}}
                 >
                     <h2 style={{margin: '0px'}}>{result.NAME}</h2>
-                    {userInfo && userInfo.USER_TYPE!=='admin' && <button className="custom-btn" onClick={bookAccommodation}>Book Now!</button>}
+                    {userInfo && userInfo.USER_TYPE!=='admin' && <button className="custom-btn" onClick={()=>setShowConfirmationMessage(true)}>Book Now!</button>}
                 </div>
                 
                 <div style={{marginLeft: '0px',padding: '40px', display: 'flex', justifyContent:'space-between'}}>

@@ -8,7 +8,7 @@ import { ImCross } from "react-icons/im";
 import UserInfoContext from "../Context/UserInfoContext";
 
 const SignUp = (props) => {
-    const { setInfo } = useContext(UserInfoContext);
+    const { setInfo, setShowDetailedNotification } = useContext(UserInfoContext);
     const [userType, setUserType] = useState("");
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
@@ -192,6 +192,8 @@ const SignUp = (props) => {
             alert("Your request is being processed");
         }
         
+        props.setNotifications([]);
+        setShowDetailedNotification(true);
         setInfo(result);
         props.setUserInfo(false);
     }
@@ -282,7 +284,8 @@ const SignUp = (props) => {
 SignUp.propTypes = {
     goToLogin: PropTypes.func,
     setUserInfo: PropTypes.func,
-    goToHome: PropTypes.func
+    goToHome: PropTypes.func,
+    setNotifications: PropTypes.func
 }
 
 export default SignUp;

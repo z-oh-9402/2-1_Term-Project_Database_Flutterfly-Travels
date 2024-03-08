@@ -1,7 +1,8 @@
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
+.trip-container{
+    overflow: auto;
+    width : 450px;
+    height: 500px;
+    animation: none;
 }
 
 .category-bar {
@@ -9,11 +10,12 @@ body {
     background-color: #074b8a;
     color: white;
     border-radius: 3px;
+    box-sizing: border-box;
 }
 
 .category {
     flex: 1;
-    padding: 10px;
+    padding: 7px;
     text-align: center;
     cursor: pointer;
     user-select: none;
@@ -30,7 +32,7 @@ body {
     padding: 20px;
     background-color: #f1efef;
     margin-top: 10px;
-    height: 70%;
+    min-height: 70%;
     border-radius: 6px;
 }
 
@@ -47,6 +49,85 @@ body {
     border-radius: 5px;
 }
 
-.trip-details{
-    margin-bottom: 20px;
+.customer-confirm-button{
+    margin-right: 0px;
+}
+
+.trip{
+    position: relative;
+    box-sizing: border-box;
+    border-radius: 8px;
+    background-color: #c8a7f0;
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+
+.trip-child-div{
+    padding: 8px;
+    border-radius: 4px;
+}
+
+.trip-child-div:hover{
+    background-color: #a17cc3;
+    color: white;
+}
+
+.visit-agent-profile{
+    color: #074b8a;
+    font-weight: bold;
+}
+
+.visit-agent-profile:hover{
+    text-decoration: underline;
+    cursor: pointer;
+    color: rgb(171, 87, 245);
+}
+
+.trip-reservations{
+    display: flex;
+    flex-direction: column;
+    margin-top: 10px;
+    background-color: #f1efef;
+    border-radius: 6px;
+    padding: 20px;
+}
+
+.reservation{
+    position: relative;
+    background-color: #e0cafa;
+    padding: 10px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    border-radius: 6px;
+}
+
+.delete-button{
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translate(0%, -50%);
+    font-size: 24px;
+    font-weight: bold;
+    background-color: rgb(235, 120, 120);
+    border-radius: 3px;
+    padding: 3px;
+}
+
+.delete-button:hover{
+    color: white;
+}
+
+.tick-button{
+    position: absolute;
+    right: 42px;
+    top: 50%;
+    transform: translate(0%, -50%);
+    font-size: 24px;
+    background-color: rgb(120, 235, 170);
+    border-radius: 3px;
+    padding: 3px;
+}
+
+.tick-button:hover{
+    color: white;
 }
