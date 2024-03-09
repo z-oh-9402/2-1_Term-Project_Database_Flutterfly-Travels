@@ -8,8 +8,6 @@ import UserInfoContext from '../Context/UserInfoContext';
 import Rating from '../Components/Rating';
 import { RiDeleteBin5Line } from "react-icons/ri";
 import CreateTrip from '../Components/CreateTrip';
-import { TiTick } from "react-icons/ti";
-import { RxCross2 } from "react-icons/rx";
 import AgentSearch from '../Components/AgentSearch';
 
 const Trips = (props) => {
@@ -198,47 +196,7 @@ const Trips = (props) => {
         await response.json();
         
         func();
-        setPage(1);
-    }
-
-    const agentDecision = async (index, decision) => {
-        const trip = trips[currentCategory][index];
-
-        let response;
-        if(decision)
-        {
-            response = await fetch(`http://localhost:3000/trip/update-trip`, {
-                method: 'PUT',
-                headers: {
-                'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(
-                {
-                    tripStatus: "UPDATING",
-                    tripId: trip.TRIP_ID,
-                    agentId: trip.AGENT_ID
-                })
-            });
-        }
-        else
-        {
-            response = await fetch(`http://localhost:3000/trip/update-trip`, {
-                method: 'PUT',
-                headers: {
-                'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(
-                {
-                    tripStatus: "UPDATING",
-                    tripId: trip.TRIP_ID,
-                    agentId: null
-                })
-            });
-        }
-        await response.json();
-
-        func();
-        setRefreshPage(!refreshPage);
+        setShowTrips(false);
     }
 
     const updateAgent = async () => {
@@ -285,8 +243,7 @@ const Trips = (props) => {
                                 <div className={"category" + (currentCategory===1 ? " selected-category" : "")} id="category1" onClick={()=>setCurrentCategory(1)}>Updating</div>
                                 <div className={"category" + (currentCategory===2 ? " selected-category" : "")} id="category2" onClick={()=>setCurrentCategory(2)}>Confirmed</div>
                                 <div className={"category" + (currentCategory===3 ? " selected-category" : "")} id="category3" onClick={()=>setCurrentCategory(3)}>Completed</div>
-                                {userInfo.USER_TYPE==='customer' && 
-                                    <div className={"category" + (currentCategory===4 ? " selected-category" : "")} id="category4" onClick={()=>setCurrentCategory(4)}>Suggested</div>}
+                                <div className={"category" + (currentCategory===4 ? " selected-category" : "")} id="category4" onClick={()=>setCurrentCategory(4)}>Suggested</div>
                             </div>
 
                             {trips.length!==0 &&
@@ -298,9 +255,7 @@ const Trips = (props) => {
                                 :
                                 trips[currentCategory].map((trip, index) => 
                                     <div key={index} className="trip">
-                                        {currentCategory===0 && userInfo.USER_TYPE==='agent' && <TiTick className='tick-button' onClick={()=>agentDecision(index, true)}/>}
-                                        {currentCategory===0 && userInfo.USER_TYPE==='agent' && <RxCross2 className='delete-button' onClick={()=>agentDecision(index, false)}/>}
-                                        {currentCategory===0 && userInfo.USER_TYPE==='customer' && <RiDeleteBin5Line className='delete-button' onClick={()=>deleteTrip(index)}/>}
+                                        {currentCategory===0 && <RiDeleteBin5Line className='delete-button' onClick={()=>deleteTrip(index)}/>}
                                         <div className='trip-child-div' onClick={()=>{visitTripProfile(trip)}}>
                                             <h3 style={{marginTop: '0px', marginBottom: '8px'}}>{trip.NAME}</h3>
                                             <div className="trip-details">
@@ -319,8 +274,7 @@ const Trips = (props) => {
                                                     })}
                                                 </p>
                                                 <p>Total Cost: ৳ {trip.TOTAL_COST.toLocaleString('en-US')}</p>
-                                                {userInfo.USER_TYPE==='customer' && <p>Agent: {trip.USER_ID ? trip.USERNAME : 'not set yet'}</p>}
-                                                {userInfo.USER_TYPE==='agent' && <p>Customer: {trip.USERNAME}</p>}
+                                                <p>Agent: {trip.USER_ID ? trip.USERNAME : 'not set yet'}</p>
                                                 {(currentCategory===3 || currentCategory===4) && <p>Rating: {trip.RATING!==0 ? <Rating rating={trip.RATING} state={0} setRating={null}/> : 'no rating given yet'}</p>}
                                             </div>
                                         </div>
@@ -334,8 +288,8 @@ const Trips = (props) => {
                         <>
                             <div style={{width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
                                 <h2>{visitingTrip.NAME}</h2>
-                                {userInfo.USER_TYPE==='customer' && currentCategory===1 && isThereContent && <button className="customer-confirm-button custom-btn" onClick={customerConfirm}>Confirm</button>}
-                                {userInfo.USER_TYPE==='customer' && currentCategory===0 && !visitingTrip.USER_ID && <button className="customer-confirm-button custom-btn" onClick={showAgentSearch ? updateAgent : setAgent}>{showAgentSearch ? 'Set Agent'  : 'Find Agent'}</button>}
+                                {currentCategory===1 && isThereContent && <button className="customer-confirm-button custom-btn" onClick={customerConfirm}>Confirm</button>}
+                                {currentCategory===0 && !visitingTrip.USER_ID && <button className="customer-confirm-button custom-btn" onClick={showAgentSearch ? updateAgent : setAgent}>{showAgentSearch ? 'Set Agent'  : 'Find Agent'}</button>}
                             </div>
                             
                             <div className="trip-details">
@@ -356,8 +310,7 @@ const Trips = (props) => {
                                 <p>Total Cost: ৳ {visitingTrip.TOTAL_COST.toLocaleString('en-US')}</p>
                                 <p>Discount: {visitingTrip.DISCOUNT!==0 ? visitingTrip.DISCOUNT+"%" : 'none'}</p>
                                 {(currentCategory===3 || currentCategory===4) && <p>Rating: {visitingTrip.RATING!==0 ? <Rating rating={visitingTrip.RATING} state={0} setRating={null}/> : 'no rating given yet'}</p>}
-                                {userInfo.USER_TYPE==='customer' && <p>Agent: {visitingTrip.USER_ID ? visitingTrip.USERNAME : <span id="set-agent-link" onClick={setAgent}>not set yet</span>}</p>}
-                                {userInfo.USER_TYPE==='agent' && <p>Customer: {visitingTrip.USERNAME}</p>}
+                                <p>Agent: {visitingTrip.USER_ID ? visitingTrip.USERNAME : <span id="set-agent-link" onClick={setAgent}>not set yet</span>}</p>
 
                                 {showAgentSearch && <AgentSearch setProfile={setAgentProfile}/>}
 
@@ -409,15 +362,28 @@ const Trips = (props) => {
                                             <div key={index} className="reservation">
                                                 {currentCategory===1 && <RiDeleteBin5Line className='delete-button' onClick={()=>deleteBooking('restaurant',index)}/>}
                                                 <p>Name: {restaurant.NAME}</p>
-                                                <p>Location: {restaurant.LOCATION}</p>
-                                                <p>Date: 
-                                                    {new Date(restaurant.DATE).toLocaleDateString('en-US', {
+                                                <p>Booking Date: 
+                                                    {new Date(restaurant.BOOKING_DATE).toLocaleDateString('en-US', {
                                                         year: 'numeric',
                                                         month: 'long',
                                                         day: 'numeric'
                                                     })}
                                                 </p>
-                                                <p>Time: {restaurant.TIME}</p>
+                                                <p>Number of seats: {restaurant.NUMBER_OF_SEATS}</p>
+                                                <p>Arrival Time: {new Date(restaurant.ARRIVAL_TIME).toLocaleTimeString('en-US',
+                                                    {
+                                                        hour: 'numeric',
+                                                        minute: 'numeric',
+                                                        hour12: true,
+                                                    })}
+                                                </p>
+                                                <p>Departure Time: {new Date(restaurant.DEPARTURE_TIME).toLocaleTimeString('en-US',
+                                                    {
+                                                        hour: 'numeric',
+                                                        minute: 'numeric',
+                                                        hour12: true,
+                                                    })}
+                                                </p>
                                             </div>
                                         )}
                                     </div>}
@@ -427,7 +393,6 @@ const Trips = (props) => {
                                         <h3>Flights -</h3>
                                         {visitingTrip.FLIGHTS.map((flight, index) => 
                                             <div key={index} className="reservation">
-                                                {console.log(flight)}
                                                 {currentCategory===1 && <RiDeleteBin5Line className='delete-button' onClick={()=>deleteBooking('flight',index)}/>}
                                                 <p>Airline Name: {flight.AIRLINE_NAME}</p>
                                                 <p>Flight Style: {flight.FLIGHT_STYLE}</p>

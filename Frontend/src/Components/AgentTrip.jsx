@@ -340,7 +340,6 @@ const AgentTrip = () => {
                             <h3>Flights -</h3>
                             {visitingTrip.FLIGHTS.map((flight, index) => 
                                 <div key={index} className="reservation">
-                                    {console.log(flight)}
                                     {currentCategory===1 && <RiDeleteBin5Line className='delete-button' onClick={()=>deleteBooking('flight',index)}/>}
                                     <p>Airline Name: {flight.AIRLINE_NAME}</p>
                                     <p>Flight Style: {flight.FLIGHT_STYLE}</p>

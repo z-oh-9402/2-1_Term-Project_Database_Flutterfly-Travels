@@ -130,16 +130,10 @@ const RestaurantBooking = ({header, restaurant, setShowConfirmationMessage}) => 
         {
             setBookingDate(new Date(date));
         }
-    } 
-
-    const formatTimestamp = ({ hour, minute, am }) => {
-        const ampm = am ? 'AM' : 'PM';
-        const formattedHour = am ? (hour === 12 ? 0 : hour) : hour + 12;
-        const timestampString = `${formattedHour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')} ${ampm}`;
-        return timestampString;
     }
+    
 
-    const addBooking = async (tripId) => {
+    const goToNext = () => {
         const at = (arrivalTime.hour + (arrivalTime.am ? 0 : 12)) * 60 + arrivalTime.minute;
         const dt = (departureTime.hour + (departureTime.am ? 0 : 12)) * 60 + departureTime.minute;
 
@@ -151,67 +145,81 @@ const RestaurantBooking = ({header, restaurant, setShowConfirmationMessage}) => 
         {
             alert("Arrival time must be before 8:00 PM");
         }
+        else if(at<(9*60))
+        {
+            alert("Arrival time must be after 9:00 AM");
+        }
         else
         {
-            const options = {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-                hour12: false
-            };
-    
-            let inDate = new Intl.DateTimeFormat('en-US', options).format(bookingDate);
-            if(inDate.includes(', 24:')) {
-                inDate = inDate.replace(', 24:', ', 00:');
-            }
+            setPage(trips.length!==0 ? (userInfo.USER_TYPE==='customer' ? 3 : 5) : 4)
+        }
+    }
 
-            let inTime = formatTimestamp(arrivalTime);
-            let outTime = formatTimestamp(departureTime);
-    
-            const response = await fetch(`http://localhost:3000/booking/add-restaurant-booking`, {
-                method: "POST",
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    itemId: restaurant.RESTAURANT_ID,
-                    tripId: tripId,
-                    bookingDate: inDate,
-                    arrivalTime: inTime,
-                    departureTime: outTime,
-                    numberOfSeats: numberOfSeats,
-                    totalCost: totalCost,
-                    bookingType: 'RESTAURANT'
-                }),
-            });
-    
-            const data = await response.json();
-            if(data.status === "ok")
+    const formatTimestamp = ({ hour, minute, am }) => {
+        const ampm = am ? 'AM' : 'PM';
+        const timestampString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')} ${ampm}`;
+        return timestampString;
+    }
+
+    const addBooking = async (tripId) => {
+        const options = {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+        };
+
+        let inDate = new Intl.DateTimeFormat('en-US', options).format(bookingDate);
+        if(inDate.includes(', 24:')) {
+            inDate = inDate.replace(', 24:', ', 00:');
+        }
+
+        let inTime = formatTimestamp(arrivalTime);
+        let outTime = formatTimestamp(departureTime);
+
+        const response = await fetch(`http://localhost:3000/booking/add-restaurant-booking`, {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                itemId: restaurant.RESTAURANT_ID,
+                tripId: tripId,
+                bookingDate: inDate,
+                arrivalTime: inTime,
+                departureTime: outTime,
+                numberOfSeats: numberOfSeats,
+                totalCost: totalCost,
+                bookingType: 'RESTAURANT'
+            }),
+        });
+
+        const data = await response.json();
+        if(data.status === "ok")
+        {
+            if(userInfo.USER_TYPE === 'customer')
             {
-                if(userInfo.USER_TYPE === 'customer')
-                {
-                    const response = await fetch(`http://localhost:3000/trip/for-customer?customerId=${userInfo.USER_ID}`, {
-                        method: "GET"
-                    });
-    
-                    const result = await response.json();
-                    userInfo.TRIPS = result;
-                }
-                if(userInfo.USER_TYPE === 'agent')
-                {
-                    const response = await fetch(`http://localhost:3000/trip/for-agent?agentId=${userInfo.USER_ID}`, {
-                        method: "GET"
-                    });
-    
-                    const result = await response.json();
-                    userInfo.TRIPS = result;
-                }
-                setInfo(userInfo);
-                setShowConfirmationMessage(false);
+                const response = await fetch(`http://localhost:3000/trip/for-customer?customerId=${userInfo.USER_ID}`, {
+                    method: "GET"
+                });
+
+                const result = await response.json();
+                userInfo.TRIPS = result;
             }
+            if(userInfo.USER_TYPE === 'agent')
+            {
+                const response = await fetch(`http://localhost:3000/trip/for-agent?agentId=${userInfo.USER_ID}`, {
+                    method: "GET"
+                });
+
+                const result = await response.json();
+                userInfo.TRIPS = result;
+            }
+            setInfo(userInfo);
+            setShowConfirmationMessage(false);
         }
     }
 
@@ -224,7 +232,6 @@ const RestaurantBooking = ({header, restaurant, setShowConfirmationMessage}) => 
 
     const setTime = (type) => {
         const element = document.getElementById(`${type}-time-picker`);
-        console.log(type)
         element.style.display = 'flex';
     }
 
@@ -286,7 +293,7 @@ const RestaurantBooking = ({header, restaurant, setShowConfirmationMessage}) => 
                             </div>
                         </div>
                         
-                        <button className='custom-btn' onClick={()=>setPage(trips.length!==0 ? (userInfo.USER_TYPE==='customer' ? 3 : 5) : 4)}>Next</button>
+                        <button className='custom-btn' onClick={goToNext}>Next</button>
                     </>}
 
                     {page===3 &&

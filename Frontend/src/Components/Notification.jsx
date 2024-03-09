@@ -6,7 +6,7 @@ import UserInfoContext from '../Context/UserInfoContext';
 
 const Notification = (props) => {
     const {notifications} = props;
-    const {showDetailedNotification, setShowDetailedNotification} = useContext(UserInfoContext);
+    const {showDetailedNotification} = useContext(UserInfoContext);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -17,7 +17,7 @@ const Notification = (props) => {
                 if(showDetailedNotification)
                 {
                     element = document.getElementById('detailed-notif')
-                    element.style.top = `${scrollThreshold+5}px`;
+                    element.style.top = `${scrollThreshold}px`;
                 }
             }
         }
@@ -25,23 +25,6 @@ const Notification = (props) => {
         handleScroll();
     }
     , [showDetailedNotification, notifications]);
-
-    useEffect(() => {
-        const handleScroll = () => {
-            const scrollThreshold = document.getElementById('main-nav').offsetHeight;
-
-            if(window.scrollY >= (scrollThreshold))
-            {
-                setShowDetailedNotification(false);
-            }
-        };
-    
-        window.addEventListener('scroll', handleScroll);
-    
-        return () => {
-            window.removeEventListener('scroll', handleScroll);
-        };
-    }, [showDetailedNotification]);
 
     return (
         <>
