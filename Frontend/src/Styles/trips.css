@@ -1,6 +1,7 @@
 .trip-container{
     animation: none;
-    padding-right: 80px
+    overflow: auto;
+    width: 480px;
 }
 
 .category-bar {
@@ -29,7 +30,7 @@
 
 .category-data {
     padding: 20px;
-    background-color: #f1efef;
+    background-color: #f1efef4a;
     margin-top: 10px;
     min-height: 70%;
     border-radius: 6px;
@@ -56,9 +57,10 @@
     position: relative;
     box-sizing: border-box;
     border-radius: 8px;
-    background-color: #c8a7f0;
+    background-color: rgba(128, 128, 128, 0.393);
     margin-bottom: 10px;
     cursor: pointer;
+    color:black;
 }
 
 .trip-child-div{
@@ -67,8 +69,8 @@
 }
 
 .trip-child-div:hover{
-    background-color: #a17cc3;
-    color: white;
+    background-color: #27272870;
+    color: rgb(253, 248, 248);
 }
 
 .visit-agent-profile{
@@ -79,21 +81,23 @@
 .visit-agent-profile:hover{
     text-decoration: underline;
     cursor: pointer;
-    color: rgb(171, 87, 245);
+    color: rgba(128, 128, 128, 0.393);
 }
 
 .trip-reservations{
     display: flex;
     flex-direction: column;
     margin-top: 10px;
-    background-color: #f1efef;
+    background-color: #f1efef27;
     border-radius: 6px;
     padding: 20px;
 }
 
 .reservation{
     position: relative;
-    background-color: #e0cafa;
+    background-color: #cae6fa50;
+    background: linear-gradient(to right, rgba(20, 20, 20, 0.5), rgba(10, 10, 10, 0.5)), #cae6fa50;
+    border: 1px solid gray;
     padding: 10px;
     margin-bottom: 10px;
     cursor: pointer;
@@ -129,4 +133,8 @@
 
 .tick-button:hover{
     color: white;
+}
+.agent-side{
+    overflow: unset;
+    padding-right: 80px;
 }

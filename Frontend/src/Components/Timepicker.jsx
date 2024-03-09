@@ -1,4 +1,4 @@
-import "../Styles/timePicker.css";
+import "../Styles/timepicker.css";
 import { timePicker } from "analogue-time-picker";
 import { useEffect, useState } from "react";
 import PropTypes from 'prop-types';

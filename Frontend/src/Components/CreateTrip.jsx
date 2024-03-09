@@ -174,7 +174,7 @@ const CreateTrip = (props) => {
                     </div>
                 </label>
             </div>
-        <button className='custom-btn' onClick={createTripPackage}>Create Trip</button>
+        <button className='custom-btn' style={{color:"black"}} onClick={createTripPackage}>Create Trip</button>
     </>);
 }
 

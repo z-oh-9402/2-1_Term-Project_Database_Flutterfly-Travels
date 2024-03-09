@@ -219,7 +219,7 @@ const AgentTrip = () => {
                             {currentCategory===0 && userInfo.USER_TYPE==='agent' && <RxCross2 className='delete-button' onClick={()=>agentDecision(index, false)}/>}
                             {currentCategory===0 && userInfo.USER_TYPE==='customer' && <RiDeleteBin5Line className='delete-button' onClick={()=>deleteTrip(index)}/>}
                             <div className='trip-child-div' onClick={()=>{visitTripProfile(trip)}}>
-                                <h3 style={{marginTop: '0px', marginBottom: '8px'}}>{trip.NAME}</h3>
+                                <h3 style={{marginTop: '0px', marginBottom: '8px', fontFamily:'Brush Script, cursive'}}>{trip.NAME}</h3>
                                 <div className="trip-details">
                                     <p>Departure Date:&nbsp;
                                         {new Date(trip.DEPARTURE_DATE).toLocaleDateString('en-US', {
@@ -249,7 +249,7 @@ const AgentTrip = () => {
             :
             
             <>
-                <div style={{width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                <div style={{width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' , fontFamily:'Brush Script, cursive'}}>
                     <h2>{visitingTrip.NAME}</h2>
                     <button className='custom-btn customer-confirm-button' onClick={()=>setPage(1)}>All Trips</button>
                 </div>

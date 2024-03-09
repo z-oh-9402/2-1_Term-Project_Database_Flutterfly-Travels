@@ -191,8 +191,8 @@ const DestinationBooking = ({header, destination, setShowConfirmationMessage}) =
                         <div className='message-title'>{header}</div>
                         <p className='message-content'>{message[page-1]}</p>
                         <div>
-                            <button className='custom-btn' onClick={goToNextPage}>Yes</button>
-                            <button className='custom-btn' onClick={handleGoToCurrentPage}>Cancel</button>
+                            <button className='custom-btn' style={{color:"black"}} onClick={goToNextPage}>Yes</button>
+                            <button className='custom-btn' style={{color:"black"}} onClick={handleGoToCurrentPage}>Cancel</button>
                         </div>
                     </>}
 

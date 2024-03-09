@@ -130,7 +130,7 @@ const ReviewsAndRatings = (props) => {
                             <div>
                                 <h1>Reviews and Ratings</h1>
                                 {reviews.map((item, index) => (
-                                    <div key={index} style={{ border: "2px solid", borderRadius: "5px", padding: "20px", marginBottom: "20px", background: "linear-gradient(to right, rgba(15, 173, 173, 0.19) ,rgba(21, 95, 173, .09))" }}>
+                                    <div key={index} style={{ border: "1px solid gray", borderRadius: "5px", padding: "20px", marginBottom: "20px", background: "linear-gradient(to right, rgba(100, 100, 100, 0.5), rgba(20, 20, 20, 0.5))" }}>
                                         <p style={{ fontSize: "18px", fontWeight: "bold" }}>{item.USERNAME}</p>
                                         <Rating rating={item.RATING} state={0} setRating={null} />
                                         <p>{item.REVIEW}</p>
