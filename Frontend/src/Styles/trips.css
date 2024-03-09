@@ -1,6 +1,7 @@
 .trip-container{
     animation: none;
-    padding-right: 80px
+    overflow: auto;
+    width: 480px;
 }
 
 .category-bar {
@@ -9,6 +10,7 @@
     color: white;
     border-radius: 3px;
     box-sizing: border-box;
+    width: 100%
 }
 
 .category {
@@ -129,4 +131,11 @@
 
 .tick-button:hover{
     color: white;
+}
+
+.agent-side{
+    overflow: unset;
+    padding-right: 80px;
+    min-width: 100%;
+    box-sizing: border-box;
 }

@@ -12,9 +12,10 @@ import { IoAirplaneSharp } from "react-icons/io5";
 import { IoBedSharp } from "react-icons/io5";
 import { IoGlobeSharp } from "react-icons/io5";
 import { FaRegHeart } from "react-icons/fa";
+import Notification from "./Notification";
 
 const Header = (props)=>{
-    const {handleIsInLoginOrSignUpFromNavbar, setShowTrips} = props;
+    const {handleIsInLoginOrSignUpFromNavbar, setShowTrips, notifications} = props;
     const {userInfo, showDetailedNotification, setShowDetailedNotification} = useContext(UserInfoContext);
     const navigate = useNavigate();
     const [isBottomStyles, setIsBottomStyles] = useState(false);
@@ -62,14 +63,16 @@ const Header = (props)=>{
                         <button className="custom-btn" onClick={()=>handleIsInLoginOrSignUpFromNavbar(true)}>Login</button>
                         <button className="custom-btn" onClick={()=>handleIsInLoginOrSignUpFromNavbar(false)}>Sign Up</button>
                     </div>}
+                    {userInfo!==null && <Notification notifications={notifications}/>}
             </nav>
-            {isBottomStyles && <div style={{height: `${placeholderHeight}px`}}></div>}
+            <div style={{height: `${placeholderHeight}px`}}></div>
         </>)
 }
 
 Header.propTypes = {
     handleIsInLoginOrSignUpFromNavbar: PropTypes.func,
-    setShowTrips: PropTypes.func
+    setShowTrips: PropTypes.func,
+    notifications: PropTypes.array
 }
 
 export default Header;

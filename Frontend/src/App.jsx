@@ -17,7 +17,6 @@ import AccommodationProfile from './Pages/AccommodationProfile.jsx';
 import Flights from './Pages/Flights.jsx';
 import RestaurantProfile from './Pages/RestaurantProfile.jsx';
 import Trips from './Pages/Trips.jsx';
-import Notification from './Components/Notification.jsx';
 
 function App() {
   const [isLoginOrSignUpPageLoaded,setIsLoginOrSignUpPageLoaded] = useState(false);
@@ -48,7 +47,7 @@ function App() {
 
     const intervalId = setInterval(() => {
       fetchNotification();
-    }, 800);
+    }, 1500);
 
     return () => clearInterval(intervalId);
   }, [userInfo, notifications]);
@@ -123,9 +122,10 @@ function App() {
         (isInLoginPage ? <Login goToHome={goToHome} setUserInfo={handleUserInfo} goToSignUp={handleChangeBetweenLoginAndSignUp} setNotifications={setNotifications}/> 
                        : <SignUp goToHome={goToHome} setUserInfo={handleUserInfo} goToLogin={handleChangeBetweenLoginAndSignUp} setNotifications={setNotifications}/>)}
       {userInfo!==null && showTrips && <Trips setShowTrips={setShowTrips}/>}
-      {userInfo!==null && <Notification notifications={notifications}  instantNotifications={instantNotifications}/>}
-      <Header handleIsInLoginOrSignUpFromNavbar={handleIsInLoginOrSignUpFromNavbar} setShowTrips={setShowTrips}/>
-      <br/><br/><br/><br/><br/><br/>
+      <Header handleIsInLoginOrSignUpFromNavbar={handleIsInLoginOrSignUpFromNavbar} setShowTrips={setShowTrips} notifications={instantNotifications}/>
+
+      <br/><br/>
+
       <Routes>
         <Route path='' element={<Homepage/>}/>
         <Route path='destinations' element={<><Outlet/></>}>

@@ -18,7 +18,6 @@ const ItemBar = (props) => {
         const checkFavourite = async () => {
             if(userInfo!==null)
             {
-                console.log(userInfo.USER_ID);
                 if(itemType==='destination')
                 {
                     const response = await fetch(`http://localhost:3000/wishlist/destination?userId=${userInfo.USER_ID}&itemId=${item.DESTINATION_ID}`,{
