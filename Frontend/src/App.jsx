@@ -17,6 +17,7 @@ import AccommodationProfile from './Pages/AccommodationProfile.jsx';
 import Flights from './Pages/Flights.jsx';
 import RestaurantProfile from './Pages/RestaurantProfile.jsx';
 import Trips from './Pages/Trips.jsx';
+import Wishlist from './Components/Wishlist.jsx';
 
 function App() {
   const [isLoginOrSignUpPageLoaded,setIsLoginOrSignUpPageLoaded] = useState(false);
@@ -25,6 +26,7 @@ function App() {
   const [showTrips, setShowTrips] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [instantNotifications, setInstantNotifications] = useState([]);
+  const [showWishlist, setShowWishlist] = useState(false);
 
   useEffect(() => {
     const fetchNotification = async () => {
@@ -122,9 +124,10 @@ function App() {
         (isInLoginPage ? <Login goToHome={goToHome} setUserInfo={handleUserInfo} goToSignUp={handleChangeBetweenLoginAndSignUp} setNotifications={setNotifications}/> 
                        : <SignUp goToHome={goToHome} setUserInfo={handleUserInfo} goToLogin={handleChangeBetweenLoginAndSignUp} setNotifications={setNotifications}/>)}
       {userInfo!==null && showTrips && <Trips setShowTrips={setShowTrips}/>}
-      <Header handleIsInLoginOrSignUpFromNavbar={handleIsInLoginOrSignUpFromNavbar} setShowTrips={setShowTrips} notifications={instantNotifications}/>
+      {userInfo!==null && showWishlist && <Wishlist setShowWishlist={setShowWishlist} isWishlist={true}/>}
+      <Header handleIsInLoginOrSignUpFromNavbar={handleIsInLoginOrSignUpFromNavbar} setShowTrips={setShowTrips} setShowWishlist={setShowWishlist} notifications={instantNotifications}/>
 
-      <br/><br/>
+      <br/><br/><br/><br/>
 
       <Routes>
         <Route path='' element={<Homepage/>}/>

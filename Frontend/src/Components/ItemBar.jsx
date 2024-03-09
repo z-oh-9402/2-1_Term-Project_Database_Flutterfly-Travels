@@ -153,7 +153,7 @@ const ItemBar = (props) => {
 
     return (
         <div className="bar" id={`bar${index}`}>
-            {itemType!=='flight' && (addedToFav ? <FaHeart className='fav-icon' onClick={updateFavourite}/> : <FaRegHeart className='fav-icon' onClick={updateFavourite}/>)}
+            {itemType!=='flight' && userInfo.USER_TYPE==='customer' && (addedToFav ? <FaHeart className='fav-icon' onClick={updateFavourite}/> : <FaRegHeart className='fav-icon' onClick={updateFavourite}/>)}
             <div style={{width: '100%', height: '100%', display:'flex', alignItems: 'center'}} onMouseOver={showPopup} onMouseOut={hidePopup} onClick={navigatePage}>
                 <div className='main-info-container'>
                     <img className='cover-img' src={item.IMAGE} alt="Card Image"/>
@@ -166,6 +166,7 @@ const ItemBar = (props) => {
                         </>:
                         <>
                             <p>{item.DEPARTURE_AIRPORT} =&gt; {item.ARRIVAL_AIRPORT}</p>
+                            {item.FLIGHT_STYLE==='Round Trip' && <p>{item.ARRIVAL_AIRPORT} =&gt; {item.DEPARTURE_AIRPORT}</p>}
                             <p>Departure Time: {departureTime}</p>
                             <p>Arrival Time: {arrivalTime}</p>
                         </>}

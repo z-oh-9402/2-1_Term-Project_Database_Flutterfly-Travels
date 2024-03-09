@@ -88,8 +88,8 @@ router.put("/:userId",async(req,res)=>{
     const hashedPassword = await bcrypt.hash(plaintextPassword, salt);
 
     const query = `UPDATE Users
-                    SET USERNAME='${user.username}',PASSWORD='${hashedPassword}',FIRST_NAME='${user.firstName}',LAST_NAME='${user.lastName}',EMAIL='${user.email}'
-                    WHERE USER_ID=${req.params.userId}`;
+                   SET USERNAME='${user.username}',PASSWORD='${hashedPassword}',FIRST_NAME='${user.firstName}',LAST_NAME='${user.lastName}',EMAIL='${user.email}'
+                   WHERE USER_ID=${req.params.userId}`;
     await database.query(query,params);
 
     const query2 = `UPDATE Customer
@@ -113,8 +113,8 @@ router.put("/:userId",async(req,res)=>{
     await database.query('commit',params);
 
     const res_query = `SELECT U.*,C.PASSPORT_NUMBER,C.TRIP_BOOKED
-                        FROM Users U LEFT JOIN Customer C ON  U.USER_ID=C.CUSTOMER_ID
-                        WHERE USER_ID=${req.params.userId}`;
+                       FROM Users U LEFT JOIN Customer C ON  U.USER_ID=C.CUSTOMER_ID
+                       WHERE USER_ID=${req.params.userId}`;
     ans = await database.query(res_query,params);
     ans[0].PREFERENCES = user.preferences;
     ans[0].PASSWORD = user.password;

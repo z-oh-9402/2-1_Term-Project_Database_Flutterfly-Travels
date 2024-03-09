@@ -126,6 +126,16 @@ const Flights = () => {
     }
 
     const compareWithSystemTime = (time, targetTime) => {
+        const currtime = new Date();
+        const compTime = new Date(departureDate);
+        compTime.setHours(0,0,0,0);
+        currtime.setHours(0,0,0,0);
+
+        if(compTime > currtime)
+        {
+            return true;
+        }
+
         const currentHour = targetTime.getHours();
         const currentMinute = targetTime.getMinutes();
 

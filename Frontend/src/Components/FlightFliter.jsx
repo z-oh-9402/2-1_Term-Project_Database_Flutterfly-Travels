@@ -151,13 +151,6 @@ const FlightFliter = (props) => {
                         </div>}
                 </div>
 
-                {/* <Select className="select"
-                    styles={customStyles2}
-                    options={seatClassOptions}
-                    onChange={(e) => setSeatClass(e.value)}
-                    isSearchable
-                    placeholder="Seat Class"
-                /> */}
                 <Select className="select"
                     styles={{
                         ...customStyles2,

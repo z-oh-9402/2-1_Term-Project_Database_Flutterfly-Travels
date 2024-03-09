@@ -1,6 +1,44 @@
 const router = require("express-promise-router")();
 const database = require('../database');
 
+router.get('/fetch', async (req, res) => {
+    const { userId } = req.query;
+
+    const params = [];
+    let query = `SELECT DW.WISHLIST_ID, D.* 
+                 FROM DESTINATION_WISHLIST DW JOIN DESTINATION D ON DW.DESTINATION_ID=D.DESTINATION_ID
+                 WHERE CUSTOMER_ID=${userId}`;
+    const destinations = await database.query(query, params);
+
+    query = `SELECT AW.WISHLIST_ID, A.* 
+             FROM ACCOMMODATION_WISHLIST AW JOIN ACCOMMODATION A ON AW.ACCOMMODATION_ID=A.ACCOMMODATION_ID
+             WHERE CUSTOMER_ID=${userId}`;
+    const accommodations = await database.query(query, params);
+
+    query = `SELECT RW.WISHLIST_ID, R.*
+             FROM RESTAURANT_WISHLIST RW JOIN RESTAURANT R ON RW.RESTAURANT_ID=R.RESTAURANT_ID
+             WHERE CUSTOMER_ID=${userId}`;
+    const restaurants = await database.query(query, params);
+
+    const result = 
+        [
+            {
+                category: "destination",
+                items: destinations,
+            },
+            {
+                category: "accommodation",
+                items: accommodations,
+            },
+            {
+                category: "restaurant",
+                items: restaurants,
+            }
+        ];
+
+    res.json(result);
+});
+
 router.get('/destination', async (req, res) => {
     const { userId, itemId } = req.query;
 

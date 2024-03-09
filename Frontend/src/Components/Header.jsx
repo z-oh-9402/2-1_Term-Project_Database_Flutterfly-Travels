@@ -15,7 +15,7 @@ import { FaRegHeart } from "react-icons/fa";
 import Notification from "./Notification";
 
 const Header = (props)=>{
-    const {handleIsInLoginOrSignUpFromNavbar, setShowTrips, notifications} = props;
+    const {handleIsInLoginOrSignUpFromNavbar, setShowTrips, setShowWishlist, notifications} = props;
     const {userInfo, showDetailedNotification, setShowDetailedNotification} = useContext(UserInfoContext);
     const navigate = useNavigate();
     const [isBottomStyles, setIsBottomStyles] = useState(false);
@@ -55,7 +55,7 @@ const Header = (props)=>{
                 {userInfo!==null ? 
                     <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
                         <IoMdNotifications className="notification-icon" onClick={()=>setShowDetailedNotification(!showDetailedNotification)}/>
-                        {userInfo.USER_TYPE==='customer' && <FaRegHeart className="wishlist"/>}
+                        {userInfo.USER_TYPE==='customer' && <FaRegHeart className="wishlist" onClick={()=>setShowWishlist(true)}/>}
                         <h4 className="username">Hello <Link to='user'>{userInfo.USERNAME}</Link><VscAccount className="icon"/></h4>
                     </div> 
                     : 
@@ -65,13 +65,14 @@ const Header = (props)=>{
                     </div>}
                     {userInfo!==null && <Notification notifications={notifications}/>}
             </nav>
-            <div style={{height: `${placeholderHeight}px`}}></div>
+            {isBottomStyles && <div style={{height: `${placeholderHeight}px`}}></div>}
         </>)
 }
 
 Header.propTypes = {
     handleIsInLoginOrSignUpFromNavbar: PropTypes.func,
     setShowTrips: PropTypes.func,
+    setShowWishlist: PropTypes.func,
     notifications: PropTypes.array
 }
 

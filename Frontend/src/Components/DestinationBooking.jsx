@@ -3,6 +3,7 @@ import UserInfoContext from "../Context/UserInfoContext";
 import { ImCross } from "react-icons/im";
 import '../Styles/confirmation-message.css';
 import '../Styles/login-signup.css';
+import '../Styles/trips.css';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import PropTypes from 'prop-types';
@@ -29,7 +30,7 @@ const DestinationBooking = ({header, destination, setShowConfirmationMessage}) =
         }
         else
         {
-            found = false;
+            found = true;
         }
 
         return found;
@@ -191,8 +192,8 @@ const DestinationBooking = ({header, destination, setShowConfirmationMessage}) =
                         <div className='message-title'>{header}</div>
                         <p className='message-content'>{message[page-1]}</p>
                         <div>
-                            <button className='custom-btn' style={{color:"black"}} onClick={goToNextPage}>Yes</button>
-                            <button className='custom-btn' style={{color:"black"}} onClick={handleGoToCurrentPage}>Cancel</button>
+                            <button className='custom-btn customer-confirm-button' style={{color:"black"}} onClick={goToNextPage}>Yes</button>
+                            <button className='custom-btn customer-confirm-button' style={{color:"black"}} onClick={handleGoToCurrentPage}>Cancel</button>
                         </div>
                     </>}
 
@@ -235,7 +236,7 @@ const DestinationBooking = ({header, destination, setShowConfirmationMessage}) =
                             </div>
                         </div>
                         
-                        <button className='custom-btn' onClick={()=>setPage(trips.length!==0 ? (userInfo.USER_TYPE==='customer' ? 3 : 5) : 4)}>Next</button>
+                        <button className='custom-btn customer-confirm-button' onClick={()=>setPage(trips.length!==0 ? (userInfo.USER_TYPE==='customer' ? 3 : 5) : 4)}>Next</button>
                     </>}
 
                     {page===3 &&
@@ -243,8 +244,8 @@ const DestinationBooking = ({header, destination, setShowConfirmationMessage}) =
                         <div className='message-title'>{header}</div>
                         <p className='message-content'>{message[1]}</p>
                         <div>
-                            <button className='custom-btn' onClick={() => setPage(5)}>Add to an existing package</button>
-                            <button className='custom-btn' onClick={() => setPage(6)}>Create a new package</button>
+                            <button className='custom-btn customer-confirm-button' onClick={() => setPage(5)}>Add to an existing package</button>
+                            <button className='custom-btn customer-confirm-button' onClick={() => setPage(6)}>Create a new package</button>
                         </div>
                     </>}
 
@@ -253,7 +254,7 @@ const DestinationBooking = ({header, destination, setShowConfirmationMessage}) =
                         <div className='message-title'>{header}</div>
                         <p className='message-content'>{message[2]}</p>
                         <div>
-                            <button className='custom-btn' onClick={() => setPage(6)}>Create a new package</button>
+                            <button className='custom-btn customer-confirm-button' onClick={() => setPage(6)}>Create a new package</button>
                         </div>
                     </>}
 

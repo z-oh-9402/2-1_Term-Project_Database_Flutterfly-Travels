@@ -6,6 +6,8 @@ import UserInfoContext from '../Context/UserInfoContext';
 import CategorizedDestination from '../Components/CategorizedDestination';
 import "../Styles/button.css"
 import AgentTrip from '../Components/AgentTrip';
+import { TiTick } from "react-icons/ti";
+import { RxCross2 } from "react-icons/rx";
 
 const ProfileHomePage = (props) => {
     const { userInfo, setInfo } = useContext(UserInfoContext);
@@ -13,6 +15,7 @@ const ProfileHomePage = (props) => {
     const pref = user.USER_TYPE === 'customer' ? user.PREFERENCES : null;
     const [recommendedDestinations, setRecommendedDestinations] = useState([]);
     const [pendingAgents, setPendingAgents] = useState([]);
+    const [pendingTrips, setPendingTrips] = useState([]);
     const list = ["Mountains", "Lakes", "Beaches", "Forests", "Hill Tracks", "Tea Gardens", "Historical Places"];
 
     const [isPref1Checked, setIsPref1Checked] = useState(pref !== null ? pref.includes(list[0]) : pref);
@@ -38,7 +41,7 @@ const ProfileHomePage = (props) => {
     const [isPasswordStarting, setIsPasswordStarting] = useState(true);
     const [isPassportStarting, setIsPassportStarting] = useState(true);
 
-    const [isPendingListSame, setIsPendingListSame] = useState(false);
+    const [currentCategory, setCurrentCategory] = useState(0);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -55,19 +58,24 @@ const ProfileHomePage = (props) => {
                 setRecommendedDestinations(data);
             }
 
-            if (user.USER_TYPE === 'admin' && !isPendingListSame) {
-                const response = await fetch(`http://localhost:3000/agent/pending-agents/`, {
+            if (user.USER_TYPE === 'admin') {
+                let response = await fetch(`http://localhost:3000/agent/pending-agents/`, {
                     method: "GET"
                 });
 
                 const data = await response.json();
                 setPendingAgents(data);
-                setIsPendingListSame(true);
+
+                response = await fetch(`http://localhost:3000/trip/fetch-pending-trips/`, {
+                    method: "GET"
+                });
+
+                const data2 = await response.json();
+                setPendingTrips(data2);
             }
         };
         fetchData()
-    }
-        , [user.PREFERENCES]);
+    }, [user.PREFERENCES]);
 
     const handleUsernameChange = async (e) => {
         setUsername(e.target.value);
@@ -281,6 +289,40 @@ const ProfileHomePage = (props) => {
         navigate("/");
     }
 
+    const adminDecision = async (index, isAccepted) => {
+        const trip = pendingTrips[index];
+
+        let response;
+        if(isAccepted)
+        {
+            response = await fetch(`http://localhost:3000/trip/admin-decision/`, {
+                method: "PUT",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ tripId: trip.TRIP_ID })
+            });
+        }
+        else
+        {
+            response = await fetch(`http://localhost:3000/trip/admin-decision/`, {
+                method: "DELETE",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ tripId: trip.TRIP_ID })
+            });
+        }
+        await response.json();
+
+        response = await fetch(`http://localhost:3000/trip/fetch-pending-trips/`, {
+            method: "GET"
+        });
+
+        const data = await response.json();
+        setPendingTrips(data);
+    }
+
     return (
         <div className='profile-page'>
             <div className='profile-container'>
@@ -346,11 +388,6 @@ const ProfileHomePage = (props) => {
                     {user.USER_TYPE === 'admin' && 
                         <>
                             <button className="btn-primary" onClick={() => {handleLogOutOrDeleteAccount(false)}}>Log Out</button><br /><br />
-                            <button className="btn-primary">Add Destination</button><br /><br />
-                            <button className="btn-primary">Add Accommodation</button><br /><br />
-                            <button className="btn-primary">Add Restaurant</button><br /><br />
-                            <button className="btn-primary">Add Flight</button><br /><br />
-                            <button className="btn-primary">Add Transport</button><br /><br />
                         </>
                     }
                 </div> :
@@ -403,20 +440,56 @@ const ProfileHomePage = (props) => {
                 <>
                     <h1>Pending Tasks -</h1>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column' }}>
-                            {pendingAgents.length > 0 && <h2>Agent accounts to be reviewed - </h2>}
-                            {pendingAgents.map((agent, index) =>
-                                <div key={index} className="agent-box">
-                                    <h3>{agent.USERNAME}</h3>
-                                    <p>Experience: {agent.EXPERIENCE_YEARS} years</p>
-                                    <p>Fee: {agent.FEE}</p>
-                                    <div className="button-container2">
-                                        <button className="btn-primary" onClick={() => acceptRequest(agent)}>Accept</button>
-                                        <span style={{ margin: '0 10px' }}></span>
-                                        <button className="btn-primary" onClick={() => declineRequest(agent)}>Decline</button>
+                        <div className='agent-side' style={{ display: 'flex', flexDirection: 'column', marginRight: '80px'}}>
+                            <div className="category-bar" id="categoryBar">
+                                <div className={"category" + (currentCategory===0 ? " selected-category" : "")} id="category0" onClick={()=>setCurrentCategory(0)}>Agent accounts to be reviewed</div>
+                                <div className={"category" + (currentCategory===1 ? " selected-category" : "")} id="category1" onClick={()=>setCurrentCategory(1)}>Trip packages to be reviewed</div>
+                            </div>
+
+                            <div style={{marginTop: "20px"}}>
+                                {currentCategory===0 && 
+                                (pendingAgents.length===0 ? <>Nothing to be reviewed</>
+                                :
+                                pendingAgents.map((agent, index) =>
+                                    <div key={index} className="agent-box">
+                                        <h3>{agent.USERNAME}</h3>
+                                        <p>Experience: {agent.EXPERIENCE_YEARS} years</p>
+                                        <p>Fee: {agent.FEE}</p>
+                                        <div className="button-container2">
+                                            <button className="btn-primary" onClick={() => acceptRequest(agent)}>Accept</button>
+                                            <span style={{ margin: '0 10px' }}></span>
+                                            <button className="btn-primary" onClick={() => declineRequest(agent)}>Decline</button>
+                                        </div>
                                     </div>
-                                </div>
-                            )}
+                                ))}
+
+                                {currentCategory===1 &&
+                                (pendingTrips.length===0 ? <div>Nothing to be reviewed</div>
+                                :
+                                pendingTrips.map((trip, index) =>
+                                <div key={index} className="agent-box">
+                                    <TiTick className='tick-button' onClick={()=>adminDecision(index, true)}/>
+                                    <RxCross2 className='delete-button' onClick={()=>adminDecision(index, false)}/>
+                                    <h3>{trip.NAME}</h3>
+                                    <p>Cost: {trip.TOTAL_COST}</p>
+                                    <p>Start Date:&nbsp;
+                                        {new Date(trip.DEPARTURE_DATE).toLocaleDateString('en-US', {
+                                            year: 'numeric',
+                                            month: 'long',
+                                            day: 'numeric'
+                                        })}
+                                    </p>
+                                    <p>End Date:&nbsp;
+                                        {new Date(trip.RETURN_DATE).toLocaleDateString('en-US', {
+                                            year: 'numeric',
+                                            month: 'long',
+                                            day: 'numeric'
+                                        })}
+                                    </p>
+                                    <p>Agent: {trip.AGENT_NAME}</p>
+                                    <p>Customer: {trip.CUSTOMER_NAME}</p>
+                                </div>))}
+                            </div>
                         </div>
                     </div>
                 </>}

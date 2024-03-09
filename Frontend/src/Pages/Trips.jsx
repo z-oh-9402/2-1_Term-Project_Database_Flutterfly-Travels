@@ -27,8 +27,8 @@ const Trips = (props) => {
         let newTrips = [];
         const requestingTrips = [];
         const updatingTrips = [];
+        const pendingTrips = [];
         const confirmedTrips = [];
-        const completedTrips = [];
 
         for(let trip of tripList)
         {
@@ -36,28 +36,28 @@ const Trips = (props) => {
             {
                 requestingTrips.push(trip);
             }
-            else if(trip.TRIP_STATUS === "UPDATING")
+            if(trip.TRIP_STATUS === "UPDATING")
             {
                 updatingTrips.push(trip);
             }
-            else if(trip.TRIP_STATUS === "CONFIRMED")
+            if(trip.TRIP_STATUS === "PENDING")
+            {
+                pendingTrips.push(trip);
+            }
+            if(trip.TRIP_STATUS === "CONFIRMED")
             {
                 confirmedTrips.push(trip);
-            }
-            else
-            {
-                completedTrips.push(trip);
             }
         }
 
         newTrips.push(requestingTrips);
         newTrips.push(updatingTrips);
+        newTrips.push(pendingTrips);
         newTrips.push(confirmedTrips);
-        newTrips.push(completedTrips);
 
         if(userInfo.USER_TYPE==='customer')
         {
-            const response = await fetch(`http://localhost:3000/trip/fetch-other-trips?userId=${userInfo.USER_ID}`, {
+            const response = await fetch(`http://localhost:3000/trip/fetch-complete-trips`, {
                 method: 'GET'  
             });
             
@@ -188,7 +188,7 @@ const Trips = (props) => {
             },
             body: JSON.stringify(
             {
-                tripStatus: "CONFIRMED",
+                tripStatus: "PENDING",
                 tripId: visitingTrip.TRIP_ID
             })
         });
@@ -241,8 +241,8 @@ const Trips = (props) => {
                             <div className="category-bar" id="categoryBar">
                                 <div className={"category" + (currentCategory===0 ? " selected-category" : "")} id="category0" onClick={()=>setCurrentCategory(0)}>Requesting</div>
                                 <div className={"category" + (currentCategory===1 ? " selected-category" : "")} id="category1" onClick={()=>setCurrentCategory(1)}>Updating</div>
-                                <div className={"category" + (currentCategory===2 ? " selected-category" : "")} id="category2" onClick={()=>setCurrentCategory(2)}>Confirmed</div>
-                                <div className={"category" + (currentCategory===3 ? " selected-category" : "")} id="category3" onClick={()=>setCurrentCategory(3)}>Completed</div>
+                                <div className={"category" + (currentCategory===2 ? " selected-category" : "")} id="category2" onClick={()=>setCurrentCategory(2)}>Pending</div>
+                                <div className={"category" + (currentCategory===3 ? " selected-category" : "")} id="category3" onClick={()=>setCurrentCategory(3)}>Confirmed</div>
                                 <div className={"category" + (currentCategory===4 ? " selected-category" : "")} id="category4" onClick={()=>setCurrentCategory(4)}>Suggested</div>
                             </div>
 
@@ -275,7 +275,7 @@ const Trips = (props) => {
                                                 </p>
                                                 <p>Total Cost: ৳ {trip.TOTAL_COST.toLocaleString('en-US')}</p>
                                                 <p>Agent: {trip.USER_ID ? trip.USERNAME : 'not set yet'}</p>
-                                                {(currentCategory===3 || currentCategory===4) && <p>Rating: {trip.RATING!==0 ? <Rating rating={trip.RATING} state={0} setRating={null}/> : 'no rating given yet'}</p>}
+                                                {currentCategory===4 && <p>Rating: {trip.RATING!==0 ? <Rating rating={trip.RATING} state={0} setRating={null}/> : 'no rating given yet'}</p>}
                                             </div>
                                         </div>
                                     </div>

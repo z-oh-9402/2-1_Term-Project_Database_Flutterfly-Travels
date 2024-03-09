@@ -20,8 +20,8 @@ const AgentTrip = () => {
         let newTrips = [];
         const requestingTrips = [];
         const updatingTrips = [];
+        const pendingTrips = [];
         const confirmedTrips = [];
-        const completedTrips = [];
 
         for(let trip of tripList)
         {
@@ -29,34 +29,24 @@ const AgentTrip = () => {
             {
                 requestingTrips.push(trip);
             }
-            else if(trip.TRIP_STATUS === "UPDATING")
+            if(trip.TRIP_STATUS === "UPDATING")
             {
                 updatingTrips.push(trip);
             }
-            else if(trip.TRIP_STATUS === "CONFIRMED")
+            if(trip.TRIP_STATUS === "PENDING")
+            {
+                pendingTrips.push(trip);
+            }
+            if(trip.TRIP_STATUS === "CONFIRMED")
             {
                 confirmedTrips.push(trip);
-            }
-            else
-            {
-                completedTrips.push(trip);
             }
         }
 
         newTrips.push(requestingTrips);
         newTrips.push(updatingTrips);
+        newTrips.push(pendingTrips);
         newTrips.push(confirmedTrips);
-        newTrips.push(completedTrips);
-
-        if(userInfo.USER_TYPE==='customer')
-        {
-            const response = await fetch(`http://localhost:3000/trip/fetch-other-trips?userId=${userInfo.USER_ID}`, {
-                method: 'GET'  
-            });
-            
-            const suggestedTrips = await response.json();
-            newTrips.push(suggestedTrips);
-        }
 
         setTrips(newTrips);
     }
@@ -137,18 +127,6 @@ const AgentTrip = () => {
         setRefreshPage(!refreshPage);
     }
 
-    const deleteTrip = async (index) => {
-        const trip = trips[currentCategory][index];
-        const response = await fetch(`http://localhost:3000/trip/delete-trip?tripId=${trip.TRIP_ID}`, {
-            method: 'DELETE'
-        });
-
-        await response.json();
-
-        func();
-        setRefreshPage(!refreshPage);
-    }
-
     const agentDecision = async (index, decision) => {
         const trip = trips[currentCategory][index];
 
@@ -200,10 +178,8 @@ const AgentTrip = () => {
                 <div className="category-bar" id="categoryBar">
                     <div className={"category" + (currentCategory===0 ? " selected-category" : "")} id="category0" onClick={()=>setCurrentCategory(0)}>Requesting</div>
                     <div className={"category" + (currentCategory===1 ? " selected-category" : "")} id="category1" onClick={()=>setCurrentCategory(1)}>Updating</div>
-                    <div className={"category" + (currentCategory===2 ? " selected-category" : "")} id="category2" onClick={()=>setCurrentCategory(2)}>Confirmed</div>
-                    <div className={"category" + (currentCategory===3 ? " selected-category" : "")} id="category3" onClick={()=>setCurrentCategory(3)}>Completed</div>
-                    {userInfo.USER_TYPE==='customer' && 
-                        <div className={"category" + (currentCategory===4 ? " selected-category" : "")} id="category4" onClick={()=>setCurrentCategory(4)}>Suggested</div>}
+                    <div className={"category" + (currentCategory===2 ? " selected-category" : "")} id="category2" onClick={()=>setCurrentCategory(2)}>Pending</div>
+                    <div className={"category" + (currentCategory===3 ? " selected-category" : "")} id="category3" onClick={()=>setCurrentCategory(3)}>Confirmed</div>
                 </div>
 
                 {trips.length!==0 &&
@@ -217,7 +193,6 @@ const AgentTrip = () => {
                         <div key={index} className="trip">
                             {currentCategory===0 && userInfo.USER_TYPE==='agent' && <TiTick className='tick-button' onClick={()=>agentDecision(index, true)}/>}
                             {currentCategory===0 && userInfo.USER_TYPE==='agent' && <RxCross2 className='delete-button' onClick={()=>agentDecision(index, false)}/>}
-                            {currentCategory===0 && userInfo.USER_TYPE==='customer' && <RiDeleteBin5Line className='delete-button' onClick={()=>deleteTrip(index)}/>}
                             <div className='trip-child-div' onClick={()=>{visitTripProfile(trip)}}>
                                 <h3 style={{marginTop: '0px', marginBottom: '8px', fontFamily:'Brush Script, cursive'}}>{trip.NAME}</h3>
                                 <div className="trip-details">
@@ -236,9 +211,7 @@ const AgentTrip = () => {
                                         })}
                                     </p>
                                     <p>Total Cost: ৳ {trip.TOTAL_COST.toLocaleString('en-US')}</p>
-                                    {userInfo.USER_TYPE==='customer' && <p>Agent: {trip.USER_ID ? trip.USERNAME : 'not set yet'}</p>}
-                                    {userInfo.USER_TYPE==='agent' && <p>Customer: {trip.USERNAME}</p>}
-                                    {(currentCategory===3 || currentCategory===4) && <p>Rating: {trip.RATING!==0 ? <Rating rating={trip.RATING} state={0} setRating={null}/> : 'no rating given yet'}</p>}
+                                    <p>Customer: {trip.USERNAME}</p>
                                 </div>
                             </div>
                         </div>
