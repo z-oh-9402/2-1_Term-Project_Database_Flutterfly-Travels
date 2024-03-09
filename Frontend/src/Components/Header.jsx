@@ -11,6 +11,7 @@ import { IoCafe } from "react-icons/io5";
 import { IoAirplaneSharp } from "react-icons/io5";
 import { IoBedSharp } from "react-icons/io5";
 import { IoGlobeSharp } from "react-icons/io5";
+import { FaRegHeart } from "react-icons/fa";
 
 const Header = (props)=>{
     const {handleIsInLoginOrSignUpFromNavbar, setShowTrips} = props;
@@ -42,19 +43,18 @@ const Header = (props)=>{
     return(
         <>
             <nav className={`main-navbar ${isBottomStyles && 'bottom-styles'}`} id='main-nav'>
-                <div className="main-section"><Link to='/' className="basicInfo">Home</Link> <Link to='/about' className="basicInfo">About</Link></div>
+                <div className="main-section"><Link to='/' className="basicInfo"><img className="title-img" src='/title.png'/></Link></div>
                 <div className="button-container" >
-                    {(userInfo!==null && userInfo.USER_TYPE !== 'admin') && <button className="btn-primary" onClick={()=>setShowTrips(true)}>My Trips</button>}
+                    {(userInfo!==null && userInfo.USER_TYPE === 'customer') && <button className="btn-primary" onClick={()=>setShowTrips(true)}>My Trips</button>}
                     <button className="btn-primary" onClick={()=>{navigate('/destinations')}}>Destinations <IoGlobeSharp className="icon"/></button> 
                     <button className="btn-primary" onClick={()=>{navigate('/accommodations');}}>Accommodations<IoBedSharp className="icon" /></button>
                     <button className="btn-primary" onClick={()=>{navigate('/restaurants');}}>Restaurants<IoCafe className="icon"/></button>
                     <button className="btn-primary" onClick={()=>{navigate('/flights');}}> Flights<IoAirplaneSharp className="icon"/></button>
-                    {/* <button className="btn-primary" onClick={()=>{navigate('/transports');}}>Transports</button> */}
                 </div>
                 {userInfo!==null ? 
                     <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
                         <IoMdNotifications className="notification-icon" onClick={()=>setShowDetailedNotification(!showDetailedNotification)}/>
-                        <img src="/wishlist.png" className="wishlist"/>
+                        {userInfo.USER_TYPE==='customer' && <FaRegHeart className="wishlist"/>}
                         <h4 className="username">Hello <Link to='user'>{userInfo.USERNAME}</Link><VscAccount className="icon"/></h4>
                     </div> 
                     : 

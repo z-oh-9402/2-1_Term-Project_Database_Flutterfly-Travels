@@ -3,7 +3,6 @@ import {useContext, useEffect, useState} from 'react';
 import UserInfoContext from './Context/UserInfoContext.jsx';
 
 import Header from './Components/Header.jsx';
-import Title from './Components/Title.jsx';
 
 import Login from './Pages/Login.jsx';
 import SignUp from './Pages/SignUp.jsx';
@@ -126,7 +125,7 @@ function App() {
       {userInfo!==null && showTrips && <Trips setShowTrips={setShowTrips}/>}
       {userInfo!==null && <Notification notifications={notifications}  instantNotifications={instantNotifications}/>}
       <Header handleIsInLoginOrSignUpFromNavbar={handleIsInLoginOrSignUpFromNavbar} setShowTrips={setShowTrips}/>
-      <Title/>
+      <br/><br/><br/><br/><br/><br/>
       <Routes>
         <Route path='' element={<Homepage/>}/>
         <Route path='destinations' element={<><Outlet/></>}>

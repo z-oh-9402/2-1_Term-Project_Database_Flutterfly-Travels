@@ -368,7 +368,7 @@ const Trips = (props) => {
                                         <h3>Destinations -</h3>
                                         {visitingTrip.DESTINATIONS.map((destination, index) => 
                                             <div key={index} className="reservation">
-                                                {currentCategory===0 && <RiDeleteBin5Line className='delete-button' onClick={()=>deleteBooking('destination',index)}/>}
+                                                {currentCategory===1 && <RiDeleteBin5Line className='delete-button' onClick={()=>deleteBooking('destination',index)}/>}
                                                 <p>Name: {destination.NAME}</p>
                                                 <p>Location: {destination.LOCATION_NAME}</p>
                                                 <p>District: {destination.DISTRICT_NAME}</p>
@@ -381,7 +381,7 @@ const Trips = (props) => {
                                         <h3>Accommodations -</h3>
                                         {visitingTrip.ACCOMMODATIONS.map((accommodation, index) => 
                                             <div key={index} className="reservation">
-                                                {currentCategory===0 && <RiDeleteBin5Line className='delete-button' onClick={()=>deleteBooking('accommodation',index)}/>}
+                                                {currentCategory===1 && <RiDeleteBin5Line className='delete-button' onClick={()=>deleteBooking('accommodation',index)}/>}
                                                 <p>Name: {accommodation.NAME}</p>
                                                 <p>Check-In:&nbsp;
                                                     {new Date(accommodation.CHECK_IN).toLocaleDateString('en-US', {
@@ -407,7 +407,7 @@ const Trips = (props) => {
                                         <h3>Restaurants -</h3>
                                         {visitingTrip.RESTAURANTS.map((restaurant, index) => 
                                             <div key={index} className="reservation">
-                                                {currentCategory===0 && <RiDeleteBin5Line className='delete-button' onClick={()=>deleteBooking('restaurant',index)}/>}
+                                                {currentCategory===1 && <RiDeleteBin5Line className='delete-button' onClick={()=>deleteBooking('restaurant',index)}/>}
                                                 <p>Name: {restaurant.NAME}</p>
                                                 <p>Location: {restaurant.LOCATION}</p>
                                                 <p>Date: 
@@ -427,18 +427,27 @@ const Trips = (props) => {
                                         <h3>Flights -</h3>
                                         {visitingTrip.FLIGHTS.map((flight, index) => 
                                             <div key={index} className="reservation">
-                                                {currentCategory===0 && <RiDeleteBin5Line className='delete-button' onClick={()=>deleteBooking('flight',index)}/>}
-                                                <p>Flight Name: {flight.FLIGHT_NAME}</p>
-                                                <p>Departure: {flight.DEPARTURE}</p>
-                                                <p>Destination: {flight.DESTINATION}</p>
-                                                <p>Date: 
-                                                    {new Date(flight.DATE).toLocaleDateString('en-US', {
+                                                {console.log(flight)}
+                                                {currentCategory===1 && <RiDeleteBin5Line className='delete-button' onClick={()=>deleteBooking('flight',index)}/>}
+                                                <p>Airline Name: {flight.AIRLINE_NAME}</p>
+                                                <p>Flight Style: {flight.FLIGHT_STYLE}</p>
+                                                <p>Seat Class: {flight.SEAT_CLASS}</p>
+                                                <p>Number of Seats: {flight.NUMBER_OF_SEATS}</p>
+                                                <p>Departure Date: 
+                                                    {new Date(flight.DEPARTURE_AT).toLocaleDateString('en-US', {
                                                         year: 'numeric',
                                                         month: 'long',
                                                         day: 'numeric'
                                                     })}
                                                 </p>
-                                                <p>Time: {flight.TIME}</p>
+                                                {flight.RETURN_DATE &&
+                                                <p>Return Date: 
+                                                    {new Date(flight.RETURN_DATE).toLocaleDateString('en-US', {
+                                                        year: 'numeric',
+                                                        month: 'long',
+                                                        day: 'numeric'
+                                                    })}
+                                                </p>}
                                             </div>
                                         )}
                                     </div>}

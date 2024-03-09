@@ -241,6 +241,18 @@ router.get("/review-rating/:destinationId",async(req,res)=>{
     res.status(200).json(ans);
 });
 
+router.put('/update-favourite',async(req,res)=>{
+    const id = req.body.id;
+    const value = req.body.value;
+
+    const query = `UPDATE DESTINATION SET ADDED_TO_WISHLIST=${value} WHERE DESTINATION_ID=${id}`;
+    const params = [];
+    await database.query(query,params);
+    await database.query('commit',params);
+
+    res.status(200).json({status:'ok'});
+});
+
 router.post("/review-rating/:id",async(req,res)=>{
     const id = req.params.id;
     const reviews = req.body.review;

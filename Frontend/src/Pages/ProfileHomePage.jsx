@@ -5,6 +5,7 @@ import PasswordInput from '../Components/PasswordInput';
 import UserInfoContext from '../Context/UserInfoContext';
 import CategorizedDestination from '../Components/CategorizedDestination';
 import "../Styles/button.css"
+import AgentTrip from '../Components/AgentTrip';
 
 const ProfileHomePage = (props) => {
     const { userInfo, setInfo } = useContext(UserInfoContext);
@@ -394,6 +395,9 @@ const ProfileHomePage = (props) => {
                     <h1>Recommended Destinations -</h1>
                     <CategorizedDestination destinationObj={recommendedDestinations} />
                 </>}
+
+                {user.USER_TYPE === 'agent' &&
+                <AgentTrip/>}
 
                 {user.USER_TYPE === 'admin' &&
                 <>

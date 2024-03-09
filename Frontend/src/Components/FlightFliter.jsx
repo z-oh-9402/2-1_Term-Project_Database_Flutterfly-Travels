@@ -106,7 +106,6 @@ const FlightFliter = (props) => {
                         Round Trip
                     </label>
                 </div>
-                
             </div>
             <div className="flight-details-container">
                 <div style={{ display: 'flex', flexDirection: 'column' }}>

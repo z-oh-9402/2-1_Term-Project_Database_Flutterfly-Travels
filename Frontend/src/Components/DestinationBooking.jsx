@@ -151,7 +151,6 @@ const DestinationBooking = ({header, destination, setShowConfirmationMessage}) =
         const data = await response.json();
         if(data.status === "ok")
         {
-            alert("Booking added successfully!");
             if(userInfo.USER_TYPE === 'customer')
             {
                 const response = await fetch(`http://localhost:3000/trip/for-customer?customerId=${userInfo.USER_ID}`, {
@@ -200,33 +199,35 @@ const DestinationBooking = ({header, destination, setShowConfirmationMessage}) =
                     {page===2 &&
                     <>
                         <div className='message-title'>{header}</div>
-                        <label> Check-in Date:
-                            <div style={{display: 'inline-block', marginLeft: '5px'}}>
-                                <div className='datepicker-container'>
-                                    <DatePicker
-                                        selected={checkInDate}
-                                        onChange={(e)=>handleCheckInDateChange(e)}
-                                        dateFormat="dd/MM/yyyy"
-                                        placeholderText="Departure Date"
-                                    />
-                                    <FaRegCalendarAlt className='calendar-img'/>
+                        <div style={{display: 'flex', width: '100%', height: '40%', flexDirection: 'column', justifyContent: "space-between"}}>
+                            <label> Check-in Date:
+                                <div style={{display: 'inline-block', marginLeft: '5px'}}>
+                                    <div className='datepicker-container'>
+                                        <DatePicker
+                                            selected={checkInDate}
+                                            onChange={(e)=>handleCheckInDateChange(e)}
+                                            dateFormat="dd/MM/yyyy"
+                                            placeholderText="Departure Date"
+                                        />
+                                        <FaRegCalendarAlt className='calendar-img'/>
+                                    </div>
                                 </div>
-                            </div>
-                        </label>
-                        
-                        <label> Check-out Date:
-                            <div style={{display: 'inline-block', marginLeft: '5px'}}>
-                                <div className='datepicker-container'>
-                                    <DatePicker
-                                        selected={checkOutDate}
-                                        onChange={(e)=>handleCheckOutDateChange(e)}
-                                        dateFormat="dd/MM/yyyy"
-                                        placeholderText="Return Date"
-                                    />
-                                    <FaRegCalendarAlt className='calendar-img'/>
+                            </label>
+                            
+                            <label> Check-out Date:
+                                <div style={{display: 'inline-block', marginLeft: '5px'}}>
+                                    <div className='datepicker-container'>
+                                        <DatePicker
+                                            selected={checkOutDate}
+                                            onChange={(e)=>handleCheckOutDateChange(e)}
+                                            dateFormat="dd/MM/yyyy"
+                                            placeholderText="Return Date"
+                                        />
+                                        <FaRegCalendarAlt className='calendar-img'/>
+                                    </div>
                                 </div>
-                            </div>
-                        </label>
+                            </label>
+                        </div>
                         
                         <div style={{width: '100%', display: 'flex', justifyContent: 'flex-end'}}>
                             <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>

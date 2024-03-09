@@ -75,7 +75,7 @@ const RestaurantProfile = () => {
         <>
             {result &&
                 <div>
-                 {showConfirmationMessage && <RestaurantBooking header='Book destination -' destination={result} setShowConfirmationMessage={setShowConfirmationMessage}/>}
+                 {showConfirmationMessage && <RestaurantBooking header='Book destination -' restaurant={result} setShowConfirmationMessage={setShowConfirmationMessage}/>}
                     <div
                         style={{
                             display: 'flex',

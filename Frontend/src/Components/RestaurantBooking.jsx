@@ -8,9 +8,9 @@ import { useContext, useEffect, useState } from 'react';
 import UserInfoContext from '../Context/UserInfoContext';
 import { FaMinus, FaPlus, FaRegCalendarAlt } from 'react-icons/fa';
 import CreateTrip from './CreateTrip';
-import TimePicker from 'react-time-picker';
-import 'react-time-picker/dist/TimePicker.css';
-import 'react-clock/dist/Clock.css';
+import TimePicker from './TimePicker';
+
+const types = ['arrival', 'departure'];
 
 const RestaurantBooking = ({header, restaurant, setShowConfirmationMessage}) => {
     const {userInfo, setInfo} = useContext(UserInfoContext);
@@ -48,19 +48,12 @@ const RestaurantBooking = ({header, restaurant, setShowConfirmationMessage}) => 
                      "How would you like to add this restaurant to your package?",
                      "No already created trip package exists. Would you like to create a new one?"];
 
+    const bookingCost = restaurant.BOOKING_COST;
     const [numberOfSeats, setNumberOfSeats] = useState(1);
-
-    const date = new Date();
-    const [bookingDate, setBookingDate] = useState(new Date(date));
-    const [arrivalTime, setArrivalTime] = useState(new Date(date));
-    const [departureTime, setDepartureTime] = useState(new Date(date));
-    const [numberOfHours, setNumberOfHours] = useState(1);
-
-    const [tripName, setTripName] = useState('New Trip');
-    const [departureDate, setDepartureDate] = useState(new Date());
-    const [returnDate, setReturnDate] = useState(new Date());
-
-    const [agent, setAgent] = useState(undefined);
+    const [bookingDate, setBookingDate] = useState(new Date());
+    const [totalCost, setTotalCost] = useState(restaurant.BOOKING_COST);
+    const [arrivalTime, setArrivalTime] = useState({hour: 9, minute: 0, am: true});
+    const [departureTime, setDepartureTime] = useState({hour: 10, minute: 0, am: true});
 
     useEffect(() => {
         const resizeComponent = () => {
@@ -91,21 +84,30 @@ const RestaurantBooking = ({header, restaurant, setShowConfirmationMessage}) => 
         if(increase)
         {
             setNumberOfSeats(parseInt(numberOfSeats)+1);
+            setTotalCost((totalCost/numberOfSeats)*(numberOfSeats+1));
         }
         else
         {
             if(numberOfSeats > 1)
             {
                 setNumberOfSeats(parseInt(numberOfSeats)-1);
+                setTotalCost((totalCost/numberOfSeats)*(numberOfSeats-1));
             }
         }
     }
 
     const handleSeatNumberChange = (e) => {
         const isValid = /^[1-9]\d*$/.test(e.target.value);
-        if(isValid || e.target.value.length === 0)
+
+        if(e.target.value.length === 0)
         {
             setNumberOfSeats(e.target.value);
+            setTotalCost(bookingCost);
+        }
+        if(isValid)
+        {
+            setNumberOfSeats(parseInt(e.target.value));
+            setTotalCost(bookingCost*e.target.value);
         }
     }
 
@@ -128,173 +130,102 @@ const RestaurantBooking = ({header, restaurant, setShowConfirmationMessage}) => 
         {
             setBookingDate(new Date(date));
         }
+    } 
+
+    const formatTimestamp = ({ hour, minute, am }) => {
+        const ampm = am ? 'AM' : 'PM';
+        const formattedHour = am ? (hour === 12 ? 0 : hour) : hour + 12;
+        const timestampString = `${formattedHour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')} ${ampm}`;
+        return timestampString;
     }
-
-    const handleDepartureDateChange = (date) =>
-    {
-        const sysdate = new Date();
-
-        if(date<sysdate)
-        {
-            alert("Departure Date cannot be in the past");
-        }
-        else
-        {
-            setDepartureDate(date);
-            
-            if(returnDate<date)
-            {
-                setReturnDate(date);
-            }
-        }
-    }
-
-    const handleReturnDateChange = (date) =>
-    {
-        if(date<departureDate)
-        {
-            setReturnDate(departureDate);
-        }
-        else
-        {
-            setReturnDate(date);
-        }
-    }
-
-    const handleArrivalTimeChange = (time) =>
-    {
-        setArrivalTime(time);
-        console.log(time);
-    }
-
-    const handleDepartureTimeChange = (time) =>
-    {
-        setDepartureTime(time);
-        console.log(time);
-    }
-
-    const createTripPackage = async () => {
-        const options = {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit'
-        };
-
-        const inDate = new Intl.DateTimeFormat('en-US', options).format(departureDate);
-        const outDate = new Intl.DateTimeFormat('en-US', options).format(returnDate);
-
-        const response = await fetch(`http://localhost:3000/trip/`, {
-            method: "POST",
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                customerId: userInfo.USER_ID,
-                agentId: agent!==undefined ? agent.USER_ID : null,
-                name: tripName,
-                departureDate: inDate,
-                returnDate: outDate,
-                totalCost: 0,
-                discount: 0,
-                tripStatus: 'UPDATING',
-                rating: 0
-            }),
-        });
-
-        await response.json();
-
-        if(userInfo.USER_TYPE === 'customer')
-        {
-            const response = await fetch(`http://localhost:3000/trip/for-customer?customerId=${userInfo.USER_ID}`, {
-                method: "GET"
-            });
-
-            const result = await response.json();
-            userInfo.TRIPS = result;
-        }
-        if(userInfo.USER_TYPE === 'agent')
-        {
-            const response = await fetch(`http://localhost:3000/trip/for-agent?agentId=${userInfo.USER_ID}`, {
-                method: "GET"
-            });
-
-            const result = await response.json();
-            userInfo.TRIPS = result;
-        }
-        setInfo(userInfo);
-        setPage(5);
-    }   
 
     const addBooking = async (tripId) => {
-        const options = {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: false
-        };
+        const at = (arrivalTime.hour + (arrivalTime.am ? 0 : 12)) * 60 + arrivalTime.minute;
+        const dt = (departureTime.hour + (departureTime.am ? 0 : 12)) * 60 + departureTime.minute;
 
-        const inDate = new Intl.DateTimeFormat('en-US', options).format(bookingDate);
-
-        const response = await fetch(`http://localhost:3000/booking/add-restaurant-booking`, {
-            method: "POST",
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                itemId: restaurant.RESTAURANT_ID,
-                tripId: tripId,
-                checkInDate: inDate,
-                numberOfSeats: numberOfSeats,
-                bookingType: 'RESTAURANT'
-            }),
-        });
-
-        const data = await response.json();
-        if(data.status === "ok")
+        if(at>dt-60)
         {
-            alert("Booking added successfully!");
-            if(userInfo.USER_TYPE === 'customer')
-            {
-                const response = await fetch(`http://localhost:3000/trip/for-customer?customerId=${userInfo.USER_ID}`, {
-                    method: "GET"
-                });
-
-                const result = await response.json();
-                userInfo.TRIPS = result;
+            alert("Arrival time must be at least 1 hour before departure time");
+        }
+        else if(at>(20*60))
+        {
+            alert("Arrival time must be before 8:00 PM");
+        }
+        else
+        {
+            const options = {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            };
+    
+            let inDate = new Intl.DateTimeFormat('en-US', options).format(bookingDate);
+            if(inDate.includes(', 24:')) {
+                inDate = inDate.replace(', 24:', ', 00:');
             }
-            if(userInfo.USER_TYPE === 'agent')
-            {
-                const response = await fetch(`http://localhost:3000/trip/for-agent?agentId=${userInfo.USER_ID}`, {
-                    method: "GET"
-                });
 
-                const result = await response.json();
-                userInfo.TRIPS = result;
+            let inTime = formatTimestamp(arrivalTime);
+            let outTime = formatTimestamp(departureTime);
+    
+            const response = await fetch(`http://localhost:3000/booking/add-restaurant-booking`, {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    itemId: restaurant.RESTAURANT_ID,
+                    tripId: tripId,
+                    bookingDate: inDate,
+                    arrivalTime: inTime,
+                    departureTime: outTime,
+                    numberOfSeats: numberOfSeats,
+                    totalCost: totalCost,
+                    bookingType: 'RESTAURANT'
+                }),
+            });
+    
+            const data = await response.json();
+            if(data.status === "ok")
+            {
+                if(userInfo.USER_TYPE === 'customer')
+                {
+                    const response = await fetch(`http://localhost:3000/trip/for-customer?customerId=${userInfo.USER_ID}`, {
+                        method: "GET"
+                    });
+    
+                    const result = await response.json();
+                    userInfo.TRIPS = result;
+                }
+                if(userInfo.USER_TYPE === 'agent')
+                {
+                    const response = await fetch(`http://localhost:3000/trip/for-agent?agentId=${userInfo.USER_ID}`, {
+                        method: "GET"
+                    });
+    
+                    const result = await response.json();
+                    userInfo.TRIPS = result;
+                }
+                setInfo(userInfo);
+                setShowConfirmationMessage(false);
             }
-            setInfo(userInfo);
-            setShowConfirmationMessage(false);
         }
     }
 
-    const params = {
-        data: {
-            header,
-            tripName,
-            departureDate,
-            returnDate
-        },
-        functions: {
-            setTripName,
-            setDepartureDate,
-            setReturnDate,
-            setAgent,
-            handleDepartureDateChange,
-            handleReturnDateChange,
-            createTripPackage
+    const setCreateTrip = (param) => {
+        if(!param)
+        {
+            setPage(5);
         }
+    }
+
+    const setTime = (type) => {
+        const element = document.getElementById(`${type}-time-picker`);
+        console.log(type)
+        element.style.display = 'flex';
     }
 
     return (
@@ -315,57 +246,43 @@ const RestaurantBooking = ({header, restaurant, setShowConfirmationMessage}) => 
                     {page===2 &&
                     <>
                         <div className='message-title'>{header}</div>
-                        <label>Number of seats: 
-                            <div style={{position: "relative", display: 'inline-block', marginLeft: "5px"}}>
-                                <input className='seat-number' type="text" value={numberOfSeats} onChange={handleSeatNumberChange} onBlur={fixValue}/>
-                                {numberOfSeats.length!==0 &&
-                                <FaMinus className='seat-number-buttons minus' onClick={()=>changeSeatNumber(false)} />}
-                                {numberOfSeats.length!==0 &&
-                                <FaPlus className='seat-number-buttons plus' onClick={()=>changeSeatNumber(true)} />}
-                            </div>
-                        </label>
-
-                        <label> Booking Date:
-                            <div style={{display: 'inline-block', marginLeft: '5px'}}>
-                                <div className='datepicker-container'>
-                                    <DatePicker
-                                        selected={bookingDate}
-                                        onChange={(e)=>handleBookingDateChange(e)}
-                                        dateFormat="dd/MM/yyyy"
-                                        placeholderText="Departure Date"
-                                    />
-                                    <FaRegCalendarAlt className='calendar-img'/>
+                        <div style={{display: 'flex', width: '100%', height: '50%', flexDirection: 'column', justifyContent: "space-between"}}>
+                            <label>Number of seats: 
+                                <div style={{position: "relative", display: 'inline-block', marginLeft: "5px"}}>
+                                    <input className='seat-number' type="text" value={numberOfSeats} onChange={handleSeatNumberChange} onBlur={fixValue}/>
+                                    {numberOfSeats.length!==0 &&
+                                    <FaMinus className='seat-number-buttons minus' onClick={()=>changeSeatNumber(false)} />}
+                                    {numberOfSeats.length!==0 &&
+                                    <FaPlus className='seat-number-buttons plus' onClick={()=>changeSeatNumber(true)} />}
                                 </div>
-                            </div>
-                        </label>
+                            </label>
 
-                        
-                        <div style={{display: 'inline-block', marginLeft: '5px'}}>
-                            <div>
-                                <p>Arrival Time: {bookingDate.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })}</p>
-                                <TimePicker onChange={(time) => handleDepartureTimeChange(time)} value={departureTime}/>
-                            </div>
-                        </div>
+                            <label> Booking Date:
+                                <div style={{display: 'inline-block', marginLeft: '5px'}}>
+                                    <div className='datepicker-container'>
+                                        <DatePicker
+                                            selected={bookingDate}
+                                            onChange={(e)=>handleBookingDateChange(e)}
+                                            dateFormat="dd/MM/yyyy"
+                                            placeholderText="Departure Date"
+                                        />
+                                        <FaRegCalendarAlt className='calendar-img'/>
+                                    </div>
+                                </div>
+                            </label>
 
-                        <div style={{display: 'inline-block', marginLeft: '5px'}}>
-                            <div>
-                                <p>Departure Time: {bookingDate.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })}</p>
-                                {/* <TimePicker
-                                    value={departureTime}
-                                    onChange={(time) => handleDepartureTimeChange(time)}
-                                    format="h:mm a"
-                                    maxTime="18:00"
-                                    minTime="08:00"
-                                    clearIcon={null}
-                                    className="my-time-picker"
-                                    use12Hours
-                                /> */}
-                            </div>
+                            <label>Arrival Time: <span style={{cursor: 'pointer'}} onClick={()=>setTime(types[0])}>{arrivalTime.hour.toLocaleString('en-US', { minimumIntegerDigits: 2 })}:{arrivalTime.minute.toLocaleString('en-US', { minimumIntegerDigits: 2 })} {arrivalTime.am ? 'AM' : 'PM'}</span>
+                                <TimePicker time={arrivalTime} setTime={setArrivalTime} type={types[0]}/>
+                            </label>
+
+                            <label>Departure Time: <span style={{cursor: 'pointer'}} onClick={()=>setTime(types[1])}>{departureTime.hour.toLocaleString('en-US', { minimumIntegerDigits: 2 })}:{departureTime.minute.toLocaleString('en-US', { minimumIntegerDigits: 2 })} {departureTime.am ? 'AM' : 'PM'}</span>
+                                <TimePicker time={departureTime} setTime={setDepartureTime} type={types[1]}/>
+                            </label>
                         </div>
                         
                         <div style={{width: '100%', display: 'flex', justifyContent: 'flex-end'}}>
                             <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
-                                <div>Staying: {numberOfHours} {numberOfHours===1 ? 'hour' : 'hours'}</div>
+                                <div>Total Booking Price: ৳ {totalCost.toLocaleString('en-US')}</div>
                             </div>
                         </div>
                         
@@ -423,7 +340,7 @@ const RestaurantBooking = ({header, restaurant, setShowConfirmationMessage}) => 
 
                     {page===6 &&
                     <>
-                        <CreateTrip data={params.data} functions={params.functions}/>
+                        <CreateTrip setCreateTrip={setCreateTrip}/>
                     </>}
                 </div>
             </div>

@@ -1,8 +1,6 @@
 .trip-container{
-    overflow: auto;
-    width : 450px;
-    height: 500px;
     animation: none;
+    padding-right: 80px
 }
 
 .category-bar {
@@ -26,6 +24,7 @@
 .selected-category{
     background: white;
     color: #074b8a;
+    border-radius: 3px;
 }
 
 .category-data {

@@ -30,7 +30,7 @@ router.post("/add-accommodation-booking", async (req, res) => {
 });
 
 router.post("/add-destination-booking", async (req, res) => {
-    const { itemId, tripId, checkInDate, checkOutDate, bookingType } = req.body;
+    const { itemId, tripId, checkInDate, checkOutDate } = req.body;
 
     const query = `INSERT INTO TRIP_DESTINATION (TRIP_ID, DESTINATION_ID, DEPARTURE_DATE, RETURN_DATE)
                 VALUES (${tripId}, ${itemId}, TO_TIMESTAMP('${checkInDate}', 'MM/DD/YYYY, HH24:MI:SS'), TO_TIMESTAMP('${checkOutDate}', 'MM/DD/YYYY, HH24:MI:SS'))`;
@@ -38,6 +38,41 @@ router.post("/add-destination-booking", async (req, res) => {
     
     const ans = await database.query(query,params);
     await database.query("COMMIT",params);
+
+    res.status(200).json({status: "ok"});
+});
+
+router.post("/add-flight-booking", async (req, res) => {
+    const { itemId, tripId, departureDate, returnDate, numberOfSeats, seatClass, flightStyle, totalCost, bookingType } = req.body;
+
+    const oracledb = database.oracledb;
+    let query = 
+    `BEGIN
+        :ret := GET_BOOKING_ID(:tripId, :bookingType, :totalCost);
+     END;`;
+
+    const binds = {
+        ret: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+        tripId: tripId,
+        bookingType: bookingType,
+        totalCost: totalCost,
+    };
+    const ans = await database.query2(query,binds);
+    const bookingId = ans.ret;
+
+    if(returnDate !== undefined)
+    {
+        query = `INSERT INTO FLIGHT_BOOKING (FLIGHT_BOOKING_ID, NUMBER_OF_SEATS, FLIGHT_ID, DEPARTURE_AT, ARRIVAL_AT, SEAT_CLASS, FLIGHT_STYLE)
+             VALUES (${bookingId}, ${numberOfSeats}, ${itemId}, TO_TIMESTAMP('${departureDate}', 'MM/DD/YYYY, HH24:MI:SS'), TO_TIMESTAMP('${returnDate}', 'MM/DD/YYYY, HH24:MI:SS'), '${seatClass}', '${flightStyle}')`;
+    }
+    else
+    {
+        query = `INSERT INTO FLIGHT_BOOKING (FLIGHT_BOOKING_ID, NUMBER_OF_SEATS, FLIGHT_ID, DEPARTURE_AT, SEAT_CLASS, FLIGHT_STYLE)
+             VALUES (${bookingId}, ${numberOfSeats}, ${itemId}, TO_TIMESTAMP('${departureDate}', 'MM/DD/YYYY, HH24:MI:SS'), '${seatClass}', '${flightStyle}')`;
+    }
+
+    await database.query(query,[]);
+    await database.query("COMMIT",[]);
 
     res.status(200).json({status: "ok"});
 });

@@ -198,7 +198,6 @@ const AccommodationBooking = ({ header, accommodation, setShowConfirmationMessag
         const data = await response.json();
         if(data.status === "ok")
         {
-            alert("Booking added successfully!");
             if(userInfo.USER_TYPE === 'customer')
             {
                 const response = await fetch(`http://localhost:3000/trip/for-customer?customerId=${userInfo.USER_ID}`, {

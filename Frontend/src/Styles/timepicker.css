@@ -1,6 +1,15 @@
 .App {
   font-family: sans-serif;
   text-align: center;
+  position: fixed;
+  top: 28%;
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+}
+
+.atp-background-color{
+  width: auto;
 }
 
 .atp-clock-btn {
@@ -22,6 +31,7 @@
 
 .mat-card {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: space-between;
 }
@@ -29,7 +39,11 @@
 .atp-time {
   background-color: black !important;
   text-align: center !important;
-  font-size: 35px;
+  font-size: 25px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .atp-color--primary {
@@ -39,6 +53,13 @@
 .atp-clock-cnt {
   background-color: black !important;
   border-radius: 50%;
+  padding: 12px; 
+  height: 200px;
+  width: 200px;
+}
+
+.atp-am, .atp-pm{
+  font-size: 10px;
 }
 
 .atp-clock {

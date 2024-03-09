@@ -601,3 +601,75 @@ Table creation commands:
 		FROM DUAL;
 	END;
 	/
+
+--26. Destination_Wishlist
+	CREATE TABLE Destination_Wishlist(
+		wishlist_id NUMBER PRIMARY KEY,
+		customer_id NUMBER,
+		destination_id NUMBER,
+		FOREIGN KEY (customer_id) REFERENCES Customer(customer_id) ON DELETE CASCADE,
+		FOREIGN KEY (destination_id) REFERENCES Destination(destination_id) ON DELETE CASCADE
+	);
+
+	CREATE SEQUENCE destination_wishlist_id_sequence
+		START WITH 1
+		INCREMENT BY 1
+		NOMAXVALUE;
+
+	CREATE OR REPLACE TRIGGER destination_wishlist_id_trigger
+	BEFORE INSERT ON Destination_Wishlist
+	FOR EACH ROW
+	BEGIN
+		SELECT destination_wishlist_id_sequence.NEXTVAL
+		INTO :NEW.WISHLIST_ID
+		FROM DUAL;
+	END;
+	/
+
+--27. Accommodation_Wishlist
+	CREATE TABLE Accommodation_Wishlist(
+		wishlist_id NUMBER PRIMARY KEY,
+		customer_id NUMBER,
+		accommodation_id NUMBER,
+		FOREIGN KEY (customer_id) REFERENCES Customer(customer_id) ON DELETE CASCADE,
+		FOREIGN KEY (accommodation_id) REFERENCES Accommodation(accommodation_id) ON DELETE CASCADE
+	);
+
+	CREATE SEQUENCE accommodation_wishlist_id_sequence
+		START WITH 1
+		INCREMENT BY 1
+		NOMAXVALUE;
+
+	CREATE OR REPLACE TRIGGER accommodation_wishlist_id_trigger
+	BEFORE INSERT ON Accommodation_Wishlist
+	FOR EACH ROW
+	BEGIN
+		SELECT accommodation_wishlist_id_sequence.NEXTVAL
+		INTO :NEW.WISHLIST_ID
+		FROM DUAL;
+	END;
+	/
+
+--28. Restaurant_Wishlist
+	CREATE TABLE Restaurant_Wishlist(
+		wishlist_id NUMBER PRIMARY KEY,
+		customer_id NUMBER,
+		restaurant_id NUMBER,
+		FOREIGN KEY (customer_id) REFERENCES Customer(customer_id) ON DELETE CASCADE,
+		FOREIGN KEY (restaurant_id) REFERENCES Restaurant(restaurant_id) ON DELETE CASCADE
+	);
+
+	CREATE SEQUENCE restaurant_wishlist_id_sequence
+		START WITH 1
+		INCREMENT BY 1
+		NOMAXVALUE;
+
+	CREATE OR REPLACE TRIGGER restaurant_wishlist_id_trigger
+	BEFORE INSERT ON Restaurant_Wishlist
+	FOR EACH ROW
+	BEGIN
+		SELECT restaurant_wishlist_id_sequence.NEXTVAL
+		INTO :NEW.WISHLIST_ID
+		FROM DUAL;
+	END;
+	/

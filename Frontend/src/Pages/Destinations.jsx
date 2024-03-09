@@ -1,5 +1,4 @@
 import {useState } from "react";
-import "../Styles/item-bar.css"
 import { useNavigate } from "react-router-dom";
 import SearchAndSuggestions from "../Components/SearchAndSuggestions";
 import ItemBar from "../Components/ItemBar";

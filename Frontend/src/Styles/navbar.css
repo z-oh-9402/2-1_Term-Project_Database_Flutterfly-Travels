@@ -54,6 +54,11 @@
 }
 
 .wishlist {
-    height: 35px;
     margin-right: 20px;
+    color: white;
+    font-size: 25px;
+}
+
+.title-img{
+    height: 40px;
 }

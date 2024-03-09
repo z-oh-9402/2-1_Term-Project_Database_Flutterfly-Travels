@@ -24,7 +24,7 @@ const Notification = (props) => {
 
         handleScroll();
     }
-    , [showDetailedNotification,notifications]);
+    , [showDetailedNotification, notifications]);
 
     useEffect(() => {
         const handleScroll = () => {

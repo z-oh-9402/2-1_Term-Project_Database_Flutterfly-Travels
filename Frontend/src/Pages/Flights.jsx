@@ -6,6 +6,7 @@ import { WiDaySunny } from "react-icons/wi";
 import { WiSunset } from "react-icons/wi";
 import { WiMoonrise } from "react-icons/wi";
 import ItemBar from '../Components/ItemBar';
+import FlightBooking from '../Components/FlightBooking';
 
 const marks = {
     4000: '৳4,000',
@@ -43,6 +44,7 @@ const times =  [{
                 }];
 
 const Flights = () => {
+    const [showBooking, setShowBooking] = useState(false);
     const [departureAirport, setDepartureAirport] = useState("");
     const [arrivalAirport, setArrivalAirport] = useState("");
     const airportSet = {setDepartureAirport, setArrivalAirport};
@@ -65,6 +67,10 @@ const Flights = () => {
     const [airlinesChecked, setAirlinesChecked] = useState([false,false,false,false]);
     const [departureTime, setDepartureTime] = useState(-1);
     const [arrivalTime, setArrivalTime] = useState(-1);
+    const [returnDepartureTime, setReturnDepartureTime] = useState(-1);
+    const [returnArrivalTime, setReturnArrivalTime] = useState(-1);
+
+    const [flight, setFlight] = useState(undefined);
 
     const airportOptions = [
         { value: 'DAC', label: `Hazrat Shahjalal International Airport (Dhaka)` },
@@ -86,7 +92,7 @@ const Flights = () => {
     const resetFilter = () => {
         setIsFilterApplied(false);
 
-        setPrices([5000,20000]);
+        setPrices([4000,20000]);
         setDepartureTime(-1);
         setArrivalTime(-1);
         setAirlinesChecked([false,false,false,false]);
@@ -109,12 +115,19 @@ const Flights = () => {
         setIsFilterApplied(true);
     }
 
-    const compareWithSystemTime = (time) => {
-        const currentTime = new Date();
-        // console.log(currentTime, time);
+    const selectReturnDepartureTime = (index) => {
+        setReturnDepartureTime(index);
+        setIsFilterApplied(true);
+    }
 
-        const currentHour = currentTime.getHours();
-        const currentMinute = currentTime.getMinutes();
+    const selectReturnArrivalTime = (index) => {
+        setReturnArrivalTime(index);
+        setIsFilterApplied(true);
+    }
+
+    const compareWithSystemTime = (time, targetTime) => {
+        const currentHour = targetTime.getHours();
+        const currentMinute = targetTime.getMinutes();
 
         const targetHour = time.getHours();
         const targetMinute = time.getMinutes();
@@ -127,24 +140,14 @@ const Flights = () => {
 
         if(isChecked)
         {
-            if(seatClass==='Economy')
-            {
-                isChecked = flight.ECONOMY_SEAT_PRICE>=prices[0] && flight.ECONOMY_SEAT_PRICE<=prices[1];
-            }
-            else if(seatClass==='Business')
-            {
-                isChecked = flight.BUSINESS_SEAT_PRICE>=prices[0] && flight.BUSINESS_SEAT_PRICE<=prices[1];
-            }
-            else
-            {
-                isChecked = flight.FIRST_SEAT_PRICE>=prices[0] && flight.FIRST_SEAT_PRICE<=prices[1];
-            }
+            isChecked = flight.SEAT_PRICE>=prices[0] && flight.SEAT_PRICE<=prices[1];
         }
 
         if(isChecked)
         {
             let time = new Date(flight.DEPARTURE_TIME);
-            isChecked = compareWithSystemTime(time);
+            const currTime = new Date();
+            isChecked = compareWithSystemTime(time, currTime);
 
             if(departureTime!==-1)
             {
@@ -156,6 +159,27 @@ const Flights = () => {
         {
             let time = new Date(flight.ARRIVAL_TIME)
             isChecked = time>=times[arrivalTime].start && time<=times[arrivalTime].end;
+        }
+
+        if(flightStyle==="Round Trip")
+        {
+            if(isChecked)
+            {
+                let time = new Date(flight.RETURN_DEPARTURE_TIME);
+                let targetTime = new Date(flight.ARRIVAL_TIME);
+                isChecked = compareWithSystemTime(time, targetTime);
+    
+                if(returnDepartureTime!==-1)
+                {
+                    isChecked = isChecked && time>=times[returnDepartureTime].start && time<=times[returnDepartureTime].end;
+                }
+            }
+
+            if(isChecked && returnArrivalTime!==-1)
+            {
+                let time = new Date(flight.RETURN_ARRIVAL_TIME)
+                isChecked = isChecked && time>=times[returnArrivalTime].start && time<=times[returnArrivalTime].end;
+            }
         }
 
         if(isChecked)
@@ -207,8 +231,21 @@ const Flights = () => {
         }
     }
 
+    const openBooking = (item) => {
+        setShowBooking(true);
+        setFlight(item);
+    }
+
+    const bookingDetails = {
+        departureDate,
+        returnDate: flightStyle==="Round Trip" ? returnDate : undefined,
+        numberOfSeats,
+        seatClass
+    }
+
     return (
         <>
+            {showBooking && <FlightBooking header={'Book Flight -'} flight={flight} setShowConfirmationMessage={setShowBooking} bookingDetails={bookingDetails}/>}
             <FlightFliter airportSet={airportSet} setSeatClass={setSeatClass} dateSet={dateSet} flightStyleSet={flightStyleSet} seatNumberSet={seatNumberSet} airportOptions={airportOptions} seatClassOptions={seatClassOptions} handleSubmit={handleSubmit}/>
 
             {filteredFlights.length!==0 &&
@@ -243,6 +280,33 @@ const Flights = () => {
                             )}
                         </div>
 
+                        {flightStyle==="Round Trip" &&
+                        <>
+                            <h3>Return Departure Time:</h3>
+                            <div className='all-times-container'>
+                                {times.map((time,index)=>
+                                    <div key={index} style={{display: "flex", flexDirection: "column", justifyContent: "space-between"}}>
+                                        <div className='time-container' onClick={()=>selectReturnDepartureTime(index)} style={{backgroundColor: departureTime===index ? 'gray' : 'black'}}>
+                                            {time.icon}
+                                        </div>
+                                        <label className='time-label'>{time.label}</label>
+                                    </div>
+                                )}
+                            </div>
+    
+                            <h3>Return Arrival Time:</h3>
+                            <div className='all-times-container'>
+                                {times.map((time,index)=>
+                                    <div key={index} style={{display: "flex", flexDirection: "column", justifyContent: "space-between"}}>
+                                        <div className='time-container' onClick={()=>selectReturnArrivalTime(index)} style={{backgroundColor: arrivalTime===index ? 'gray' : 'black'}}>
+                                            {time.icon}
+                                        </div>
+                                        <label className='time-label'>{time.label}</label>
+                                    </div>
+                                )}
+                            </div>
+                        </>}
+
                         <div style={{margin: '40px 0px 40px 0px'}}>
                             <h3>Choose Your Preferred Airline:</h3>
                             <label><input type="checkbox" checked={airlinesChecked[0]} onChange={()=>checkAirline(0)}/>Air Astra</label><br/>
@@ -256,7 +320,7 @@ const Flights = () => {
                         <h1>Searched Accommodations -</h1>
                         <div className='card-container'>
                             {filteredFlights.map((flight,index)=>
-                                (isFilterApplied ? filterCheck(flight) : compareWithSystemTime(new Date(flight.DEPARTURE_TIME))) && <ItemBar key={index} itemType='flight' item={flight} index={`${index}`}/>
+                                (isFilterApplied ? filterCheck(flight) : compareWithSystemTime(new Date(flight.DEPARTURE_TIME), new Date())) && <ItemBar key={index} itemType='flight' item={flight} index={`${index}`} showBooking={openBooking}/>
                             )}
                         </div>
                     </div>
