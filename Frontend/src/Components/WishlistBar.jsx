@@ -49,24 +49,10 @@ const WishlistBar = (props) => {
         checkFavourite();
     }, []);
 
-    const showPopup = () => {
-        if(itemType!=='flight' || userInfo===null || userInfo.USER_TYPE!=='admin')
-        {
-            document.getElementById(`${props.index}`).style.display = 'flex';
-        }
-    }
-
-    const hidePopup = () => {
-        if(itemType!=='flight' || userInfo===null || userInfo.USER_TYPE!=='admin')
-        {
-            document.getElementById(`${props.index}`).style.display = 'none';
-        }
-    }
-
     return (
         <div className="bar" id={`bar${index}`} style={{display:'flex', alignItems: 'center', height: '120px', boxSizing:'border-box'}}>
             {userInfo.USER_TYPE==='customer' && (addedToFav ? <FaHeart className='fav-icon'/> : <FaRegHeart className='fav-icon'/>)}
-            <div style={{width: '100%', height: '100px', display:'flex', alignItems: 'center'}} onMouseOver={showPopup} onMouseOut={hidePopup}>
+            <div style={{width: '100%', height: '100px', display:'flex', alignItems: 'center'}}>
                 <div className='main-info-container wishlist-container'>
                     <img className='cover-img wishlist-img' src={item.IMAGE} alt="Card Image"/>
                     <div>
@@ -76,17 +62,6 @@ const WishlistBar = (props) => {
                         </div>
                     </div>
                 </div>
-                
-
-                {itemType==='destination' && <div className="popup" id={index}>
-                    <p className="description"><span style={{fontWeight:"bold",color:"white"}}>Description: </span><br/>{item.DESCRIPTION}</p>
-                    <p></p>
-                </div>}
-
-                {(itemType==='accommodation' || itemType==='restaurant') && <div className="popup" id={index}>
-                    <p className="description"><span style={{fontWeight:"bold",color:"white"}}>Address: </span><br/>{item.ADDRESS}</p>
-                    <p></p>
-                </div>}
             </div>
         </div>
     )

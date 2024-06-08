@@ -327,7 +327,7 @@ const Flights = () => {
                         
                     </div>
                     <div className='recommendation-container'>
-                        <h1>Searched Accommodations -</h1>
+                        <h1>Searched Flights -</h1>
                         <div className='card-container'>
                             {filteredFlights.map((flight,index)=>
                                 (isFilterApplied ? filterCheck(flight) : compareWithSystemTime(new Date(flight.DEPARTURE_TIME), new Date())) && <ItemBar key={index} itemType='flight' item={flight} index={`${index}`} showBooking={openBooking}/>

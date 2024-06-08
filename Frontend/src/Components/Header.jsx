@@ -53,13 +53,13 @@ const Header = (props)=>{
                     <button className="btn-primary" onClick={()=>{navigate('/flights');}}> Flights<IoAirplaneSharp className="icon"/></button>
                 </div>
                 {userInfo!==null ? 
-                    <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
                         <IoMdNotifications className="notification-icon" onClick={()=>setShowDetailedNotification(!showDetailedNotification)}/>
                         {userInfo.USER_TYPE==='customer' && <FaRegHeart className="wishlist" onClick={()=>setShowWishlist(true)}/>}
                         <h4 className="username">Hello <Link to='user'>{userInfo.USERNAME}</Link><VscAccount className="icon"/></h4>
                     </div> 
                     : 
-                    <div>
+                    <div style={{display: 'flex', alignItems: 'center'}}>
                         <button className="custom-btn" onClick={()=>handleIsInLoginOrSignUpFromNavbar(true)}>Login</button>
                         <button className="custom-btn" onClick={()=>handleIsInLoginOrSignUpFromNavbar(false)}>Sign Up</button>
                     </div>}

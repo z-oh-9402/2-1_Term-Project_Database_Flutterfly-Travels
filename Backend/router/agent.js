@@ -2,6 +2,50 @@ const router = require("express-promise-router")();
 const database = require('../database');
 const bcrypt = require('bcryptjs');
 
+router.get("/review-rating/:agentId/:customerId",async(req,res)=>{
+    const id = req.params.agentId;
+    const customerId = req.params.customerId;
+
+    const query = 
+    `
+        SELECT RATING FROM RATING
+        WHERE CUSTOMER_ID=${customerId} AND ITEM_ID=${id} AND ITEM_TYPE='agent'
+    `;
+
+    const params = [];
+
+    const ans = await database.query(query,params);
+
+    let result;
+    if(ans.length===0)
+    {
+        result = 0;
+    }
+    else
+    {
+        result = ans[0].RATING;
+    }
+
+    res.status(200).json(result);
+});
+
+router.get("/review-rating/:agentId",async(req,res)=>{
+    const id = req.params.agentId;
+
+    const query = 
+    `
+        SELECT RE.REVIEW, RA.RATING, TO_CHAR(RE.CREATED_AT, 'DD Mon, YYYY ... HH12:MI:SS AM') AS CREATED_AT, U.USERNAME
+        FROM REVIEW RE JOIN RATING RA ON RE.ITEM_ID=RA.ITEM_ID AND RE.ITEM_TYPE=RA.ITEM_TYPE AND RE.CUSTOMER_ID=RA.CUSTOMER_ID JOIN USERS U ON U.USER_ID=RE.CUSTOMER_ID
+        WHERE RE.ITEM_ID=${id} AND RE.ITEM_TYPE='agent'
+        ORDER BY RE.CREATED_AT DESC
+    `;
+
+    const params = [];
+
+    const ans = await database.query(query,params);
+    res.status(200).json(ans);
+});
+
 router.get("/pending-agents",async(req,res)=>{
     const query = `SELECT U.*, A.EXPERIENCE_YEARS, A.FEE, A.ACC_STATUS
                    FROM Users U RIGHT JOIN Agent A ON U.USER_ID = A.AGENT_ID
@@ -39,12 +83,72 @@ router.get("/fetch/:agentId",async(req,res)=>{
 router.get("/:agentId",async(req,res)=>{
     
     const query = `SELECT *
-                   FROM Agent 
+                   FROM Agent A JOIN Users U ON A.AGENT_ID=U.USER_ID
                    WHERE AGENT_ID=${req.params.agentId}`;
     const params = [];
     const ans = await database.query(query,params);
 
     res.status(200).json(ans[0]);
+});
+
+router.post("/review-rating/:id",async(req,res)=>{
+    const id = req.params.id;
+    const reviews = req.body.review;
+    const rating = req.body.rating;
+    const customerId = req.body.customerId;
+
+    const review = reviews.replace(`'`,`''`);
+
+    const params = [];
+    if(rating!==0)
+    {
+        const query1 = 
+        `
+            SELECT * FROM RATING
+            WHERE CUSTOMER_ID=${customerId} AND ITEM_ID=${id} AND ITEM_TYPE='agent'
+        `
+        const ans = await database.query(query1,params);
+
+        if(ans.length===0)
+        {
+            const query2 = 
+            `
+                INSERT INTO RATING (ITEM_ID,ITEM_TYPE,RATING,CUSTOMER_ID)
+                VALUES (${id},'agent','${rating}',${customerId})
+            `
+            await database.query(query2,params);
+        }
+        else
+        {
+            const query2 = 
+            `
+                UPDATE RATING SET RATING=${rating} WHERE ITEM_ID=${id} AND ITEM_TYPE='agent' AND CUSTOMER_ID=${customerId}
+            `
+            await database.query(query2,params);
+        }
+
+        const ratingUpdateQuery = 
+        `
+            UPDATE AGENT
+            SET RATING=(SELECT ROUND(AVG(RATING),1) FROM RATING WHERE ITEM_ID=${id} AND ITEM_TYPE='agent') 
+            WHERE AGENT_ID=${id}
+        `
+        await database.query(ratingUpdateQuery,params);
+    }
+
+    if(review.length!==0)
+    {
+        const query3 = 
+        `
+            INSERT INTO REVIEW (ITEM_ID,ITEM_TYPE,REVIEW,CUSTOMER_ID)
+            VALUES (${id},'restaurant','${review}',${customerId})
+        `
+        await database.query(query3,params);
+    }
+
+    await database.query('commit',params);
+
+    res.status(200).json({status:'ok'});
 });
 
 router.post("/",async(req,res)=>{
@@ -76,8 +180,6 @@ router.post("/",async(req,res)=>{
 
     res.status(200).json(ans[0]);
 });
-
-
 
 router.put("/acceptRequest/:agentId", async (req, res) => {
     const agentId = req.params.agentId;

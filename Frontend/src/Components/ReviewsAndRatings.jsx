@@ -30,20 +30,6 @@ const ReviewsAndRatings = (props) => {
         <>
             <div style={{ display: 'flex', marginBottom: "20px", justifyContent: (userInfo !== null && userInfo.USER_TYPE === 'customer') ? "space-between" : 'center', width: "600px" }}>
                 {userInfo !== null && userInfo.USER_TYPE === 'customer' &&
-                    // <div className="review-section" style={{maxWidth: "400px"}}>
-                    //     <h2>Leave your feedback -</h2>
-
-                    //     <div style={{display: 'inline-block'}}>
-                    //         <div style={{display: 'flex', alignItems: 'center'}}>
-                    //             <label>Your Rating: </label>
-                    //             <Rating rating={rating} state={1} setRating={setRating}/>
-                    //         </div>
-
-                    //         <textarea value={review} placeholder="Write your review here..." onChange={handleReviewChange}/>
-                    //         <p>{review.length}/{max_review_length}</p><br/>
-                    //         <button className="btn-primary" onClick={handleSubmit}>Submit Review</button>
-                    //     </div>
-                    // </div>}
                     <div className="review-section" style={{ maxWidth: "400px", margin: "20px auto", padding: "20px", border: "1px solid #ccc", borderRadius: "5px", fontFamily: "Arial, sans-serif" }}>
                         <h2 style={{ marginBottom: "20px", fontFamily: "Arial, sans-serif" }}>Leave your feedback</h2>
 
@@ -61,22 +47,7 @@ const ReviewsAndRatings = (props) => {
 
                 }
             </div>
-            {/* <div className="all-review" style={{ width: "300px" }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h2>All Reviews ({reviews.length})</h2>
-                    {reviews.length > 3 && <div className="see-all-link" onClick={() => setSeeAllReviews(true)}>see all</div>}
-                </div>
-                {reviews.map((item, index) => (
-                    index < 3 &&
-                    <div key={index}>
-                        <p>{item.USERNAME}</p>
-                        <Rating rating={item.RATING} state={0} setRating={null} />
-                        <p>{item.REVIEW}</p>
-                        <p>{item.CREATED_AT}</p>
-                        <br />
-                    </div>
-                ))}
-            </div> */}
+
             <div className="all-review" style={{ width: "300px" }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '10px' }}>
                     <h2 style={{ marginBottom: '0' }}>All Reviews ({reviews.length})</h2>
@@ -89,6 +60,7 @@ const ReviewsAndRatings = (props) => {
                         <div key={index} style={{
                             border: "2px solid", borderRadius: "5px", padding: "20px", marginBottom: "20px", backgroundColor: "transparent"
                         }}>
+                            <p style={{fontWeight: "bold", fontSize: 18, color: 'lightgrey'}}>{item.USERNAME}</p>
                             <Rating rating={item.RATING} state={0} setRating={null} />
                             <p>{item.REVIEW}</p>
                             <p>{item.CREATED_AT}</p>
@@ -102,31 +74,6 @@ const ReviewsAndRatings = (props) => {
                     <div className="close-container" style={{ position: 'relative', color: "black" }}>
                         <ImCross className='close' onClick={handleGoToCurrentPage} />
                         <div className='login-signup-container review-container'>
-                            {/* {userInfo !== null &&
-                                <div className="review-section" style={{ maxWidth: "400px" }}>
-                                    <h2>Leave your feedback -</h2>
-
-                                    <div style={{ display: 'inline-block' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center' }}>
-                                            <label>Your Rating: </label>
-                                            <Rating rating={rating} state={1} setRating={setRating} />
-                                        </div>
-
-                                        <textarea value={review} placeholder="Write your review here..." onChange={handleReviewChange} />
-                                        <p>{review.length}/{max_review_length}</p><br />
-                                        <button className="btn-primary" onClick={handleSubmit}>Submit Review</button>
-                                    </div>
-                                </div>} */}
-                            {/* <h1>Reviews and Ratings</h1>
-                            {reviews.map((item, index) => (
-                                <div key={index}>
-                                    <p style={{ fontSize: "18px", fontWeight: "bold" }}>{item.USERNAME}</p>
-                                    <Rating rating={item.RATING} state={0} setRating={null} />
-                                    <p>{item.REVIEW}</p>
-                                    <p>{item.CREATED_AT}</p>
-                                    <br />
-                                </div>
-                            ))} */}
                             <div>
                                 <h1>Reviews and Ratings</h1>
                                 {reviews.map((item, index) => (
@@ -138,13 +85,8 @@ const ReviewsAndRatings = (props) => {
                                     </div>
                                 ))}
                             </div>
-
-
-
                         </div>
-
                     </div>
-
                 </div>}
         </>
     )

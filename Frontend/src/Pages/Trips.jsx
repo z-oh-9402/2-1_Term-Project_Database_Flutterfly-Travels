@@ -5,10 +5,10 @@ import '../Styles/confirmation-message.css';
 import '../Styles/trips.css';
 import { useContext, useEffect, useState } from 'react';
 import UserInfoContext from '../Context/UserInfoContext';
-import Rating from '../Components/Rating';
 import { RiDeleteBin5Line } from "react-icons/ri";
 import CreateTrip from '../Components/CreateTrip';
 import AgentSearch from '../Components/AgentSearch';
+import AgentProfile from '../Components/AgentProfile';
 
 const Trips = (props) => {
     const {userInfo, setInfo} = useContext(UserInfoContext);
@@ -22,6 +22,8 @@ const Trips = (props) => {
     const [createTrip, setCreateTrip] = useState(false);
     const [showAgentSearch, setShowAgentSearch] = useState(false);
     const [agentProfile, setAgentProfile] = useState(undefined);
+    const [showAgentProfile, setShowAgentProfile] = useState(false);
+    const [visitingAgent, setVisitingAgent] = useState(undefined);
 
     const sortTrips = async (tripList) => {
         let newTrips = [];
@@ -62,6 +64,7 @@ const Trips = (props) => {
             });
             
             const suggestedTrips = await response.json();
+            console.log(suggestedTrips)
             newTrips.push(suggestedTrips);
         }
 
@@ -218,8 +221,20 @@ const Trips = (props) => {
         setRefreshPage(!refreshPage);
     }
 
+    const visitAgentProfile = async (agentId) => {
+            const response = await fetch(`http://localhost:3000/agent/${agentId}`, {
+                method: 'GET'
+            });
+
+            const result = await response.json();
+        setVisitingAgent(result);
+        setShowAgentProfile(true);
+    }
+
     return(
-        <>
+        <> 
+            {showAgentProfile ? <AgentProfile agent={visitingAgent} setShowAgentProfile={setShowAgentProfile}/>
+            :
             <div className='login-signup-popup'>
                 <div className="close-container" style={{position: 'relative'}}>
                     <ImCross className='close' onClick={handleGoToCurrentPage} />
@@ -275,7 +290,7 @@ const Trips = (props) => {
                                                 </p>
                                                 <p>Total Cost: ৳ {trip.TOTAL_COST.toLocaleString('en-US')}</p>
                                                 <p>Agent: {trip.USER_ID ? trip.USERNAME : 'not set yet'}</p>
-                                                {currentCategory===4 && <p>Rating: {trip.RATING!==0 ? <Rating rating={trip.RATING} state={0} setRating={null}/> : 'no rating given yet'}</p>}
+                                                {/* {currentCategory===4 && <p>Rating: {trip.RATING!==0 ? <Rating rating={trip.RATING} state={0} setRating={null}/> : 'no rating given yet'}</p>} */}
                                             </div>
                                         </div>
                                     </div>
@@ -309,8 +324,8 @@ const Trips = (props) => {
                                 </p>
                                 <p>Total Cost: ৳ {visitingTrip.TOTAL_COST.toLocaleString('en-US')}</p>
                                 <p>Discount: {visitingTrip.DISCOUNT!==0 ? visitingTrip.DISCOUNT+"%" : 'none'}</p>
-                                {(currentCategory===3 || currentCategory===4) && <p>Rating: {visitingTrip.RATING!==0 ? <Rating rating={visitingTrip.RATING} state={0} setRating={null}/> : 'no rating given yet'}</p>}
-                                <p>Agent: {visitingTrip.USER_ID ? visitingTrip.USERNAME : <span id="set-agent-link" onClick={setAgent}>not set yet</span>}</p>
+                                {/* {(currentCategory===3 || currentCategory===4) && <p>Rating: {visitingTrip.RATING!==0 ? <Rating rating={visitingTrip.RATING} state={0} setRating={null}/> : 'no rating given yet'}</p>} */}
+                                <p onClick={()=>visitAgentProfile(visitingTrip.USER_ID)}>Agent: {visitingTrip.USER_ID ? visitingTrip.USERNAME : <span id="set-agent-link" onClick={setAgent}>not set yet</span>}</p>
 
                                 {showAgentSearch && <AgentSearch setProfile={setAgentProfile}/>}
 
@@ -423,7 +438,7 @@ const Trips = (props) => {
                         </>}
                     </div>}
                 </div>
-            </div>
+            </div>}
         </>
     )
 }

@@ -123,7 +123,7 @@ router.get('/for-agent', async (req, res) => {
 })
 
 router.get('/fetch-complete-trips', async (req, res) => {
-    const query = `SELECT T.*, U.USERNAME 
+    const query = `SELECT T.*, U.USERNAME, U.USER_ID
                    FROM Trip T LEFT JOIN USERS U ON T.AGENT_ID=U.USER_ID
                    WHERE T.TRIP_STATUS = 'COMPLETED'
                    ORDER BY T.RATING`;

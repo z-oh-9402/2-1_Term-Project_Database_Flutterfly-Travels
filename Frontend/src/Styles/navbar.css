@@ -4,8 +4,7 @@
     background-image: radial-gradient(ellipse at center, rgba(255,255,255,0.1) 0%,rgba(0,0,0,0.9) 100%); /* Add radial gradient for texture */
     background-size: cover; /* Ensure background covers entire viewport */
     background-attachment: fixed; /* Fix background position */
-    background-blend-mode: overlay; 
-    
+    background-blend-mode: overlay;
     padding: 16px 32px;
     display: flex;
     justify-content: space-between;
