@@ -4,25 +4,18 @@ const database = require('../database');
 router.post('/filtered-flights', async (req, res) => {
     const { departureAirport, arrivalAirport, seatClass, flightStyle } = req.body;
 
-    const oracledb = database.oracledb;
-    const query = `BEGIN 
-                   FETCH_FILTERED_FLIGHTS (:departureAirport , :arrivalAirport, :seatClass, :flightStyle, :cursor);
-                   END;`;
+    let params = [departureAirport, arrivalAirport, seatClass, flightStyle, "filtered_flights_cursor"]
 
-    const binds = {
-        departureAirport: departureAirport,
-        arrivalAirport: arrivalAirport,
-        seatClass: seatClass,
-        flightStyle: flightStyle,
-        cursor: { type: oracledb.CURSOR, dir: oracledb.BIND_OUT }
-    };
+    await database.query(`BEGIN`,[]);
+    
+    let result = await database.query(`CALL FETCH_FILTERED_FLIGHTS($1, $2, $3, $4, $5)`, params);
+    const cursor = result[0].p_cursor;
 
-    const result = await database.query2(query, binds);
+    result = await database.query(`FETCH ALL IN "${cursor}"`, []);
 
-    const resultSet = await result.cursor.getRows();
-    await result.cursor.close();
+    await database.query(`CLOSE "${cursor}"`,[]);
 
-    res.status(200).json(resultSet);
+    res.status(200).json(result);
 });
 
 module.exports = router;

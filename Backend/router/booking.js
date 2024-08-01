@@ -5,20 +5,10 @@ const database = require('../database');
 router.post("/add-accommodation-booking", async (req, res) => {
     const { itemId, tripId, checkInDate, checkOutDate, numberOfRooms, totalCost, bookingType } = req.body;
 
-    const oracledb = database.oracledb;
-    let query = 
-    `BEGIN
-        :ret := GET_BOOKING_ID(:tripId, :bookingType, :totalCost);
-     END;`;
-
-    const binds = {
-        ret: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
-        tripId: tripId,
-        bookingType: bookingType,
-        totalCost: totalCost,
-    };
-    const ans = await database.query2(query,binds);
-    const bookingId = ans.ret;
+    let params = [tripId, bookingType, totalCost]
+    let query = `SELECT GET_BOOKING_ID($1, $2, $3)`;
+    const ans = await database.query(query,params);
+    const bookingId = ans[0].GET_BOOKING_ID;
 
     query = `INSERT INTO ACCOMMODATION_BOOKING (ACCOMMODATION_BOOKING_ID, NUMBER_OF_ROOMS, ACCOMMODATION_ID, CHECK_IN, CHECK_OUT)
              VALUES (${bookingId}, ${numberOfRooms}, ${itemId}, TO_TIMESTAMP('${checkInDate}', 'MM/DD/YYYY, HH24:MI:SS'), TO_TIMESTAMP('${checkOutDate}', 'MM/DD/YYYY, HH24:MI:SS'))`;
@@ -45,20 +35,10 @@ router.post("/add-destination-booking", async (req, res) => {
 router.post("/add-restaurant-booking", async (req, res) => {
     const {itemId, tripId, bookingDate, arrivalTime, departureTime, numberOfSeats, totalCost, bookingType} = req.body;
 
-    const oracledb = database.oracledb;
-    let query = 
-    `BEGIN
-        :ret := GET_BOOKING_ID(:tripId, :bookingType, :totalCost);
-     END;`;
-
-    const binds = {
-        ret: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
-        tripId: tripId,
-        bookingType: bookingType,
-        totalCost: totalCost,
-    };
-    const ans = await database.query2(query,binds);
-    const bookingId = ans.ret;
+    let params = [tripId, bookingType, totalCost]
+    let query = `SELECT GET_BOOKING_ID($1, $2, $3)`;
+    const ans = await database.query(query,params);
+    const bookingId = ans[0].GET_BOOKING_ID;
 
     query = `INSERT INTO RESTAURANT_BOOKING (RESTAURANT_BOOKING_ID, NUMBER_OF_SEATS, RESTAURANT_ID, BOOKING_DATE, ARRIVAL_TIME, DEPARTURE_TIME)
              VALUES (${bookingId}, ${numberOfSeats}, ${itemId}, TO_DATE('${bookingDate}', 'MM/DD/YYYY, HH24:MI:SS'), TO_TIMESTAMP('${arrivalTime}', 'HH:MI AM'), TO_TIMESTAMP('${departureTime}', 'HH:MI AM'))`;
@@ -72,20 +52,10 @@ router.post("/add-restaurant-booking", async (req, res) => {
 router.post("/add-flight-booking", async (req, res) => {
     const { itemId, tripId, departureDate, returnDate, numberOfSeats, seatClass, flightStyle, totalCost, bookingType } = req.body;
 
-    const oracledb = database.oracledb;
-    let query = 
-    `BEGIN
-        :ret := GET_BOOKING_ID(:tripId, :bookingType, :totalCost);
-     END;`;
-
-    const binds = {
-        ret: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
-        tripId: tripId,
-        bookingType: bookingType,
-        totalCost: totalCost,
-    };
-    const ans = await database.query2(query,binds);
-    const bookingId = ans.ret;
+    let params = [tripId, bookingType, totalCost]
+    let query = `SELECT GET_BOOKING_ID($1, $2, $3)`;
+    const ans = await database.query(query,params);
+    const bookingId = ans[0].GET_BOOKING_ID;
 
     if(returnDate !== undefined)
     {

@@ -49,23 +49,13 @@ router.get("/:username/:password",async(req,res)=>{
 });
 
 router.get("/:username",async(req,res)=>{
-    const oracledb = database.oracledb;
-    const query = 
-     `BEGIN
-        :ret := CHECK_USERNAME(:username);
-      END;`;
-
-    const binds = {
-      ret: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
-      username: req.params.username ,
-    };
-    const ans = await database.query2(query,binds);
+    const params = [req.params.username]
+    const query = `SELECT CHECK_USERNAME($1)`;
+    const ans = await database.query(query,params);
 
     let result = {
-        status: -1,
+        status: ans[0].check_username
     }
-
-    result.status = ans.ret;
 
     res.status(200).json(result);
 });

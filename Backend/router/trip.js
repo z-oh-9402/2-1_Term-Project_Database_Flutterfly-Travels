@@ -2,20 +2,11 @@ const router = require("express-promise-router")();
 const database = require('../database');
 
 router.get("/check-tripname",async(req,res)=>{
-    const {tripName} = req.query;
-    const oracledb = database.oracledb;
-    const query = 
-     `BEGIN
-        :ret := CHECK_TRIP_NAME(:tripName);
-      END;`;
+    const params = [req.query.tripName];
+    const query = `SELECT CHECK_TRIP_NAME($1)`;
+    const ans = await database.query(query,params);
 
-    const binds = {
-      ret: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
-      tripName: tripName,
-    };
-    const ans = await database.query2(query,binds);
-
-    result = ans.ret;
+    result = ans[0].check_trip_name;
 
     res.status(200).json(result);
 });

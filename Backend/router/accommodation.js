@@ -4,45 +4,45 @@ const database = require('../database');
 router.get("/search",async(req,res)=>{
     const keyword = req.query.keyword.replace(`'`,`''`).toLowerCase();
 
-    const params = [];
-    const query = `SELECT A.NAME, L.LOCATION_NAME, DIS.DISTRICT_NAME
+    let params = [`%${keyword}%`];
+    let query = `SELECT A.NAME, L.LOCATION_NAME, DIS.DISTRICT_NAME
                    FROM ACCOMMODATION A JOIN Location L ON A.LOCATION_ID=L.LOCATION_ID JOIN District DIS ON DIS.DISTRICT_ID=L.DISTRICT_ID
-                   WHERE LOWER(A.NAME) LIKE '%${keyword}%'
+                   WHERE LOWER(A.NAME) LIKE $1
                    ORDER BY NAME`;
     const des = await database.query(query,params);
 
-    const query2 = `WITH T(LOCATION_ID,COUNT) AS
-                    (SELECT L1.LOCATION_ID,COUNT(DISTINCT A.ACCOMMODATION_ID)
-                    FROM ACCOMMODATION A RIGHT JOIN Location L1 ON A.LOCATION_ID=L1.LOCATION_ID
-                    GROUP BY L1.LOCATION_ID)
+    query = `WITH T(LOCATION_ID,COUNT) AS
+             (SELECT L1.LOCATION_ID,COUNT(DISTINCT A.ACCOMMODATION_ID)
+             FROM ACCOMMODATION A RIGHT JOIN Location L1 ON A.LOCATION_ID=L1.LOCATION_ID
+             GROUP BY L1.LOCATION_ID)
 
-                    SELECT L.LOCATION_NAME,D.DISTRICT_NAME,DIV.DIVISION_NAME
-                    FROM Location L JOIN T ON T.LOCATION_ID=L.LOCATION_ID JOIN District D ON D.DISTRICT_ID=L.DISTRICT_ID JOIN Division DIV ON DIV.DIVISION_ID=D.DIVISION_ID
-                    WHERE LOWER(L.LOCATION_NAME) LIKE '%${keyword}%' AND T.COUNT>0
-                    ORDER BY T.COUNT DESC, L.LOCATION_NAME ASC`;
-    const sDis = await database.query(query2,params);
+             SELECT L.LOCATION_NAME,D.DISTRICT_NAME,DIV.DIVISION_NAME
+             FROM Location L JOIN T ON T.LOCATION_ID=L.LOCATION_ID JOIN District D ON D.DISTRICT_ID=L.DISTRICT_ID JOIN Division DIV ON DIV.DIVISION_ID=D.DIVISION_ID
+             WHERE LOWER(L.LOCATION_NAME) LIKE $1 AND T.COUNT>0
+             ORDER BY T.COUNT DESC, L.LOCATION_NAME ASC`;
+    const sDis = await database.query(query,params);
 
-    const query3 = `WITH T(DISTRICT_ID,COUNT) AS
-                    (SELECT D2.DISTRICT_ID,COUNT(DISTINCT A.ACCOMMODATION_ID)
-                    FROM ACCOMMODATION A JOIN Location L ON A.LOCATION_ID=L.LOCATION_ID RIGHT JOIN DISTRICT D2 ON D2.DISTRICT_ID=L.DISTRICT_ID
-                    GROUP BY D2.DISTRICT_ID)
+    query = `WITH T(DISTRICT_ID,COUNT) AS
+             (SELECT D2.DISTRICT_ID,COUNT(DISTINCT A.ACCOMMODATION_ID)
+             FROM ACCOMMODATION A JOIN Location L ON A.LOCATION_ID=L.LOCATION_ID RIGHT JOIN DISTRICT D2 ON D2.DISTRICT_ID=L.DISTRICT_ID
+             GROUP BY D2.DISTRICT_ID)
 
-                    SELECT D.DISTRICT_NAME, DIV.DIVISION_NAME
-                    FROM District D JOIN T ON T.DISTRICT_ID=D.DISTRICT_ID JOIN Division DIV ON DIV.DIVISION_ID=D.DIVISION_ID 
-                    WHERE LOWER(D.DISTRICT_NAME) LIKE '%${keyword}%' AND T.COUNT>0
-                    ORDER BY T.COUNT DESC, D.DISTRICT_NAME ASC`;
-    const dis = await database.query(query3,params);
+             SELECT D.DISTRICT_NAME, DIV.DIVISION_NAME
+             FROM District D JOIN T ON T.DISTRICT_ID=D.DISTRICT_ID JOIN Division DIV ON DIV.DIVISION_ID=D.DIVISION_ID 
+             WHERE LOWER(D.DISTRICT_NAME) LIKE $1 AND T.COUNT>0
+             ORDER BY T.COUNT DESC, D.DISTRICT_NAME ASC`;
+    const dis = await database.query(query,params);
 
-    const query4 = `WITH T(DIVISION_ID,COUNT) AS
-                    (SELECT D3.DIVISION_ID,COUNT(DISTINCT A.ACCOMMODATION_ID)
-                    FROM ACCOMMODATION A JOIN Location L ON A.LOCATION_ID=L.LOCATION_ID JOIN DISTRICT D2 ON D2.DISTRICT_ID=L.DISTRICT_ID RIGHT JOIN Division D3 ON D3.DIVISION_ID = D2.DIVISION_ID
-                    GROUP BY D3.DIVISION_ID)
+    query = `WITH T(DIVISION_ID,COUNT) AS
+             (SELECT D3.DIVISION_ID,COUNT(DISTINCT A.ACCOMMODATION_ID)
+             FROM ACCOMMODATION A JOIN Location L ON A.LOCATION_ID=L.LOCATION_ID JOIN DISTRICT D2 ON D2.DISTRICT_ID=L.DISTRICT_ID RIGHT JOIN Division D3 ON D3.DIVISION_ID = D2.DIVISION_ID
+             GROUP BY D3.DIVISION_ID)
 
-                    SELECT D.DIVISION_NAME
-                    FROM Division D JOIN T ON T.DIVISION_ID=D.DIVISION_ID
-                    WHERE LOWER(D.DIVISION_NAME) LIKE '%${keyword}%' AND T.COUNT>0
-                    ORDER BY T.COUNT DESC, D.DIVISION_NAME ASC`;
-    const div = await database.query(query4,params);
+             SELECT D.DIVISION_NAME
+             FROM Division D JOIN T ON T.DIVISION_ID=D.DIVISION_ID
+             WHERE LOWER(D.DIVISION_NAME) LIKE $1 AND T.COUNT>0
+             ORDER BY T.COUNT DESC, D.DIVISION_NAME ASC`;
+    const div = await database.query(query,params);
 
     const result = {
         status: false,

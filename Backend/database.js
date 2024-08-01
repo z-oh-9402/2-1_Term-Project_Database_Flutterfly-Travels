@@ -1,47 +1,22 @@
 require('dotenv').config();
-const oracledb = require('oracledb');
-oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
+const Pool = require('pg').Pool;
 
-let connection = undefined;
+const pool = new Pool({
+    user: process.env.DB_USERNAME,
+    host: process.env.DB_HOST,
+    database: process.env.DB_DATABASE,
+    password: process.env.DB_PASSWORD,
+    port: process.env.DB_PORT,
+});
 
 const db_query = async (query,params) =>{
-    try
-    {
-        let result = await connection.execute(query,params);
+    try{
+        let result = await pool.query(query,params);
         return result.rows;
     }
-    catch(error)
-    {
-        console.log(error);
-    }
-};
-
-const db_query2 = async (query,params) =>{
-    try
-    {
-        let result = await connection.execute(query,params);
-        return result.outBinds;
-    }
-    catch(error)
-    {
-        console.log(error);
-    }
-};
-
-const connectToDB = async ()=>{
-    try{
-        connection = await oracledb.getConnection({
-            user: process.env.DB_USERNAME,
-            password: process.env.DB_PASSWORD,
-            connectionString: process.env.DB_CONNECTION_STRING
-        });
-    }
     catch(error){
-        console.error(error);
+        console.log(error.message);
     }
 }
 
-exports.connectToDB = connectToDB;
 exports.query = db_query;
-exports.query2 = db_query2;
-exports.oracledb = oracledb;
