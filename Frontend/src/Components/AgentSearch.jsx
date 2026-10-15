@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import PropTypes from 'prop-types';
 import '../Styles/search.css';
+import { apiFetch } from '../api';
 
 const AgentSearch = (props) => {
     const {setProfile} = props;
@@ -65,7 +66,7 @@ const AgentSearch = (props) => {
         }
         else
         {
-            const response = await fetch(`http://localhost:3000/agent/search?keyword=${e.target.value}`,{
+            const response = await apiFetch(`http://localhost:3000/agent/search?keyword=${e.target.value}`,{
                 method: "GET",
             });
 
@@ -83,7 +84,7 @@ const AgentSearch = (props) => {
 
     const selectAgent = async (agentId) =>{
         console.log(agentId);
-        const response = await fetch(`http://localhost:3000/agent/fetch/${agentId}`,{
+        const response = await apiFetch(`http://localhost:3000/agent/fetch/${agentId}`,{
             method: "GET",
         });
 
@@ -108,10 +109,10 @@ const AgentSearch = (props) => {
                         <div key={index} className="suggested-items" onClick={()=>selectAgent(suggestion.user_id)}>
                             <div className="profile-pic">
                                 {console.log(suggestion)}
-                                <img src={suggestion.photo.length ? 'http://localhost:3000/uploads/'+suggestion.photo : "default_profile_pic.jpeg"}/>
+                                <img src={suggestion.photo ?'http://localhost:3000/uploads/'+suggestion.photo : "default_profile_pic.jpeg"}/>
                             </div>
                             <div className="agent-profile-info">
-                                <h4>{suggestion.usrname}</h4>
+                                <h4>{suggestion.username}</h4>
                                 <p>Experience years: {suggestion.experience_years}</p>
                                 <p>Fee: {suggestion.fee}</p>
                                 <p>Rating: {suggestion.rating}</p>

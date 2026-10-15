@@ -7,6 +7,7 @@ import { useContext, useEffect, useState } from 'react';
 import UserInfoContext from '../Context/UserInfoContext';
 import { FaHeart } from "react-icons/fa6";
 import { FaRegHeart } from "react-icons/fa6";
+import { apiFetch } from '../api';
 
 const ItemBar = (props) => {
     const {userInfo} = useContext(UserInfoContext);
@@ -16,11 +17,11 @@ const ItemBar = (props) => {
 
     useEffect(() => {
         const checkFavourite = async () => {
-            if(userInfo!==null)
+            if(userInfo!==null && userInfo.user_type==='customer')
             {
                 if(itemType==='destination')
                 {
-                    const response = await fetch(`http://localhost:3000/wishlist/destination?userId=${userInfo.user_id}&itemId=${item.destination_id}`,{
+                    const response = await apiFetch(`http://localhost:3000/wishlist/destination?userId=${userInfo.user_id}&itemId=${item.destination_id}`,{
                         method: "GET",
                     });
 
@@ -29,7 +30,7 @@ const ItemBar = (props) => {
                 }
                 else if(itemType==='accommodation')
                 {
-                    const response = await fetch(`http://localhost:3000/wishlist/accommodation?userId=${userInfo.user_id}&itemId=${item.accommodation_id}`,{
+                    const response = await apiFetch(`http://localhost:3000/wishlist/accommodation?userId=${userInfo.user_id}&itemId=${item.accommodation_id}`,{
                         method: "GET",
                     });
 
@@ -38,7 +39,7 @@ const ItemBar = (props) => {
                 }
                 else
                 {
-                    const response = await fetch(`http://localhost:3000/wishlist/restaurant?userId=${userInfo.user_id}&itemId=${item.restaurant_id}`,{
+                    const response = await apiFetch(`http://localhost:3000/wishlist/restaurant?userId=${userInfo.user_id}&itemId=${item.restaurant_id}`,{
                         method: "GET",
                     });
 
@@ -58,7 +59,7 @@ const ItemBar = (props) => {
         {
             if(itemType==='destination')
             {
-                const response = await fetch(`http://localhost:3000/wishlist/destination`,{
+                const response = await apiFetch(`http://localhost:3000/wishlist/destination`,{
                     method: addedToFav ? "DELETE" : "POST",
                     headers: {
                         'Content-Type': 'application/json'
@@ -73,7 +74,7 @@ const ItemBar = (props) => {
             }
             else if(itemType==='accommodation')
             {
-                const response = await fetch(`http://localhost:3000/wishlist/accommodation`,{
+                const response = await apiFetch(`http://localhost:3000/wishlist/accommodation`,{
                     method: addedToFav ? "DELETE" : "POST",
                     headers: {
                         'Content-Type': 'application/json'
@@ -88,7 +89,7 @@ const ItemBar = (props) => {
             }
             else
             {
-                const response = await fetch(`http://localhost:3000/wishlist/restaurant`,{
+                const response = await apiFetch(`http://localhost:3000/wishlist/restaurant`,{
                     method: addedToFav ? "DELETE" : "POST",
                     headers: {
                         'Content-Type': 'application/json'
@@ -153,7 +154,7 @@ const ItemBar = (props) => {
 
     return (
         <div className="bar" id={`bar${index}`}>
-            {itemType!=='flight' && userInfo.user_type==='customer' && (addedToFav ? <FaHeart className='fav-icon' onClick={updateFavourite}/> : <FaRegHeart className='fav-icon' onClick={updateFavourite}/>)}
+            {itemType!=='flight' && userInfo!==null && userInfo.user_type==='customer' && (addedToFav ? <FaHeart className='fav-icon' onClick={updateFavourite}/> : <FaRegHeart className='fav-icon' onClick={updateFavourite}/>)}
             <div style={{width: '100%', height: '100%', display:'flex', alignItems: 'center'}} onMouseOver={showPopup} onMouseOut={hidePopup} onClick={navigatePage}>
                 <div className='main-info-container'>
                     <img className='cover-img' src={item.image} alt="Card Image"/>

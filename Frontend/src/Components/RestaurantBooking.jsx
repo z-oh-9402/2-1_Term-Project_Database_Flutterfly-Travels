@@ -9,6 +9,7 @@ import UserInfoContext from '../Context/UserInfoContext';
 import { FaMinus, FaPlus, FaRegCalendarAlt } from 'react-icons/fa';
 import CreateTrip from './CreateTrip';
 import TimePicker from './TimePicker';
+import { apiFetch } from '../api';
 
 const types = ['arrival', 'departure'];
 
@@ -19,11 +20,11 @@ const RestaurantBooking = ({header, restaurant, setShowConfirmationMessage}) => 
     const filterTrips = (trip) => {
         let found = false;
 
-        if(trip.TRIP_STATUS==='UPDATING')
+        if(trip.trip_status==='UPDATING')
         {
-            for(let a of trip.RESTAURANTS)
+            for(let a of trip.restaurants)
             {
-                if(a.RESTAURANT_ID === restaurant.RESTAURANT_ID)
+                if(a.restaurant_id === restaurant.restaurant_id)
                 {
                     found = true;
                     break;
@@ -39,19 +40,19 @@ const RestaurantBooking = ({header, restaurant, setShowConfirmationMessage}) => 
     }
 
     useEffect(() => {
-        const t = userInfo.TRIPS.filter(trip => !filterTrips(trip));
+        const t = userInfo.trips.filter(trip => !filterTrips(trip));
         setTrips(t);
-    }, [userInfo.TRIPS]);
+    }, [userInfo.trips]);
 
     const [page, setPage] = useState(1);
     const message = ["Would you like to book this restaurant?",
                      "How would you like to add this restaurant to your package?",
                      "No already created trip package exists. Would you like to create a new one?"];
 
-    const bookingCost = restaurant.BOOKING_COST;
+    const bookingCost = restaurant.booking_cost;
     const [numberOfSeats, setNumberOfSeats] = useState(1);
     const [bookingDate, setBookingDate] = useState(new Date());
-    const [totalCost, setTotalCost] = useState(restaurant.BOOKING_COST);
+    const [totalCost, setTotalCost] = useState(restaurant.booking_cost);
     const [arrivalTime, setArrivalTime] = useState({hour: 9, minute: 0, am: true});
     const [departureTime, setDepartureTime] = useState({hour: 10, minute: 0, am: true});
 
@@ -84,14 +85,14 @@ const RestaurantBooking = ({header, restaurant, setShowConfirmationMessage}) => 
         if(increase)
         {
             setNumberOfSeats(parseInt(numberOfSeats)+1);
-            setTotalCost((totalCost/numberOfSeats)*(numberOfSeats+1));
+            setTotalCost(bookingCost*(parseInt(numberOfSeats)+1));
         }
         else
         {
             if(numberOfSeats > 1)
             {
                 setNumberOfSeats(parseInt(numberOfSeats)-1);
-                setTotalCost((totalCost/numberOfSeats)*(numberOfSeats-1));
+                setTotalCost(bookingCost*(parseInt(numberOfSeats)-1));
             }
         }
     }
@@ -151,7 +152,7 @@ const RestaurantBooking = ({header, restaurant, setShowConfirmationMessage}) => 
         }
         else
         {
-            setPage(trips.length!==0 ? (userInfo.USER_TYPE==='customer' ? 3 : 5) : 4)
+            setPage(trips.length!==0 ? (userInfo.user_type==='customer' ? 3 : 5) : 4)
         }
     }
 
@@ -180,13 +181,13 @@ const RestaurantBooking = ({header, restaurant, setShowConfirmationMessage}) => 
         let inTime = formatTimestamp(arrivalTime);
         let outTime = formatTimestamp(departureTime);
 
-        const response = await fetch(`http://localhost:3000/booking/add-restaurant-booking`, {
+        const response = await apiFetch(`http://localhost:3000/booking/add-restaurant-booking`, {
             method: "POST",
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                itemId: restaurant.RESTAURANT_ID,
+                itemId: restaurant.restaurant_id,
                 tripId: tripId,
                 bookingDate: inDate,
                 arrivalTime: inTime,
@@ -200,23 +201,23 @@ const RestaurantBooking = ({header, restaurant, setShowConfirmationMessage}) => 
         const data = await response.json();
         if(data.status === "ok")
         {
-            if(userInfo.USER_TYPE === 'customer')
+            if(userInfo.user_type === 'customer')
             {
-                const response = await fetch(`http://localhost:3000/trip/for-customer?customerId=${userInfo.USER_ID}`, {
+                const response = await apiFetch(`http://localhost:3000/trip/for-customer?customerId=${userInfo.user_id}`, {
                     method: "GET"
                 });
 
                 const result = await response.json();
-                userInfo.TRIPS = result;
+                userInfo.trips = result;
             }
-            if(userInfo.USER_TYPE === 'agent')
+            if(userInfo.user_type === 'agent')
             {
-                const response = await fetch(`http://localhost:3000/trip/for-agent?agentId=${userInfo.USER_ID}`, {
+                const response = await apiFetch(`http://localhost:3000/trip/for-agent?agentId=${userInfo.user_id}`, {
                     method: "GET"
                 });
 
                 const result = await response.json();
-                userInfo.TRIPS = result;
+                userInfo.trips = result;
             }
             setInfo(userInfo);
             setShowConfirmationMessage(false);
@@ -322,25 +323,25 @@ const RestaurantBooking = ({header, restaurant, setShowConfirmationMessage}) => 
                             {trips.map((trip, index) => 
                             <div key={index} className='trip-item'>
                                 <div>
-                                    <div className='trip-name'>{trip.NAME}</div>
+                                    <div className='trip-name'>{trip.name}</div>
                                     <div>Departure Date:&nbsp;
-                                        {new Date(trip.DEPARTURE_DATE).toLocaleDateString('en-US', {
+                                        {new Date(trip.departure_date).toLocaleDateString('en-US', {
                                             year: 'numeric',
                                             month: 'long',
                                             day: 'numeric'
                                         })}
                                     </div>
                                     <div>Return Date:&nbsp;
-                                        {new Date(trip.RETURN_DATE).toLocaleDateString('en-US', {
+                                        {new Date(trip.return_date).toLocaleDateString('en-US', {
                                             year: 'numeric',
                                             month: 'long',
                                             day: 'numeric'
                                         })}
                                     </div>
-                                    <div>Total Cost: ৳ {(trip.TOTAL_COST).toLocaleString('en-US')}</div>
-                                    <div>Agent: {trip.USERNAME ? trip.USERNAME : 'Not Set'}</div>
+                                    <div>Total Cost: ৳ {(trip.total_cost).toLocaleString('en-US')}</div>
+                                    <div>Agent: {trip.username ? trip.username : 'Not Set'}</div>
                                 </div>
-                                <button className='custom-btn plus-button' onClick={()=>addBooking(trip.TRIP_ID)}>+</button>
+                                <button className='custom-btn plus-button' onClick={()=>addBooking(trip.trip_id)}>+</button>
                             </div>)}
                         </div>
                     </>}

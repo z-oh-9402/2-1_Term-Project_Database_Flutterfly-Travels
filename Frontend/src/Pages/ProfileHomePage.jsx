@@ -12,6 +12,7 @@ import { RxCross2 } from "react-icons/rx";
 import PhotoUploader from "../Components/PhotoUploader";
 import DeleteConfirmation from "./DeleteConfirmation";
 import Rating from "../Components/Rating";
+import { apiFetch } from '../api';
 
 const list = ["Mountains", "Lakes", "Beaches", "Forests", "Hill Tracks", "Tea Gardens", "Historical Places"];
 
@@ -55,14 +56,14 @@ const ProfileHomePage = ({setLogOut}) => {
         const fetchData = async () => {
             if(!selectedFile && user.photo)
             {
-                const response = await fetch('http://localhost:3000/uploads/'+user.photo);
+                const response = await apiFetch('http://localhost:3000/uploads/'+user.photo);
                 const blob = await response.blob();
                 const file = new File([blob], "image.jpg", { type: 'image/jpeg' });
                 setSelectedFile(file);
             }
 
             if (user.user_type === 'customer') {
-                const response = await fetch(`http://localhost:3000/destination/`, {
+                const response = await apiFetch(`http://localhost:3000/destination/`, {
                     method: "POST",
                     headers: {
                         'Content-Type': 'application/json'
@@ -75,14 +76,14 @@ const ProfileHomePage = ({setLogOut}) => {
             }
 
             if (user.user_type === 'admin') {
-                let response = await fetch(`http://localhost:3000/agent/pending-agents/`, {
+                let response = await apiFetch(`http://localhost:3000/agent/pending-agents/`, {
                     method: "GET"
                 });
 
                 const data = await response.json();
                 setPendingAgents(data);
 
-                response = await fetch(`http://localhost:3000/trip/fetch-pending-trips/`, {
+                response = await apiFetch(`http://localhost:3000/trip/fetch-pending-trips/`, {
                     method: "GET"
                 });
 
@@ -101,7 +102,7 @@ const ProfileHomePage = ({setLogOut}) => {
         setUsername(e.target.value);
 
         if (e.target.value !== "") {
-            const response = await fetch(`http://localhost:3000/user/${e.target.value}`, {
+            const response = await apiFetch(`http://localhost:3000/user/${e.target.value}`, {
                 method: "GET"
             });
             const result = await response.json();
@@ -171,7 +172,7 @@ const ProfileHomePage = ({setLogOut}) => {
     }
 
     const updateInfo2 = async () => {
-        if (!isFileChanged && username === user.username && firstName === user.first_name && lastName === user.last_name && email === user.email && (password.length === 0 || password === user.password)) {
+        if (!isFileChanged && username === user.username && firstName === user.first_name && lastName === user.last_name && email === user.email && password.length === 0) {
             alert("No data change was detected.");
         }
         else if (password.length < 8 && password.length !== 0) {
@@ -187,9 +188,9 @@ const ProfileHomePage = ({setLogOut}) => {
             formData.append('firstName', firstName);
             formData.append('lastName', lastName);
             formData.append('email', email);
-            formData.append('password', password.length === 0 ? user.password : password);
+            formData.append('password', password); // empty = keep the current password
 
-            const response = await fetch(`http://localhost:3000/agent/${user.user_id}`, {
+            const response = await apiFetch(`http://localhost:3000/agent/${user.user_id}`, {
                 method: "PUT",
                 body: formData
             });
@@ -200,7 +201,8 @@ const ProfileHomePage = ({setLogOut}) => {
                 alert("This username is already taken. Use another one.");
             }
             else {
-                setInfo(result.data);
+                // The response has the updated profile fields; keep the rest (trips, acc_status, ...) from the current user
+                setInfo({ ...user, ...result.data });
                 setIsBeingUpdated(false);
             }
         }
@@ -222,7 +224,7 @@ const ProfileHomePage = ({setLogOut}) => {
             isPrefSame = false;
         }
 
-        if (!isFileChanged && username === user.username && firstName === user.first_name && lastName === user.last_name && email === user.email && passportNumber === user.passport_number && isPrefSame && (password.length === 0 || password === user.password)) {
+        if (!isFileChanged && username === user.username && firstName === user.first_name && lastName === user.last_name && email === user.email && passportNumber === user.passport_number && isPrefSame && password.length === 0) {
             alert("No data change was detected.");
         }
         else if (password.length < 8 && password.length !== 0) {
@@ -239,16 +241,22 @@ const ProfileHomePage = ({setLogOut}) => {
             formData.append('lastName', lastName);
             formData.append('email', email);
             formData.append('passportNumber', passportNumber);
-            formData.append('password', password.length === 0 ? user.password : password);
+            formData.append('password', password); // empty = keep the current password
             formData.append('preferences', JSON.stringify(pref1));
 
-            const response = await fetch(`http://localhost:3000/customer/${user.user_id}`, {
+            const response = await apiFetch(`http://localhost:3000/customer/${user.user_id}`, {
                 method: "PUT",
                 body: formData
             });
             const result = await response.json();
 
-            setInfo(result);
+            if (!response.ok) {
+                alert(result.message || "Could not update your profile.");
+                return;
+            }
+
+            // The response has the updated profile fields; keep the rest (trips, ...) from the current user
+            setInfo({ ...user, ...result });
             setIsBeingUpdated(false);
         }
     }
@@ -256,7 +264,7 @@ const ProfileHomePage = ({setLogOut}) => {
 
     const acceptRequest = async (agent) => {
 
-        const response = await fetch(`http://localhost:3000/agent/acceptRequest/${agent.user_id}`, {
+        const response = await apiFetch(`http://localhost:3000/agent/acceptRequest/${agent.user_id}`, {
             method: "PUT",
             headers: {
                 'Content-Type': 'application/json'
@@ -265,7 +273,7 @@ const ProfileHomePage = ({setLogOut}) => {
         });
         const result = await response.json();
         if (result.status === 1) {
-            const response = await fetch(`http://localhost:3000/agent/pending-agents/`, {
+            const response = await apiFetch(`http://localhost:3000/agent/pending-agents/`, {
                 method: "GET"
             });
 
@@ -274,7 +282,7 @@ const ProfileHomePage = ({setLogOut}) => {
         }
     }
     const declineRequest = async (agent) => {
-        const response = await fetch(`http://localhost:3000/agent/declineRequest/${agent.user_id}`, {
+        const response = await apiFetch(`http://localhost:3000/agent/declineRequest/${agent.user_id}`, {
             method: "PUT",
             headers: {
                 'Content-Type': 'application/json'
@@ -283,7 +291,7 @@ const ProfileHomePage = ({setLogOut}) => {
         });
         const result = await response.json();
         if (result.status === 1) {
-            const response = await fetch(`http://localhost:3000/agent/pending-agents/`, {
+            const response = await apiFetch(`http://localhost:3000/agent/pending-agents/`, {
                 method: "GET"
             });
 
@@ -294,7 +302,7 @@ const ProfileHomePage = ({setLogOut}) => {
     const handleLogOutOrDeleteAccount = async (isDeletingAccount) => {
         if(isDeletingAccount)
         {
-            await fetch(`http://localhost:3000/user/${user.user_id}`, {
+            await apiFetch(`http://localhost:3000/user/${user.user_id}`, {
                 method: "DELETE"
             })
         }     
@@ -311,7 +319,7 @@ const ProfileHomePage = ({setLogOut}) => {
         let response;
         if(isAccepted)
         {
-            response = await fetch(`http://localhost:3000/trip/admin-decision/`, {
+            response = await apiFetch(`http://localhost:3000/trip/admin-decision/`, {
                 method: "PUT",
                 headers: {
                     'Content-Type': 'application/json'
@@ -321,7 +329,7 @@ const ProfileHomePage = ({setLogOut}) => {
         }
         else
         {
-            response = await fetch(`http://localhost:3000/trip/admin-decision/`, {
+            response = await apiFetch(`http://localhost:3000/trip/admin-decision/`, {
                 method: "DELETE",
                 headers: {
                     'Content-Type': 'application/json'
@@ -331,7 +339,7 @@ const ProfileHomePage = ({setLogOut}) => {
         }
         await response.json();
 
-        response = await fetch(`http://localhost:3000/trip/fetch-pending-trips/`, {
+        response = await apiFetch(`http://localhost:3000/trip/fetch-pending-trips/`, {
             method: "GET"
         });
 

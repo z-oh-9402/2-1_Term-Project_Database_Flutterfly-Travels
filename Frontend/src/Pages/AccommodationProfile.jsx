@@ -13,6 +13,7 @@ import { FaCar, FaFacebook } from "react-icons/fa";
 import { BiAccessibility } from "react-icons/bi";
 import { BsGlobe } from "react-icons/bs";
 import { MdEmail, MdPool, MdFreeBreakfast } from "react-icons/md";
+import { apiFetch } from '../api';
 
 const iconStyle = {
     color: "white",
@@ -35,20 +36,20 @@ const AccommodationProfile = () => {
     useEffect(() => {
         const fetchData = async () => {
             const name = encodeURIComponent(params.name);
-            let response = await fetch(`http://localhost:3000/accommodation/fetch/accommodation-name?name=${name}`, {
+            let response = await apiFetch(`http://localhost:3000/accommodation/fetch/accommodation-name?name=${name}`, {
                 method: "GET",
             });
 
             let data = await response.json();
 
-            response = await fetch(`http://localhost:3000/accommodation/review-rating/${data.accommodation_id}`, {
+            response = await apiFetch(`http://localhost:3000/accommodation/review-rating/${data.accommodation_id}`, {
                 method: "GET",
             });
             const data2 = await response.json();
             setAllReviewRatings(data2);
 
             if (userInfo && userInfo.user_type === 'customer') {
-                response = await fetch(`http://localhost:3000/accommodation/review-rating/${data.accommodation_id}/${userInfo.user_id}`, {
+                response = await apiFetch(`http://localhost:3000/accommodation/review-rating/${data.accommodation_id}/${userInfo.user_id}`, {
                     method: "GET",
                 });
 
@@ -65,7 +66,7 @@ const AccommodationProfile = () => {
 
     const handleSubmit = async () => {
         if (rating !== 0) {
-            await fetch(`http://localhost:3000/accommodation/review-rating/${result.accommodation_id}`, {
+            await apiFetch(`http://localhost:3000/accommodation/review-rating/${result.accommodation_id}`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

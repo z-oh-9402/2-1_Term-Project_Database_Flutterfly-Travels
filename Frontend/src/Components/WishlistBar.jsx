@@ -6,6 +6,7 @@ import { useContext, useEffect, useState } from 'react';
 import UserInfoContext from '../Context/UserInfoContext';
 import { FaHeart } from "react-icons/fa6";
 import { FaRegHeart } from "react-icons/fa6";
+import { apiFetch } from '../api';
 
 const WishlistBar = (props) => {
     const {userInfo} = useContext(UserInfoContext);
@@ -18,7 +19,7 @@ const WishlistBar = (props) => {
             {
                 if(itemType==='destination')
                 {
-                    const response = await fetch(`http://localhost:3000/wishlist/destination?userId=${userInfo.USER_ID}&itemId=${item.DESTINATION_ID}`,{
+                    const response = await apiFetch(`http://localhost:3000/wishlist/destination?userId=${userInfo.user_id}&itemId=${item.destination_id}`,{
                         method: "GET",
                     });
 
@@ -27,7 +28,7 @@ const WishlistBar = (props) => {
                 }
                 else if(itemType==='accommodation')
                 {
-                    const response = await fetch(`http://localhost:3000/wishlist/accommodation?userId=${userInfo.USER_ID}&itemId=${item.ACCOMMODATION_ID}`,{
+                    const response = await apiFetch(`http://localhost:3000/wishlist/accommodation?userId=${userInfo.user_id}&itemId=${item.accommodation_id}`,{
                         method: "GET",
                     });
 
@@ -36,7 +37,7 @@ const WishlistBar = (props) => {
                 }
                 else
                 {
-                    const response = await fetch(`http://localhost:3000/wishlist/restaurant?userId=${userInfo.USER_ID}&itemId=${item.RESTAURANT_ID}`,{
+                    const response = await apiFetch(`http://localhost:3000/wishlist/restaurant?userId=${userInfo.user_id}&itemId=${item.restaurant_id}`,{
                         method: "GET",
                     });
 
@@ -51,14 +52,14 @@ const WishlistBar = (props) => {
 
     return (
         <div className="bar" id={`bar${index}`} style={{display:'flex', alignItems: 'center', height: '120px', boxSizing:'border-box'}}>
-            {userInfo.USER_TYPE==='customer' && (addedToFav ? <FaHeart className='fav-icon'/> : <FaRegHeart className='fav-icon'/>)}
+            {userInfo.user_type==='customer' && (addedToFav ? <FaHeart className='fav-icon'/> : <FaRegHeart className='fav-icon'/>)}
             <div style={{width: '100%', height: '100px', display:'flex', alignItems: 'center'}}>
                 <div className='main-info-container wishlist-container'>
-                    <img className='cover-img wishlist-img' src={item.IMAGE} alt="Card Image"/>
+                    <img className='cover-img wishlist-img' src={item.image} alt="Card Image"/>
                     <div>
-                        <h3 className='title'>{item.NAME}</h3>
+                        <h3 className='title'>{item.name}</h3>
                             <div className='item-rating-container'>
-                            <label>Rating: <Rating rating={item.RATING} isChanging={false} setRating={null}/></label>
+                            <label>Rating: <Rating rating={parseFloat(item.rating)} isChanging={false} setRating={null}/></label>
                         </div>
                     </div>
                 </div>

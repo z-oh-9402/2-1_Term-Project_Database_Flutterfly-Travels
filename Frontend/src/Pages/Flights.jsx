@@ -7,6 +7,7 @@ import { WiSunset } from "react-icons/wi";
 import { WiMoonrise } from "react-icons/wi";
 import ItemBar from '../Components/ItemBar';
 import FlightBooking from '../Components/FlightBooking';
+import { apiFetch } from '../api';
 
 const marks = {
     4000: '৳4,000',
@@ -76,7 +77,7 @@ const Flights = () => {
 
     useEffect(()=>{
         const fetchAirports = async () => {
-            const response = await fetch(`http://localhost:3000/flight/airports`, {
+            const response = await apiFetch(`http://localhost:3000/flight/airports`, {
                 method: "GET",
             });
             const airports = await response.json();
@@ -156,12 +157,12 @@ const Flights = () => {
 
         if(isChecked)
         {
-            isChecked = flight.SEAT_PRICE>=prices[0] && flight.SEAT_PRICE<=prices[1];
+            isChecked = flight.seat_price>=prices[0] && flight.seat_price<=prices[1];
         }
 
         if(isChecked)
         {
-            let time = new Date(flight.DEPARTURE_TIME);
+            let time = new Date(flight.departure_time);
             const currTime = new Date();
             isChecked = compareWithSystemTime(time, currTime);
 
@@ -173,7 +174,7 @@ const Flights = () => {
 
         if(isChecked && arrivalTime!==-1)
         {
-            let time = new Date(flight.ARRIVAL_TIME)
+            let time = new Date(flight.arrival_time)
             isChecked = time>=times[arrivalTime].start && time<=times[arrivalTime].end;
         }
 
@@ -181,8 +182,8 @@ const Flights = () => {
         {
             if(isChecked)
             {
-                let time = new Date(flight.RETURN_DEPARTURE_TIME);
-                let targetTime = new Date(flight.ARRIVAL_TIME);
+                let time = new Date(flight.return_departure_time);
+                let targetTime = new Date(flight.arrival_time);
                 isChecked = compareWithSystemTime(time, targetTime);
     
                 if(returnDepartureTime!==-1)
@@ -193,7 +194,7 @@ const Flights = () => {
 
             if(isChecked && returnArrivalTime!==-1)
             {
-                let time = new Date(flight.RETURN_ARRIVAL_TIME)
+                let time = new Date(flight.return_arrival_time)
                 isChecked = isChecked && time>=times[returnArrivalTime].start && time<=times[returnArrivalTime].end;
             }
         }
@@ -204,7 +205,7 @@ const Flights = () => {
             {
                 if(airlinesChecked[i])
                 {
-                    isChecked = flight.AIRLINE_NAME===airlines[i];
+                    isChecked = flight.airline_name===airlines[i];
                     if(isChecked) break;
                 }
             }
@@ -227,7 +228,7 @@ const Flights = () => {
                 flightStyle
             };
 
-            let response = await fetch(`http://localhost:3000/flight/filtered-flights`, {
+            let response = await apiFetch(`http://localhost:3000/flight/filtered-flights`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -238,9 +239,9 @@ const Flights = () => {
             let result = await response.json();
             result = result.map((flight)=>({
                 ...flight,
-                DEPARTURE_AIRPORT: departureAirport,
-                ARRIVAL_AIRPORT: arrivalAirport,
-                SEAT_CLASS: seatClass
+                departure_airport: departureAirport,
+                arrival_airport: arrivalAirport,
+                seat_class: seatClass
             }));
 
             setFilteredFlights(result);
@@ -336,7 +337,7 @@ const Flights = () => {
                         <h1>Searched Flights -</h1>
                         <div className='card-container'>
                             {filteredFlights.map((flight,index)=>
-                                (isFilterApplied ? filterCheck(flight) : compareWithSystemTime(new Date(flight.DEPARTURE_TIME), new Date())) && <ItemBar key={index} itemType='flight' item={flight} index={`${index}`} showBooking={openBooking}/>
+                                (isFilterApplied ? filterCheck(flight) : compareWithSystemTime(new Date(flight.departure_time), new Date())) && <ItemBar key={index} itemType='flight' item={flight} index={`${index}`} showBooking={openBooking}/>
                             )}
                         </div>
                     </div>

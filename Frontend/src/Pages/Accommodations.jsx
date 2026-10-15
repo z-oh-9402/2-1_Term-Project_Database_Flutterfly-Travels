@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import SearchAndSuggestions from "../Components/SearchAndSuggestions";
 import RangeSlider from "../Components/RangeSlider";
 import ItemBar from "../Components/ItemBar";
+import { apiFetch } from '../api';
 
 const marks = {
     0: '৳0',
@@ -65,7 +66,7 @@ const Accommodations = ()=>{
         }
         else
         {
-            const response = await fetch(`http://localhost:3000/accommodation/search?keyword=${e.target.value}`,{
+            const response = await apiFetch(`http://localhost:3000/accommodation/search?keyword=${e.target.value}`,{
                 method: "GET",
             });
 
@@ -88,7 +89,7 @@ const Accommodations = ()=>{
         }
         else
         {
-            const response = await fetch(`http://localhost:3000/accommodation/fetch?keyword=${search}`,{
+            const response = await apiFetch(`http://localhost:3000/accommodation/fetch?keyword=${search}`,{
                 method: "GET",
             });
 
@@ -108,7 +109,7 @@ const Accommodations = ()=>{
     const placeSelected = async (category,text) =>{
         if(category===1)
         {
-            const response = await fetch(`http://localhost:3000/accommodation/fetch/location/?name=${text}`,{
+            const response = await apiFetch(`http://localhost:3000/accommodation/fetch/location/?name=${text}`,{
                 method: "GET",
             });
 
@@ -117,7 +118,7 @@ const Accommodations = ()=>{
         }
         else if(category===2)
         {
-            const response = await fetch(`http://localhost:3000/accommodation/fetch/district?name=${text}`,{
+            const response = await apiFetch(`http://localhost:3000/accommodation/fetch/district?name=${text}`,{
                 method: "GET",
             });
 
@@ -126,7 +127,7 @@ const Accommodations = ()=>{
         }
         else
         {
-            const response = await fetch(`http://localhost:3000/accommodation/fetch/division?name=${text}`,{
+            const response = await apiFetch(`http://localhost:3000/accommodation/fetch/division?name=${text}`,{
                 method: "GET",
             });
 

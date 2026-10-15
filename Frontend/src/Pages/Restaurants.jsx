@@ -3,6 +3,7 @@ import "../Styles/search.css"
 import { useNavigate } from "react-router-dom";
 import SearchAndSuggestions from "../Components/SearchAndSuggestions";
 import ItemBar from "../Components/ItemBar";
+import { apiFetch } from '../api';
 
 const Restaurants = ()=>{
     const [search,setSearch] = useState("");
@@ -24,7 +25,7 @@ const Restaurants = ()=>{
         setPriceRange(3);
         setCuisineArray([false,false,false,false]);
         setPrivArray([false,false,false,false,false,false]);
-        isFilterApplied(false);
+        setIsFilterApplied(false);
     }
 
     const updateRatingValue = (e) => {
@@ -65,7 +66,7 @@ const Restaurants = ()=>{
         }
         else
         {
-            const response = await fetch(`http://localhost:3000/restaurant/search?keyword=${e.target.value}`,{
+            const response = await apiFetch(`http://localhost:3000/restaurant/search?keyword=${e.target.value}`,{
                 method: "GET",
             });
 
@@ -88,7 +89,7 @@ const Restaurants = ()=>{
         }
         else
         {
-            const response = await fetch(`http://localhost:3000/restaurant/fetch?keyword=${search}`,{
+            const response = await apiFetch(`http://localhost:3000/restaurant/fetch?keyword=${search}`,{
                 method: "GET",
             });
 
@@ -108,7 +109,7 @@ const Restaurants = ()=>{
     const placeSelected = async (category,text) =>{
         if(category===1)
         {
-            const response = await fetch(`http://localhost:3000/restaurant/fetch/location/?name=${text}`,{
+            const response = await apiFetch(`http://localhost:3000/restaurant/fetch/location/?name=${text}`,{
                 method: "GET",
             });
 
@@ -117,7 +118,7 @@ const Restaurants = ()=>{
         }
         else if(category===2)
         {
-            const response = await fetch(`http://localhost:3000/restaurant/fetch/district?name=${text}`,{
+            const response = await apiFetch(`http://localhost:3000/restaurant/fetch/district?name=${text}`,{
                 method: "GET",
             });
 
@@ -126,7 +127,7 @@ const Restaurants = ()=>{
         }
         else
         {
-            const response = await fetch(`http://localhost:3000/restaurant/fetch/division?name=${text}`,{
+            const response = await apiFetch(`http://localhost:3000/restaurant/fetch/division?name=${text}`,{
                 method: "GET",
             });
 
@@ -194,7 +195,7 @@ const Restaurants = ()=>{
             isChecked = false;
         }
 
-        if(isChecked && privArray[1] && restaurant.parkign==="N")
+        if(isChecked && privArray[1] && restaurant.parking==="N")
         {
             isChecked = false;
         }

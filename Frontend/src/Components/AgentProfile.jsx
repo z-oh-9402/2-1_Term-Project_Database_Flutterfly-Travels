@@ -3,6 +3,7 @@ import { ImCross } from 'react-icons/im';
 import ReviewsAndRatings from './ReviewsAndRatings';
 import UserInfoContext from '../Context/UserInfoContext';
 import { useContext, useEffect, useState } from 'react';
+import { apiFetch } from '../api';
 
 const AgentProfile = (props) => {
     const {userInfo} = useContext(UserInfoContext);
@@ -10,16 +11,18 @@ const AgentProfile = (props) => {
     const [rating, setRating] = useState(0);
     const [review, setReview] = useState([]);
     const [allReviews, setAllReviews] = useState([]);
+    // GET /agent/:agentId returns agent_id; GET /agent/fetch/:agentId returns user_id
+    const agentId = agent.agent_id ?? agent.user_id;
 
     const fetchReviews = async () => {
-        const response = await fetch(`http://localhost:3000/agent/review-rating/${agent.USER_ID}/${userInfo.USER_ID}`, {
+        const response = await apiFetch(`http://localhost:3000/agent/review-rating/${agentId}/${userInfo.user_id}`, {
             method: "GET"
         });
 
         const result = await response.json();
         setRating(result);
 
-        const response2 = await fetch(`http://localhost:3000/agent/review-rating/${agent.USER_ID}`, {
+        const response2 = await apiFetch(`http://localhost:3000/agent/review-rating/${agentId}`, {
             method: "GET"
         });
 
@@ -37,7 +40,7 @@ const AgentProfile = (props) => {
     }
 
     const handleSubmit = async () => {
-        const response = await fetch(`http://localhost:3000/agent/review-rating/${agent.USER_ID}`, {
+        const response = await apiFetch(`http://localhost:3000/agent/review-rating/${agentId}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -45,7 +48,7 @@ const AgentProfile = (props) => {
             body: JSON.stringify({
                 review: review,
                 rating: rating,
-                customerId: userInfo.USER_ID
+                customerId: userInfo.user_id
             })
         });
 
@@ -61,11 +64,11 @@ const AgentProfile = (props) => {
                 <ImCross className='close' onClick={handleGoToCurrentPage} />
 
                 <div className='login-signup-container trip-container'>
-                    <h2>Agent {agent.USERNAME}</h2>
+                    <h2>Agent {agent.username}</h2>
                     <div className='category-data'>
-                        <h3>Experience: {agent.EXPERIENCE} years</h3>
-                        <h3>Fee: {agent.FEE}</h3>
-                        <h3>Rating: {agent.RATING}</h3>
+                        <h3>Experience: {agent.experience_years} years</h3>
+                        <h3>Fee: {agent.fee}</h3>
+                        <h3>Rating: {agent.rating}</h3>
                     </div>
 
                     <ReviewsAndRatings personalRating={{rating, setRating}} personalReview={{review, setReview}} reviews={allReviews} handleSubmit={handleSubmit}/>

@@ -6,6 +6,7 @@ import { useContext, useState } from 'react'
 import PasswordInput from '../Components/PasswordInput';
 import { ImCross } from "react-icons/im";
 import UserInfoContext from '../Context/UserInfoContext';
+import { setToken, apiFetch } from '../api';
 
 const Login = (props) => {
     const { setInfo, setShowDetailedNotification } = useContext(UserInfoContext);
@@ -22,7 +23,7 @@ const Login = (props) => {
 
     const handleDataSubmit = async () => {
         if (username !== "" && password !== "") {
-            let response = await fetch(`http://localhost:3000/user/${username}`, {
+            let response = await apiFetch(`http://localhost:3000/user/${username}`, {
                 method: "GET"
             });
 
@@ -33,19 +34,25 @@ const Login = (props) => {
                 alert("Username does not exist");
             }
             else {
-                let response = await fetch(`http://localhost:3000/user/${username}/${password}`, {
-                    method: "GET"
+                let response = await apiFetch(`http://localhost:3000/user/login`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ username, password }),
                 });
                 result = await response.json();
 
                 if (result.status === 1) {
+                    setToken(result.token);
+
                     if (result.data.user_type === 'customer') {
-                        response = await fetch(`http://localhost:3000/customer/fetch?customerId=${result.data.user_id}`, {
+                        response = await apiFetch(`http://localhost:3000/customer/fetch?customerId=${result.data.user_id}`, {
                             method: "GET"
                         });
                         const result1 = await response.json();
 
-                        response = await fetch(`http://localhost:3000/trip/for-customer?customerId=${result.data.user_id}`, {
+                        response = await apiFetch(`http://localhost:3000/trip/for-customer?customerId=${result.data.user_id}`, {
                             method: "GET"
                         });
                         const result2 = await response.json();
@@ -57,7 +64,7 @@ const Login = (props) => {
                     }
 
                     if (result.data.user_type === 'agent') {
-                        response = await fetch(`http://localhost:3000/agent/${result.data.user_id}`, {
+                        response = await apiFetch(`http://localhost:3000/agent/${result.data.user_id}`, {
                             method: "GET"
                         });
 
@@ -73,7 +80,7 @@ const Login = (props) => {
                         }
                         
                         if(result1.acc_status === 'OK') {
-                            response = await fetch(`http://localhost:3000/trip/for-agent?agentId=${result.data.user_id}`, {
+                            response = await apiFetch(`http://localhost:3000/trip/for-agent?agentId=${result.data.user_id}`, {
                                 method: "GET"
                             });
 

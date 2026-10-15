@@ -3,6 +3,7 @@ import UserInfoContext from "../Context/UserInfoContext";
 import PropTyes from 'prop-types';
 import { ImCross } from "react-icons/im";
 import CreateTrip from "./CreateTrip";
+import { apiFetch } from '../api';
 
 const FlightBooking = ({ header, flight, setShowConfirmationMessage, bookingDetails }) => {
     const {userInfo, setInfo} = useContext(UserInfoContext);
@@ -11,11 +12,11 @@ const FlightBooking = ({ header, flight, setShowConfirmationMessage, bookingDeta
     const filterTrips = (trip) => {
         let found = false;
 
-        if(trip.TRIP_STATUS==='UPDATING')
+        if(trip.trip_status==='UPDATING')
         {
-            for(let a of trip.FLIGHTS)
+            for(let a of trip.flights)
             {
-                if(a.FLIGHT_ID === flight.FLIGHT_ID)
+                if(a.flight_id === flight.flight_id)
                 {
                     found = true;
                     break;
@@ -31,11 +32,11 @@ const FlightBooking = ({ header, flight, setShowConfirmationMessage, bookingDeta
     }
 
     useEffect(() => {
-        const t = userInfo.TRIPS.filter(trip => !filterTrips(trip));
+        const t = userInfo.trips.filter(trip => !filterTrips(trip));
         setTrips(t);
-    }, [userInfo.TRIPS]);
+    }, [userInfo.trips]);
 
-    const totalCost = flight.SEAT_PRICE*bookingDetails.numberOfSeats;
+    const totalCost = flight.seat_price*bookingDetails.numberOfSeats;
     const [page, setPage] = useState(3);
     const message = ["Would you like to book this flight?",
                      "How would you like to add this flight to your package?",
@@ -86,19 +87,19 @@ const FlightBooking = ({ header, flight, setShowConfirmationMessage, bookingDeta
             }
         }
 
-        const response = await fetch(`http://localhost:3000/booking/add-flight-booking`, {
+        const response = await apiFetch(`http://localhost:3000/booking/add-flight-booking`, {
             method: "POST",
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                itemId: flight.FLIGHT_ID,
+                itemId: flight.flight_id,
                 tripId: tripId,
                 departureDate: inDate,
                 returnDate: outDate,
                 numberOfSeats: bookingDetails.numberOfSeats,
                 seatClass: bookingDetails.seatClass,
-                flightStyle: flight.FLIGHT_STYLE,
+                flightStyle: flight.flight_style,
                 totalCost: totalCost,
                 bookingType: 'FLIGHT'
             }),
@@ -107,23 +108,23 @@ const FlightBooking = ({ header, flight, setShowConfirmationMessage, bookingDeta
         const data = await response.json();
         if(data.status === "ok")
         {
-            if(userInfo.USER_TYPE === 'customer')
+            if(userInfo.user_type === 'customer')
             {
-                const response = await fetch(`http://localhost:3000/trip/for-customer?customerId=${userInfo.USER_ID}`, {
+                const response = await apiFetch(`http://localhost:3000/trip/for-customer?customerId=${userInfo.user_id}`, {
                     method: "GET"
                 });
 
                 const result = await response.json();
-                userInfo.TRIPS = result;
+                userInfo.trips = result;
             }
-            if(userInfo.USER_TYPE === 'agent')
+            if(userInfo.user_type === 'agent')
             {
-                const response = await fetch(`http://localhost:3000/trip/for-agent?agentId=${userInfo.USER_ID}`, {
+                const response = await apiFetch(`http://localhost:3000/trip/for-agent?agentId=${userInfo.user_id}`, {
                     method: "GET"
                 });
 
                 const result = await response.json();
-                userInfo.TRIPS = result;
+                userInfo.trips = result;
             }
 
             setInfo(userInfo);
@@ -174,25 +175,25 @@ const FlightBooking = ({ header, flight, setShowConfirmationMessage, bookingDeta
                             {trips.map((trip, index) => 
                             <div key={index} className='trip-item'>
                                 <div>
-                                    <div className='trip-name'>{trip.NAME}</div>
+                                    <div className='trip-name'>{trip.name}</div>
                                     <div>Departure Date:&nbsp;
-                                        {new Date(trip.DEPARTURE_DATE).toLocaleDateString('en-US', {
+                                        {new Date(trip.departure_date).toLocaleDateString('en-US', {
                                             year: 'numeric',
                                             month: 'long',
                                             day: 'numeric'
                                         })}
                                     </div>
                                     <div>Return Date:&nbsp;
-                                        {new Date(trip.RETURN_DATE).toLocaleDateString('en-US', {
+                                        {new Date(trip.return_date).toLocaleDateString('en-US', {
                                             year: 'numeric',
                                             month: 'long',
                                             day: 'numeric'
                                         })}
                                     </div>
-                                    <div>Total Cost: ৳ {(trip.TOTAL_COST).toLocaleString('en-US')}</div>
-                                    <div>Agent: {trip.USERNAME ? trip.USERNAME : 'Not Set'}</div>
+                                    <div>Total Cost: ৳ {(trip.total_cost).toLocaleString('en-US')}</div>
+                                    <div>Agent: {trip.username ? trip.username : 'Not Set'}</div>
                                 </div>
-                                <button className='custom-btn plus-button' onClick={()=>addBooking(trip.TRIP_ID)}>+</button>
+                                <button className='custom-btn plus-button' onClick={()=>addBooking(trip.trip_id)}>+</button>
                             </div>)}
                         </div>
                     </>}

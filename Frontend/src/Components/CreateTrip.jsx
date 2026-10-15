@@ -5,6 +5,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import {FaRegCalendarAlt} from 'react-icons/fa';
 import PropTypes from 'prop-types';
+import { apiFetch } from '../api';
 
 const CreateTrip = ({setCreateTrip, initDepartureDate, initReturnDate}) => {
     const {userInfo, setInfo} = useContext(UserInfoContext);
@@ -60,7 +61,7 @@ const CreateTrip = ({setCreateTrip, initDepartureDate, initReturnDate}) => {
         setTripName(e.target.value);
         if(e.target.value !== "")
         {
-            const response = await fetch(`http://localhost:3000/trip/check-tripname?tripName=${e.target.value}`, {
+            const response = await apiFetch(`http://localhost:3000/trip/check-tripname?tripName=${e.target.value}`, {
                 method: "GET"
             });
 
@@ -101,7 +102,7 @@ const CreateTrip = ({setCreateTrip, initDepartureDate, initReturnDate}) => {
             const inDate = new Intl.DateTimeFormat('en-US', options).format(departureDate);
             const outDate = new Intl.DateTimeFormat('en-US', options).format(returnDate);
     
-            const response = await fetch(`http://localhost:3000/trip/`, {
+            const response = await apiFetch(`http://localhost:3000/trip/`, {
                 method: "POST",
                 headers: {
                     'Content-Type': 'application/json'
@@ -123,7 +124,7 @@ const CreateTrip = ({setCreateTrip, initDepartureDate, initReturnDate}) => {
     
             if(userInfo.user_type === 'customer')
             {
-                const response = await fetch(`http://localhost:3000/trip/for-customer?customerId=${userInfo.user_id}`, {
+                const response = await apiFetch(`http://localhost:3000/trip/for-customer?customerId=${userInfo.user_id}`, {
                     method: "GET"
                 });
     
@@ -132,7 +133,7 @@ const CreateTrip = ({setCreateTrip, initDepartureDate, initReturnDate}) => {
             }
             if(userInfo.user_type === 'agent')
             {
-                const response = await fetch(`http://localhost:3000/trip/for-agent?agentId=${userInfo.user_id}`, {
+                const response = await apiFetch(`http://localhost:3000/trip/for-agent?agentId=${userInfo.user_id}`, {
                     method: "GET"
                 });
     

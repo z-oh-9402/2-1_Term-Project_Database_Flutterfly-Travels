@@ -4,6 +4,7 @@ import ImageSlider from "../Components/ImageSlider";
 import Rating from "../Components/Rating";
 import UserInfoContext from "../Context/UserInfoContext";
 import ReviewsAndRatings from "../Components/ReviewsAndRatings";
+import { apiFetch } from '../api';
 
 const DestinationProfile = () => {
     const {userInfo} = useContext(UserInfoContext);
@@ -19,13 +20,13 @@ const DestinationProfile = () => {
     useEffect(()=>{
         const fetchData = async () => {
             const name = encodeURIComponent(params.name);
-            let response = await fetch(`http://localhost:3000/destination/fetch/destination-name?name=${name}`, {
+            let response = await apiFetch(`http://localhost:3000/destination/fetch/destination-name?name=${name}`, {
                 method: "GET",
             });
 
             let data = await response.json();
 
-            response = await fetch(`http://localhost:3000/destination/review-rating/${data.destination_id}`, {
+            response = await apiFetch(`http://localhost:3000/destination/review-rating/${data.destination_id}`, {
                 method: "GET",
             });
             const data2 = await response.json();
@@ -33,7 +34,7 @@ const DestinationProfile = () => {
 
             if(userInfo && userInfo.user_type==='customer')
             {
-                response = await fetch(`http://localhost:3000/destination/review-rating/${data.destination_id}/${userInfo.user_id}`, {
+                response = await apiFetch(`http://localhost:3000/destination/review-rating/${data.destination_id}/${userInfo.user_id}`, {
                     method: "GET",
                 });
 
@@ -50,7 +51,7 @@ const DestinationProfile = () => {
     const handleSubmit = async () => {
         if(rating)
         {
-            await fetch(`http://localhost:3000/destination/review-rating/${result.destination_id}`, {
+            await apiFetch(`http://localhost:3000/destination/review-rating/${result.destination_id}`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

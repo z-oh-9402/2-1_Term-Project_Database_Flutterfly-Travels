@@ -7,6 +7,7 @@ import PasswordInput from "../Components/PasswordInput";
 import { ImCross } from "react-icons/im";
 import UserInfoContext from "../Context/UserInfoContext";
 import PhotoUploader from "../Components/PhotoUploader";
+import { setToken, apiFetch } from "../api";
 
 const SignUp = (props) => {
     const { setInfo, setShowDetailedNotification } = useContext(UserInfoContext);
@@ -36,7 +37,7 @@ const SignUp = (props) => {
         setUsername(e.target.value);
 
         if (e.target.value !== "") {
-            const response = await fetch(`http://localhost:3000/user/${e.target.value}`, {
+            const response = await apiFetch(`http://localhost:3000/user/${e.target.value}`, {
                 method: "GET"
             });
             const result = await response.json();
@@ -153,7 +154,7 @@ const SignUp = (props) => {
             formData.append('userType', 'customer');
             formData.append('preferences', JSON.stringify(pref));
 
-            let response = await fetch(`http://localhost:3000/customer`, {
+            let response = await apiFetch(`http://localhost:3000/customer`, {
                 method: "POST",
                 body: formData
             });
@@ -167,7 +168,7 @@ const SignUp = (props) => {
             formData.append('experience', experience);
             formData.append('fee', fee);
 
-            let response = await fetch(`http://localhost:3000/agent`, {
+            let response = await apiFetch(`http://localhost:3000/agent`, {
                 method: "POST",
                 body: formData
             });
@@ -176,6 +177,9 @@ const SignUp = (props) => {
             alert("Your request is being processed");
         }
         
+        setToken(result.token);
+        delete result.token;
+
         props.setNotifications([]);
         setShowDetailedNotification(true);
         setInfo(result);

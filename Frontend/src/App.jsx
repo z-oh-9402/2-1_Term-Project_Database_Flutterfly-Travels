@@ -17,6 +17,7 @@ import Flights from './Pages/Flights.jsx';
 import RestaurantProfile from './Pages/RestaurantProfile.jsx';
 import Trips from './Pages/Trips.jsx';
 import Wishlist from './Components/Wishlist.jsx';
+import { apiFetch } from './api';
 
 function App() {
   const [isLoginOrSignUpPageLoaded,setIsLoginOrSignUpPageLoaded] = useState(false);
@@ -31,7 +32,7 @@ function App() {
   //   const fetchNotification = async () => {
   //     if(userInfo!==null)
   //     {
-  //       const response = await fetch(`http://localhost:3000/user/fetch-notification/${userInfo.USER_ID}`, {
+  //       const response = await apiFetch(`http://localhost:3000/user/fetch-notification/${userInfo.user_id}`, {
   //         method: "GET"
   //       });
 
@@ -55,7 +56,13 @@ function App() {
 
   useEffect(() => {
     const updateTripStatus = async () => {
-      const response = await fetch('http://localhost:3000/trip/update-trip-status', {
+      // Marking finished trips as COMPLETED needs a logged-in user
+      if(!userInfo)
+      {
+        return;
+      }
+
+      const response = await apiFetch('http://localhost:3000/trip/update-trip-status', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -74,7 +81,7 @@ function App() {
         let result;
         if(userInfo.user_type === 'customer')
         {
-            const response = await fetch(`http://localhost:3000/trip/for-customer?customerId=${userInfo.user_id}`, {
+            const response = await apiFetch(`http://localhost:3000/trip/for-customer?customerId=${userInfo.user_id}`, {
                 method: "GET"
             });
 
@@ -82,7 +89,7 @@ function App() {
         }
         if(userInfo.user_type === 'agent')
         {
-            const response = await fetch(`http://localhost:3000/trip/for-agent?agentId=${userInfo.user_id}`, {
+            const response = await apiFetch(`http://localhost:3000/trip/for-agent?agentId=${userInfo.user_id}`, {
                 method: "GET"
             });
 

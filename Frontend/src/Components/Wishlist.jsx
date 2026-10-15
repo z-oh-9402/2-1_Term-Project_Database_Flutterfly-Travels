@@ -3,6 +3,7 @@ import UserInfoContext from "../Context/UserInfoContext";
 import { ImCross } from "react-icons/im";
 import PropTypes from 'prop-types';
 import WishlistBar from "./WishlistBar";
+import { apiFetch } from '../api';
 
 
 const Wishlist = (props)=>{
@@ -12,7 +13,7 @@ const Wishlist = (props)=>{
 
     useEffect(() => {
         const fetchWishlist = async () => {
-            const response = await fetch(`http://localhost:3000/wishlist/fetch?userId=${userInfo.USER_ID}`, {
+            const response = await apiFetch(`http://localhost:3000/wishlist/fetch?userId=${userInfo.user_id}`, {
                 method: "GET"
             });
 

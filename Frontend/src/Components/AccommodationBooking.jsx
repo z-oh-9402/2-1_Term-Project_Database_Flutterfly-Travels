@@ -10,6 +10,7 @@ import { useContext, useEffect, useState } from 'react';
 import { FaMinus, FaPlus, FaRegCalendarAlt } from 'react-icons/fa';
 import UserInfoContext from '../Context/UserInfoContext';
 import CreateTrip from './CreateTrip';
+import { apiFetch } from '../api';
 
 
 const message = ["Would you like to book this accommodation?",
@@ -183,7 +184,7 @@ const AccommodationBooking = ({ accommodation, setShowConfirmationMessage }) => 
             outDate = outDate.replace(', 24:', ', 00:');
         }
 
-        const response = await fetch(`http://localhost:3000/booking/add-accommodation-booking`, {
+        const response = await apiFetch(`http://localhost:3000/booking/add-accommodation-booking`, {
             method: "POST",
             headers: {
                 'Content-Type': 'application/json'
@@ -204,7 +205,7 @@ const AccommodationBooking = ({ accommodation, setShowConfirmationMessage }) => 
         {
             if(userInfo.user_type === 'customer')
             {
-                const response = await fetch(`http://localhost:3000/trip/for-customer?customerId=${userInfo.user_id}`, {
+                const response = await apiFetch(`http://localhost:3000/trip/for-customer?customerId=${userInfo.user_id}`, {
                     method: "GET"
                 });
 
@@ -213,7 +214,7 @@ const AccommodationBooking = ({ accommodation, setShowConfirmationMessage }) => 
             }
             if(userInfo.user_type === 'agent')
             {
-                const response = await fetch(`http://localhost:3000/trip/for-agent?agentId=${userInfo.user_id}`, {
+                const response = await apiFetch(`http://localhost:3000/trip/for-agent?agentId=${userInfo.user_id}`, {
                     method: "GET"
                 });
 
