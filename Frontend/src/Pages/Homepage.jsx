@@ -1,4 +1,3 @@
-import React from 'react';
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
@@ -12,7 +11,7 @@ const Homepage = () => {
             text: "Seeking a heavenly experience? Let's make it divine.",
         },
         {
-            image: "https://th.bing.com/th/id/R.d8d4c03d36117166f2d3540b661efb1d?rik=fRQoW1LQFzD5cw&pid=ImgRaw&r=0",
+            image: "https://cosmosgroup.sgp1.digitaloceanspaces.com/news/details/3921007.webp",
             text: "Wanna enjoy the best food in town???",
         },
         {

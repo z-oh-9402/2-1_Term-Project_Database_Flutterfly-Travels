@@ -16,19 +16,19 @@ const ItemCard = (props) => {
   }
 
   const navigatePage = () => {
-    navigate(`/destinations/${item.NAME}`)
+    navigate(`/destinations/${item.name}`)
   }
 
   return (
     <div className="card" id={`card${index}`} onMouseOver={showPopup} onMouseOut={hidePopup} onClick={navigatePage}>
-      <img className='cover-img' src={item.IMAGE} alt="Card Image"/>
-      <h3 className='title'>{item.NAME}</h3>
-      <p>{item.LOCATION_NAME}</p>
-      <p>{item.DISTRICT_NAME}, {item.DIVISION_NAME}</p>
-      <Rating rating={item.RATING} state={0} setRating={null}/>
+      <img className='cover-img' src={item.image} alt="Card Image"/>
+      <h3 className='title'>{item.name}</h3>
+      <p>{item.location_name}</p>
+      <p>{item.district_name}, {item.division_name}</p>
+      <Rating rating={parseFloat(item.rating)} isChanging={false} setRating={null}/>
 
       <div className="popup" id={index}>
-          <p className="description"><span style={{fontWeight:"bold",color:"white"}}>Description: </span><br/>{item.DESCRIPTION}</p>
+          <p className="description"><span style={{fontWeight:"bold",color:"white"}}>Description: </span><br/>{item.description}</p>
           <p></p>
       </div>
     </div>

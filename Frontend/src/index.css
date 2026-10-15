@@ -174,12 +174,6 @@ input[type="radio"]{
     color:white;
 }
 
-.review-section{
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 20px;
-}
-
 .see-all-link{
     color: #25afe6;
     cursor: pointer;
@@ -225,4 +219,25 @@ input[type="radio"]{
 
 .wishlist-container .wishlist-img{
     width: 150px;
+}
+
+.profile-pic{
+    height: 40px;
+    width: 40px;
+    border-radius: 100%;
+    color: white;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.3);
+}
+
+.profile-pic img{
+    height: 100%;
+}
+
+.larger-profile-pic{
+    height: 120px;
+    width: 120px;
 }

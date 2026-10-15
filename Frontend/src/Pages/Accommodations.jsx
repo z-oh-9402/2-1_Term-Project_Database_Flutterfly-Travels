@@ -137,54 +137,54 @@ const Accommodations = ()=>{
         setSearch("");
     }
 
-    const showAccommodation = async (e) => {
-        navigate(`${e.target.innerText}`);
+    const showAccommodation = async (text) => {
+        navigate(`${text}`);
     }
 
     const filterCheck = (accommodation) => {
         let isChecked = true;
         
-        if(accommodation.RATING < ratingValue)
+        if(accommodation.rating < ratingValue)
         {
             isChecked = false;
         }
 
-        if(isChecked && accommodation.ROOM_CAPACITY<roomCapacity)
+        if(isChecked && accommodation.room_capacity<roomCapacity)
         {
             isChecked = false;
         }
 
-        if(isChecked && accommodation.ACCOMMODATION_CLASS<accommodationClass)
+        if(isChecked && accommodation.accommodation_class<accommodationClass)
         {
             isChecked = false;
         }
 
-        if(isChecked && privArray[0] && accommodation.FREE_WIFI==="N")
+        if(isChecked && privArray[0] && accommodation.free_wifi==="N")
         {
             isChecked = false;
         }
 
-        if(isChecked && privArray[1] && accommodation.PARKING==="N")
+        if(isChecked && privArray[1] && accommodation.parking==="N")
         {
             isChecked = false;
         }
 
-        if(isChecked && privArray[2] && accommodation.BREAKFAST==="N")
+        if(isChecked && privArray[2] && accommodation.breakfast==="N")
         {
             isChecked = false;
         }
 
-        if(isChecked && privArray[3] && accommodation.POOL==="N")
+        if(isChecked && privArray[3] && accommodation.pool==="N")
         {
             isChecked = false;
         }
 
-        if(isChecked && privArray[4] && accommodation.ACCESSIBLE==="N")
+        if(isChecked && privArray[4] && accommodation.accessible==="N")
         {
             isChecked = false;
         }
 
-        if(isChecked && (accommodation.ROOM_PRICE<prices[0] || accommodation.ROOM_PRICE>prices[1]))
+        if(isChecked && (accommodation.room_price<prices[0] || accommodation.room_price>prices[1]))
         {
             isChecked = false;
         }

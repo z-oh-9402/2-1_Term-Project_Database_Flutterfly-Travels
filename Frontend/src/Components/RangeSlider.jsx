@@ -89,24 +89,26 @@ const RangeSlider = (props) => {
                     min={minValue}
                     max={maxValue}
                 />
-                <label>Min: ৳ <input 
-                                className='range-input' 
-                                id='min-input' 
-                                type="text" 
-                                value={min} 
-                                onChange={(e)=>handleTextChange(e,0)} 
-                                onKeyDown={(e)=>handleEnterPress(e,0)} 
-                                onBlur={() => handleBlur(0)}/>
-                </label><br/>
-                <label>Max: ৳ <input 
-                                className='range-input' 
-                                id='max-input' 
-                                type="text" 
-                                value={max} 
-                                onChange={(e)=>handleTextChange(e,1)} 
-                                onKeyDown={(e)=>handleEnterPress(e,1)} 
-                                onBlur={() => handleBlur(1)}/>
-                </label>
+                <div style={{height: '60px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between'}}>
+                    <label>Min: ৳ <input 
+                                    className='range-input' 
+                                    id='min-input' 
+                                    type="text" 
+                                    value={min} 
+                                    onChange={(e)=>handleTextChange(e,0)} 
+                                    onKeyDown={(e)=>handleEnterPress(e,0)} 
+                                    onBlur={() => handleBlur(0)}/>
+                    </label>
+                    <label>Max: ৳ <input 
+                                    className='range-input' 
+                                    id='max-input' 
+                                    type="text" 
+                                    value={max} 
+                                    onChange={(e)=>handleTextChange(e,1)} 
+                                    onKeyDown={(e)=>handleEnterPress(e,1)} 
+                                    onBlur={() => handleBlur(1)}/>
+                    </label>
+                </div>
             </div>
         </div>
     );

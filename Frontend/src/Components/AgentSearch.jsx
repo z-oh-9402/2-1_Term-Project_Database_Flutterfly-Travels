@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import PropTypes from 'prop-types';
 import '../Styles/search.css';
-import { CgProfile } from "react-icons/cg";
 
 const AgentSearch = (props) => {
     const {setProfile} = props;
@@ -34,7 +33,7 @@ const AgentSearch = (props) => {
         const searchItems = document.getElementById("search-items");
         searchItems.style.zIndex = 3;
         
-        if(suggestions.length>0)
+        if(suggestions.length)
         {
             const suggestionsBlock = document.getElementById("suggestions-container");
             suggestionsBlock.style.display = "flex";
@@ -42,17 +41,19 @@ const AgentSearch = (props) => {
     }
 
     const setOnBlur = () =>{
-        const blurBackground = document.getElementById("dim-background");
-        setTimeout(()=>{blurBackground.style.display = "none"}, 300);
+        setTimeout(()=>{
+            const blurBackground = document.getElementById("dim-background");
+            blurBackground.style.display = "none";
 
-        const searchItems = document.getElementById("search-items");
-        setTimeout(()=>{searchItems.style.zIndex = 0}, 300);
-        
-        if(suggestions.length>0)
-        {
-            const suggestionsBlock = document.getElementById("suggestions-container");
-            setTimeout(()=>{suggestionsBlock.style.display = "none"}, 300);
-        }
+            const searchItems = document.getElementById("search-items");
+            searchItems.style.zIndex = 0;
+            
+            if(suggestions.length)
+            {
+                const suggestionsBlock = document.getElementById("suggestions-container");
+                suggestionsBlock.style.display = "none"
+            }
+        }, 300);
     }
 
     const handleSearch = async (e) =>{
@@ -81,6 +82,7 @@ const AgentSearch = (props) => {
     }
 
     const selectAgent = async (agentId) =>{
+        console.log(agentId);
         const response = await fetch(`http://localhost:3000/agent/fetch/${agentId}`,{
             method: "GET",
         });
@@ -88,7 +90,8 @@ const AgentSearch = (props) => {
         const result = await response.json();
         
         setProfile(result);
-        setSearch(result.USERNAME);
+        console.log(result);
+        setSearch(result.username);
     }
 
     return (
@@ -96,18 +99,22 @@ const AgentSearch = (props) => {
             <span id="dim-background"></span>
             <div id='search-items' style={{position: "relative", zIndex: "0"}}>
                 <div className="search-container user-search-container">
-                    <input id="search-bar" type="text" onFocus={setOnFocus} onBlur={setOnBlur} className="search-input user-search-input" value={search} placeholder="Search username..." onChange={handleSearch}/>
+                    <input id="search-bar" type="text" onFocus={setOnFocus} className="search-input user-search-input" value={search} placeholder="Search username..." onChange={handleSearch}/>
                 </div>
 
                 {suggestions.length!==0 &&
                 <div id="suggestions-container" className="agent-suggestions-container">
                     {suggestions.map((suggestion, index) => 
-                        <div key={index} className="suggested-items" onClick={()=>selectAgent(suggestion.USER_ID)}>
-                            <CgProfile className="profile-icon"/>
+                        <div key={index} className="suggested-items" onClick={()=>selectAgent(suggestion.user_id)}>
+                            <div className="profile-pic">
+                                {console.log(suggestion)}
+                                <img src={suggestion.photo.length ? 'http://localhost:3000/uploads/'+suggestion.photo : "default_profile_pic.jpeg"}/>
+                            </div>
                             <div className="agent-profile-info">
-                                <h4>{suggestion.USERNAME}</h4>
-                                <p>Experience years: {suggestion.EXPERIENCE_YEARS}</p>
-                                <p>Fee: {suggestion.FEE}</p>
+                                <h4>{suggestion.usrname}</h4>
+                                <p>Experience years: {suggestion.experience_years}</p>
+                                <p>Fee: {suggestion.fee}</p>
+                                <p>Rating: {suggestion.rating}</p>
                             </div>
                         </div>
                     )}

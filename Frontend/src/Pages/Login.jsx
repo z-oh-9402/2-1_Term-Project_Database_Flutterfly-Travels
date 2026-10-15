@@ -29,6 +29,7 @@ const Login = (props) => {
             let result = await response.json();
             if (result.status === -1) {
                 setUsername("");
+                setPassword("");
                 alert("Username does not exist");
             }
             else {
@@ -36,47 +37,48 @@ const Login = (props) => {
                     method: "GET"
                 });
                 result = await response.json();
+
                 if (result.status === 1) {
-                    if (result.data.USER_TYPE === 'customer') {
-                        response = await fetch(`http://localhost:3000/customer/fetch?customerId=${result.data.USER_ID}`, {
+                    if (result.data.user_type === 'customer') {
+                        response = await fetch(`http://localhost:3000/customer/fetch?customerId=${result.data.user_id}`, {
                             method: "GET"
                         });
-
                         const result1 = await response.json();
 
-                        response = await fetch(`http://localhost:3000/trip/for-customer?customerId=${result.data.USER_ID}`, {
+                        response = await fetch(`http://localhost:3000/trip/for-customer?customerId=${result.data.user_id}`, {
                             method: "GET"
                         });
-
                         const result2 = await response.json();
-                        result.data.PASSPORT_NUMBER = result1.PASSPORT_NUMBER;
-                        result.data.TRIP_BOOKED = result1.TRIP_BOOKED;
-                        result.data.PREFERENCES = result1.PREFERENCES;
-                        result.data.TRIPS = result2;
+
+                        result.data.passport_number = result1.passport_number;
+                        result.data.trip_booked = result1.trip_booked;
+                        result.data.preferences = result1.preferences;
+                        result.data.trips = result2;
                     }
 
-                    if (result.data.USER_TYPE === 'agent') {
-                        response = await fetch(`http://localhost:3000/agent/${result.data.USER_ID}`, {
+                    if (result.data.user_type === 'agent') {
+                        response = await fetch(`http://localhost:3000/agent/${result.data.user_id}`, {
                             method: "GET"
                         });
 
                         const result1 = await response.json();
 
-                        result.data.EXPERIENCE_YEARS = result1.EXPERIENCE_YEARS;
-                        result.data.FEE = result1.FEE;
-                        result.data.ACC_STATUS = result1.ACC_STATUS;
+                        result.data.experience_years = result1.experience_years;
+                        result.data.fee = result1.fee;
+                        result.data.acc_status = result1.acc_status;
+                        result.data.rating = result1.rating;
 
-                        if (result1.ACC_STATUS === 'PENDING') {
+                        if (result1.acc_status === 'PENDING') {
                             alert("Your request is still being processed!!!");
                         }
                         
-                        if(result1.ACC_STATUS === 'OK') {
-                            response = await fetch(`http://localhost:3000/trip/for-agent?agentId=${result.data.USER_ID}`, {
+                        if(result1.acc_status === 'OK') {
+                            response = await fetch(`http://localhost:3000/trip/for-agent?agentId=${result.data.user_id}`, {
                                 method: "GET"
                             });
 
                             const result2 = await response.json();
-                            result.data.TRIPS = result2;
+                            result.data.trips = result2;
                         }
                     }
                     
@@ -84,16 +86,16 @@ const Login = (props) => {
                     setShowDetailedNotification(true);
                     setInfo(result.data);
                     props.setUserInfo(false);
+                    setUsername("");
+                    setPassword("");
                 }
                 else {
                     alert("Wrong password");
+                    setPassword("");
                 }
             }
         }
         else alert("Important field(s) empty!");
-
-        setUsername("");
-        setPassword("");
     }
 
     const handleGoToHomePage = () => {

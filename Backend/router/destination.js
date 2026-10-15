@@ -80,9 +80,9 @@ router.get("/fetch/destination-name",async(req,res)=>{
 
     const query2 = `SELECT P.TYPE_NAME
             FROM DESTINATION_TYPE D LEFT JOIN PLACE_TYPE P ON D.PLACE_TYPE_ID = P.PLACE_TYPE_ID
-            WHERE D.DESTINATION_ID = ${ans[0].DESTINATION_ID}`;
+            WHERE D.DESTINATION_ID = ${ans[0].destination_id}`;
     const result2 = await database.query(query2,params);
-    ans[0].TYPE = result2;
+    ans[0].type = result2;
 
     res.status(200).json(ans[0]);
 });
@@ -103,9 +103,9 @@ router.get("/fetch/location",async(req,res)=>{
     {
         const query2 = `SELECT P.TYPE_NAME
                 FROM DESTINATION_TYPE D LEFT JOIN PLACE_TYPE P ON D.PLACE_TYPE_ID = P.PLACE_TYPE_ID
-                WHERE D.DESTINATION_ID = ${des.DESTINATION_ID}`;
+                WHERE D.DESTINATION_ID = ${des.destination_id}`;
         const result2 = await database.query(query2,params);
-        des.TYPE = result2;
+        des.type = result2;
     }
 
     res.status(200).json(ans);
@@ -127,9 +127,9 @@ router.get("/fetch/district",async(req,res)=>{
     {
         const query2 = `SELECT P.TYPE_NAME
                 FROM DESTINATION_TYPE D LEFT JOIN PLACE_TYPE P ON D.PLACE_TYPE_ID = P.PLACE_TYPE_ID
-                WHERE D.DESTINATION_ID = ${des.DESTINATION_ID}`;
+                WHERE D.DESTINATION_ID = ${des.destination_id}`;
         const result2 = await database.query(query2,params);
-        des.TYPE = result2;
+        des.type = result2;
     }
 
     res.status(200).json(ans);
@@ -151,9 +151,9 @@ router.get("/fetch/division",async(req,res)=>{
     {
         const query2 = `SELECT P.TYPE_NAME
                 FROM DESTINATION_TYPE D LEFT JOIN PLACE_TYPE P ON D.PLACE_TYPE_ID = P.PLACE_TYPE_ID
-                WHERE D.DESTINATION_ID = ${des.DESTINATION_ID}`;
+                WHERE D.DESTINATION_ID = ${des.destination_id}`;
         const result2 = await database.query(query2,params);
-        des.TYPE = result2;
+        des.type = result2;
     }
 
     res.status(200).json(ans);
@@ -185,9 +185,9 @@ router.get("/fetch",async(req,res)=>{
         {
             const query2 = `SELECT P.TYPE_NAME
                     FROM DESTINATION_TYPE D LEFT JOIN PLACE_TYPE P ON D.PLACE_TYPE_ID = P.PLACE_TYPE_ID
-                    WHERE D.DESTINATION_ID = ${des.DESTINATION_ID}`;
+                    WHERE D.DESTINATION_ID = ${des.destination_id}`;
             const result2 = await database.query(query2,params);
-            des.TYPE = result2;
+            des.type = result2;
         }
 
         result.status = true;
@@ -206,9 +206,7 @@ router.get("/review-rating/:destinationId/:customerId",async(req,res)=>{
         SELECT RATING FROM RATING
         WHERE CUSTOMER_ID=${customerId} AND ITEM_ID=${id} AND ITEM_TYPE='destination'
     `;
-
     const params = [];
-
     const ans = await database.query(query,params);
 
     let result;
@@ -218,7 +216,7 @@ router.get("/review-rating/:destinationId/:customerId",async(req,res)=>{
     }
     else
     {
-        result = ans[0].RATING;
+        result = ans[0].rating;
     }
 
     res.status(200).json(result);
@@ -229,7 +227,7 @@ router.get("/review-rating/:destinationId",async(req,res)=>{
 
     const query = 
     `
-        SELECT RE.REVIEW, RA.RATING, TO_CHAR(RE.CREATED_AT, 'DD Mon, YYYY ... HH12:MI:SS AM') AS CREATED_AT, U.USERNAME
+        SELECT RE.REVIEW, RA.RATING, TO_CHAR(RE.CREATED_AT, 'DD Mon, YYYY - HH12:MI:SS AM') AS CREATED_AT, U.USERNAME
         FROM REVIEW RE JOIN RATING RA ON RE.ITEM_ID=RA.ITEM_ID AND RE.ITEM_TYPE=RA.ITEM_TYPE AND RE.CUSTOMER_ID=RA.CUSTOMER_ID JOIN USERS U ON U.USER_ID=RE.CUSTOMER_ID
         WHERE RE.ITEM_ID=${id} AND RE.ITEM_TYPE='destination'
         ORDER BY RE.CREATED_AT DESC
@@ -315,6 +313,7 @@ router.post("/review-rating/:id",async(req,res)=>{
 
 router.post("/",async(req,res)=>{
     const categories = req.body;
+    console.log(categories);
 
     let result = []
 

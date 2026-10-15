@@ -17,7 +17,6 @@ const AgentProfile = (props) => {
         });
 
         const result = await response.json();
-        console.log(result);
         setRating(result);
 
         const response2 = await fetch(`http://localhost:3000/agent/review-rating/${agent.USER_ID}`, {

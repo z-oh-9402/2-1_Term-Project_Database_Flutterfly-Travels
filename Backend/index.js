@@ -1,7 +1,9 @@
 require('dotenv').config();
 const PORT = process.env.PORT;
+
 const morgan = require('morgan');
 const express = require('express');
+const path = require('path');
 const cors = require('cors');
 
 const app = express();
@@ -11,6 +13,9 @@ app.use(cors());
 app.options('*',cors());
 
 app.use("/",require('./router/routes'))
+
+app.use("/uploads", express.static(path.join(__dirname, 'uploads')));
+
 
 app.listen(PORT,()=>{
     console.log(`Server has started on port ${PORT}...`);

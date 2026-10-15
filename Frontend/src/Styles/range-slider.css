@@ -25,14 +25,14 @@
 
 .range-input{
     border: none;
-    box-shadow: none;
     width: 45px;
-    padding: 2px 0px 0px 2px;
+    padding: 2px 0px 2px 7px;
     background-color: #333; /* Dark shade background color */
     color: white;
+    object-fit: contain;
 }
 
 .range-input:focus {
-    outline: none;
     box-shadow: none;
+    border-color: #fff;
 }

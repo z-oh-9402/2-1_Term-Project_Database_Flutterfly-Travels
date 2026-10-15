@@ -5,7 +5,7 @@
     background-size: cover; /* Ensure background covers entire viewport */
     background-attachment: fixed; /* Fix background position */
     background-blend-mode: overlay;
-    padding: 16px 32px;
+    padding: 16px 20px;
     display: flex;
     justify-content: space-between;
 }
@@ -28,6 +28,9 @@
 .main-navbar button{
     margin-right: 10px;
 }
+.main-navbar .nav-button{
+    font-size: 14px;
+}
 
 .username{
     margin: 0px;
@@ -46,16 +49,24 @@
     width: 100%;
 }
 
-.notification-icon{
-    margin-right: 20px;
-    font-size: 30px;
+.header-icons{
+    margin-right: 15px;
     color:white;
+    cursor: pointer;
+}
+
+.notification-icon{
+    font-size: 30px;
+}
+
+.chat-icon{
+    font-size: 25px;
+    font-weight: bold;
 }
 
 .wishlist {
-    margin-right: 20px;
-    color: white;
     font-size: 25px;
+    margin-right: 20px
 }
 
 .title-img{

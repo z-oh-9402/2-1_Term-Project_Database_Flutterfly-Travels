@@ -1,40 +1,47 @@
+import "../Styles/button.css"
+
 import PropTypes from 'prop-types'
 import { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PasswordInput from '../Components/PasswordInput';
 import UserInfoContext from '../Context/UserInfoContext';
 import CategorizedDestination from '../Components/CategorizedDestination';
-import "../Styles/button.css"
 import AgentTrip from '../Components/AgentTrip';
 import { TiTick } from "react-icons/ti";
 import { RxCross2 } from "react-icons/rx";
+import PhotoUploader from "../Components/PhotoUploader";
+import DeleteConfirmation from "./DeleteConfirmation";
+import Rating from "../Components/Rating";
 
-const ProfileHomePage = (props) => {
+const list = ["Mountains", "Lakes", "Beaches", "Forests", "Hill Tracks", "Tea Gardens", "Historical Places"];
+
+const ProfileHomePage = ({setLogOut}) => {
     const { userInfo, setInfo } = useContext(UserInfoContext);
     const user = userInfo;
-    const pref = user.USER_TYPE === 'customer' ? user.PREFERENCES : null;
+    const pref = user.user_type === 'customer' ? user.preferences : null;
     const [recommendedDestinations, setRecommendedDestinations] = useState([]);
     const [pendingAgents, setPendingAgents] = useState([]);
     const [pendingTrips, setPendingTrips] = useState([]);
-    const list = ["Mountains", "Lakes", "Beaches", "Forests", "Hill Tracks", "Tea Gardens", "Historical Places"];
 
-    const [isPref1Checked, setIsPref1Checked] = useState(pref !== null ? pref.includes(list[0]) : pref);
-    const [isPref2Checked, setIsPref2Checked] = useState(pref !== null ? pref.includes(list[1]) : pref);
-    const [isPref3Checked, setIsPref3Checked] = useState(pref !== null ? pref.includes(list[2]) : pref);
-    const [isPref4Checked, setIsPref4Checked] = useState(pref !== null ? pref.includes(list[3]) : pref);
-    const [isPref5Checked, setIsPref5Checked] = useState(pref !== null ? pref.includes(list[4]) : pref);
-    const [isPref6Checked, setIsPref6Checked] = useState(pref !== null ? pref.includes(list[5]) : pref);
-    const [isPref7Checked, setIsPref7Checked] = useState(pref !== null ? pref.includes(list[6]) : pref);
+    const [isPref1Checked, setIsPref1Checked] = useState(pref ? pref.includes(list[0]) : pref);
+    const [isPref2Checked, setIsPref2Checked] = useState(pref ? pref.includes(list[1]) : pref);
+    const [isPref3Checked, setIsPref3Checked] = useState(pref ? pref.includes(list[2]) : pref);
+    const [isPref4Checked, setIsPref4Checked] = useState(pref ? pref.includes(list[3]) : pref);
+    const [isPref5Checked, setIsPref5Checked] = useState(pref ? pref.includes(list[4]) : pref);
+    const [isPref6Checked, setIsPref6Checked] = useState(pref ? pref.includes(list[5]) : pref);
+    const [isPref7Checked, setIsPref7Checked] = useState(pref ? pref.includes(list[6]) : pref);
 
     const navigate = useNavigate();
     const [isBeingUpdated, setIsBeingUpdated] = useState(false);
-    const [username, setUsername] = useState(user.USERNAME);
-    const [password, setPassword] = useState(user.PASSWORD);
-    const [rePassword, setRePassword] = useState(user.PASSWORD);
-    const [firstName, setFirstName] = useState(user.FIRST_NAME);
-    const [lastName, setLastName] = useState(user.LAST_NAME);
-    const [email, setEmail] = useState(user.EMAIL);
-    const [passportNumber, setPassportNumber] = useState(user.USER_TYPE === 'customer' ? user.PASSPORT_NUMBER : null);
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [isFileChanged, setIsFileChanged] = useState(false);
+    const [username, setUsername] = useState(user.username);
+    const [password, setPassword] = useState("");
+    const [rePassword, setRePassword] = useState("");
+    const [firstName, setFirstName] = useState(user.first_name);
+    const [lastName, setLastName] = useState(user.last_name);
+    const [email, setEmail] = useState(user.email);
+    const [passportNumber, setPassportNumber] = useState(user.user_type === 'customer' ? user.passport_number : null);
     const [isValidPassword, setIsValidPassword] = useState(false);
     const [isValidUsername, setIsValidUsername] = useState(true);
     const [isValidPassport, setIsValidPassport] = useState(true);
@@ -42,23 +49,32 @@ const ProfileHomePage = (props) => {
     const [isPassportStarting, setIsPassportStarting] = useState(true);
 
     const [currentCategory, setCurrentCategory] = useState(0);
+    const [ showDeleteConfirmation, setShowDeleteConfirmation ] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
-            if (user.USER_TYPE === 'customer') {
+            if(!selectedFile && user.photo)
+            {
+                const response = await fetch('http://localhost:3000/uploads/'+user.photo);
+                const blob = await response.blob();
+                const file = new File([blob], "image.jpg", { type: 'image/jpeg' });
+                setSelectedFile(file);
+            }
+
+            if (user.user_type === 'customer') {
                 const response = await fetch(`http://localhost:3000/destination/`, {
                     method: "POST",
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(user.PREFERENCES)
+                    body: JSON.stringify(user.preferences)
                 });
 
                 const data = await response.json();
                 setRecommendedDestinations(data);
             }
 
-            if (user.USER_TYPE === 'admin') {
+            if (user.user_type === 'admin') {
                 let response = await fetch(`http://localhost:3000/agent/pending-agents/`, {
                     method: "GET"
                 });
@@ -75,7 +91,11 @@ const ProfileHomePage = (props) => {
             }
         };
         fetchData()
-    }, [user.PREFERENCES]);
+    }, [user.preferences]);
+
+    useEffect(() => {
+        setIsFileChanged(true);
+    }, [selectedFile]);
 
     const handleUsernameChange = async (e) => {
         setUsername(e.target.value);
@@ -128,7 +148,15 @@ const ProfileHomePage = (props) => {
 
     const goToUpdate = () => {
         setIsBeingUpdated(true);
-        if (user.USER_TYPE === 'customer') {
+        setIsFileChanged(false);
+        setUsername(user.username);
+        setFirstName(user.first_name);
+        setLastName(user.last_name);
+        setEmail(user.email);
+
+        if(user.user_type === 'customer')
+        {
+            setPassportNumber(user.passport_number);
             setIsPref1Checked(pref.includes(list[0]));
             setIsPref2Checked(pref.includes(list[1]));
             setIsPref3Checked(pref.includes(list[2]));
@@ -136,20 +164,14 @@ const ProfileHomePage = (props) => {
             setIsPref5Checked(pref.includes(list[4]));
             setIsPref6Checked(pref.includes(list[5]));
             setIsPref7Checked(pref.includes(list[6]));
-
-            setPassportNumber(user.PASSPORT_NUMBER);
         }
 
-        setUsername(user.USERNAME);
-        setFirstName(user.FIRST_NAME);
-        setLastName(user.LAST_NAME);
-        setEmail(user.EMAIL);
         setPassword("");
         setRePassword("");
     }
 
     const updateInfo2 = async () => {
-        if (username === user.USERNAME && firstName === user.FIRST_NAME && lastName === user.LAST_NAME && email === user.EMAIL && (password.length === 0 || password === user.PASSWORD)) {
+        if (!isFileChanged && username === user.username && firstName === user.first_name && lastName === user.last_name && email === user.email && (password.length === 0 || password === user.password)) {
             alert("No data change was detected.");
         }
         else if (password.length < 8 && password.length !== 0) {
@@ -159,20 +181,17 @@ const ProfileHomePage = (props) => {
             alert("Password and Confirmed Password don't match.");
         }
         else {
-            let info = {
-                "username": username,
-                "firstName": firstName,
-                "lastName": lastName,
-                "email": email
-            }
-            password.length === 0 ? info.password = user.PASSWORD : info.password = password;
+            let formData = new FormData();
+            formData.append('file', selectedFile);
+            formData.append('username', username);
+            formData.append('firstName', firstName);
+            formData.append('lastName', lastName);
+            formData.append('email', email);
+            formData.append('password', password.length === 0 ? user.password : password);
 
-            const response = await fetch(`http://localhost:3000/agent/${user.USER_ID}`, {
+            const response = await fetch(`http://localhost:3000/agent/${user.user_id}`, {
                 method: "PUT",
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(info)
+                body: formData
             });
             const result = await response.json();
 
@@ -193,7 +212,7 @@ const ProfileHomePage = (props) => {
         for (let i = 0; i < list.length; i++) {
             let check = document.getElementById("pref" + i);
             if (check.checked) {
-                pref1.push(check.value);
+                pref1.push({id: i+1, name: check.value});
                 if (!pref.includes(check.value)) {
                     isPrefSame = false;
                 }
@@ -203,7 +222,7 @@ const ProfileHomePage = (props) => {
             isPrefSame = false;
         }
 
-        if (username === user.USERNAME && firstName === user.FIRST_NAME && lastName === user.LAST_NAME && email === user.EMAIL && passportNumber === user.PASSPORT_NUMBER && isPrefSame && (password.length === 0 || password === user.PASSWORD)) {
+        if (!isFileChanged && username === user.username && firstName === user.first_name && lastName === user.last_name && email === user.email && passportNumber === user.passport_number && isPrefSame && (password.length === 0 || password === user.password)) {
             alert("No data change was detected.");
         }
         else if (password.length < 8 && password.length !== 0) {
@@ -213,22 +232,19 @@ const ProfileHomePage = (props) => {
             alert("Password and Confirmed Password don't match.");
         }
         else {
-            let info = {
-                "username": username,
-                "firstName": firstName,
-                "lastName": lastName,
-                "email": email,
-                "passportNumber": passportNumber,
-                "preferences": pref1
-            }
-            password.length === 0 ? info.password = user.PASSWORD : info.password = password;
+            let formData = new FormData();
+            formData.append('file', selectedFile);
+            formData.append('username', username);
+            formData.append('firstName', firstName);
+            formData.append('lastName', lastName);
+            formData.append('email', email);
+            formData.append('passportNumber', passportNumber);
+            formData.append('password', password.length === 0 ? user.password : password);
+            formData.append('preferences', JSON.stringify(pref1));
 
-            const response = await fetch(`http://localhost:3000/customer/${user.USER_ID}`, {
+            const response = await fetch(`http://localhost:3000/customer/${user.user_id}`, {
                 method: "PUT",
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(info)
+                body: formData
             });
             const result = await response.json();
 
@@ -240,7 +256,7 @@ const ProfileHomePage = (props) => {
 
     const acceptRequest = async (agent) => {
 
-        const response = await fetch(`http://localhost:3000/agent/acceptRequest/${agent.USER_ID}`, {
+        const response = await fetch(`http://localhost:3000/agent/acceptRequest/${agent.user_id}`, {
             method: "PUT",
             headers: {
                 'Content-Type': 'application/json'
@@ -258,7 +274,7 @@ const ProfileHomePage = (props) => {
         }
     }
     const declineRequest = async (agent) => {
-        const response = await fetch(`http://localhost:3000/agent/declineRequest/${agent.USER_ID}`, {
+        const response = await fetch(`http://localhost:3000/agent/declineRequest/${agent.user_id}`, {
             method: "PUT",
             headers: {
                 'Content-Type': 'application/json'
@@ -276,16 +292,16 @@ const ProfileHomePage = (props) => {
         }
     }
     const handleLogOutOrDeleteAccount = async (isDeletingAccount) => {
-        isDeletingAccount && (user.USER_TYPE === 'customer' ?
-            await fetch(`http://localhost:3000/customer/${user.USER_ID}`, {
+        if(isDeletingAccount)
+        {
+            await fetch(`http://localhost:3000/user/${user.user_id}`, {
                 method: "DELETE"
-            }) : (user.USER_TYPE === 'agent' &&
-                await fetch(`http://localhost:3000/agent/${user.USER_ID}`, {
-                    method: "DELETE"
-                })))
+            })
+        }     
 
+        setShowDeleteConfirmation(false);
         setInfo(null);
-        props.setLogOut(true);
+        setLogOut(true);
         navigate("/");
     }
 
@@ -300,7 +316,7 @@ const ProfileHomePage = (props) => {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ tripId: trip.TRIP_ID })
+                body: JSON.stringify({ tripId: trip.trip_id })
             });
         }
         else
@@ -310,7 +326,7 @@ const ProfileHomePage = (props) => {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ tripId: trip.TRIP_ID })
+                body: JSON.stringify({ tripId: trip.trip_id })
             });
         }
         await response.json();
@@ -325,33 +341,35 @@ const ProfileHomePage = (props) => {
 
     return (
         <div className='profile-page'>
+            {showDeleteConfirmation && <DeleteConfirmation goBack={()=>setShowDeleteConfirmation(false)} shouldDelete={()=>handleLogOutOrDeleteAccount(true)}/>}
             <div className='profile-container'>
                 {!isBeingUpdated ? 
                 <div>
-                    <h1>User Details: </h1>
+                    <div className="profile-pic larger-profile-pic"><img src={user.photo.length ? 'http://localhost:3000/uploads/'+user.photo : "default_profile_pic.jpeg"}/></div><br/>
                     <p>
-                        Username: {user.USERNAME}<br />
-                        First Name: {user.FIRST_NAME}<br />
-                        Last Name: {user.LAST_NAME}<br />
-                        Email: {user.EMAIL}<br /><br />
+                        Username: {user.username}<br />
+                        First Name: {user.first_name}<br />
+                        Last Name: {user.last_name}<br />
+                        Email: {user.email}<br /><br />
 
-                        {user.USER_TYPE === 'customer' && (
+                        {user.user_type === 'customer' && (
                             <>
-                                Passport Number: {user.PASSPORT_NUMBER}<br /><br />
-                                Trip Booked: {user.TRIP_BOOKED}<br /><br />
+                                Passport Number: {user.passport_number}<br /><br />
+                                Trip Booked: {user.trip_booked}<br /><br />
                                 {pref.length !== 0 && "Preferences:"}
                             </>
                         )}
 
-                        {user.USER_TYPE === 'agent' && (
+                        {user.user_type === 'agent' && (
                             <>
-                                Experience: {user.EXPERIENCE_YEARS}<br />
-                                Fee: {user.FEE}<br /><br />
+                                Experience: {user.experience_years}<br />
+                                Fee: {user.fee}<br />
+                                {user.acc_status === 'OK' && <>Rating: <Rating rating={parseFloat(user.rating)} isChanging={false} setRating={null}/><br /><br /></>}
                             </>
                         )}
                     </p>
 
-                    {user.USER_TYPE === 'customer' && pref.length !== 0 &&
+                    {user.user_type === 'customer' && pref.length !== 0 &&
                         <>
                             <ul>
                                 {pref.map((data, index) => (
@@ -361,31 +379,31 @@ const ProfileHomePage = (props) => {
 
                             <button className="btn-primary" onClick={() => {handleLogOutOrDeleteAccount(false)}}>Log Out</button><br /><br />
                             <button className="btn-primary" onClick={goToUpdate}>Update Account</button><br /><br />
-                            <button className="btn-primary" onClick={() => {handleLogOutOrDeleteAccount(true)}}>Delete Account</button>
+                            <button className="btn-primary" onClick={()=>setShowDeleteConfirmation(true)}>Delete Account</button>
                         </>
                     }
                     
-                    {user.USER_TYPE === 'agent' && 
-                        (user.ACC_STATUS === 'OK' ?
+                    {user.user_type === 'agent' && 
+                        (user.acc_status === 'OK' ?
                         <>
                             <button className="btn-primary" onClick={() => {handleLogOutOrDeleteAccount(false)}}>Log Out</button><br /><br />
                             <button className="btn-primary" onClick={goToUpdate}>Update Account</button><br/><br/>
                             <button className="btn-primary" onClick={() => {handleLogOutOrDeleteAccount(true)}}>Delete Account</button>
                         </> :
-                        (user.ACC_STATUS === 'PENDING' ?
+                        (user.acc_status === 'PENDING' ?
                             <>
                                 <h3>Your request is still being processed!!!</h3>
                                 <button className="btn-primary" onClick={() => {handleLogOutOrDeleteAccount(false)}}>Log Out</button><br /><br />
                             </> :
                             <>
                                 <h3>Your request has been declined!!!</h3>
-                                <button className="btn-primary" onClick={() => {handleLogOutOrDeleteAccount(false)}}>Back</button><br /><br />
+                                <button className="btn-primary" onClick={() => {handleLogOutOrDeleteAccount(false)}}>Log Out</button><br /><br />
                                 <button className="btn-primary" onClick={() => {handleLogOutOrDeleteAccount(true)}}>Delete request</button>
                             </>
                         ))
                     }
 
-                    {user.USER_TYPE === 'admin' && 
+                    {user.user_type === 'admin' && 
                         <>
                             <button className="btn-primary" onClick={() => {handleLogOutOrDeleteAccount(false)}}>Log Out</button><br /><br />
                         </>
@@ -394,13 +412,14 @@ const ProfileHomePage = (props) => {
 
                 <div>
                     <h2>Update Profile:</h2>
+                    <PhotoUploader height={120}  selectedFile={selectedFile} setSelectedFile={setSelectedFile} />
                     <label>Username: <input value={username} placeholder='Enter username' onChange={handleUsernameChange} /><span style={{ color: "red" }}> *</span></label><br/>
                     {!isValidUsername ? <h5 style={{ color: "red" }}>username already exists</h5> : <br />}
                     <label>First Name: <input value={firstName} placeholder='Enter first name' onChange={handleFirstNameChange} /><span style={{ color: "red" }}> *</span></label><br /><br />
                     <label>Last Name: <input value={lastName} placeholder='Enter last name' onChange={handleLastNameChange} /><span style={{ color: "red" }}> *</span></label><br /><br />
                     <label>Email: <input value={email} placeholder='Enter email' onChange={handleEmailChange} /><span style={{ color: "red" }}> *</span></label><br /><br />
                     
-                    {user.USER_TYPE === 'customer' && 
+                    {user.user_type === 'customer' && 
                     <>
                         <label>Passport Number: <input value={passportNumber} placeholder='Enter passport number' onChange={handlePassportNumberChange} /><span style={{ color: "red" }}> *</span></label>
                         {!isValidPassport && !isPassportStarting ? <h5 style={{ color: "red" }}>passport number must contain 12 characters</h5> : <><br /><br /></>}
@@ -421,22 +440,23 @@ const ProfileHomePage = (props) => {
                     <PasswordInput Label="Confirm Password: " password={rePassword} setPassword={handleRePasswordChange} /><span style={{ color: "red" }}> *</span><br /><br />
 
                     <div>
-                        <button className="custom-btn" onClick={user.USER_TYPE === 'customer' ? updateInfo : updateInfo2}>Update Profile</button>
-                        <button className="custom-btn" onClick={() => { setIsBeingUpdated(false) }}>Cancel</button></div>
+                        <button className="btn-primary" style={{marginRight: '10px'}} onClick={user.user_type === 'customer' ? updateInfo : updateInfo2}>Update Profile</button>
+                        <button className="btn-primary" onClick={() => { setIsBeingUpdated(false) }}>Cancel</button></div>
                 </div>}
             </div>
             
             <div className='recommendation-container'>
-                {user.USER_TYPE === 'customer' && recommendedDestinations.length !== 0 &&
+                {user.user_type === 'customer' && recommendedDestinations.length !== 0 &&
                 <>
                     <h1>Recommended Destinations -</h1>
                     <CategorizedDestination destinationObj={recommendedDestinations} />
                 </>}
 
-                {user.USER_TYPE === 'agent' &&
-                <AgentTrip/>}
+                {(user.user_type === 'agent' && user.acc_status === 'OK') ?
+                <AgentTrip/> :
+                <h1>Nothing to show here...</h1>}
 
-                {user.USER_TYPE === 'admin' &&
+                {user.user_type === 'admin' &&
                 <>
                     <h1>Pending Tasks -</h1>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -452,9 +472,9 @@ const ProfileHomePage = (props) => {
                                 :
                                 pendingAgents.map((agent, index) =>
                                     <div key={index} className="agent-box">
-                                        <h3>{agent.USERNAME}</h3>
-                                        <p>Experience: {agent.EXPERIENCE_YEARS} years</p>
-                                        <p>Fee: {agent.FEE}</p>
+                                        <h3>{agent.username}</h3>
+                                        <p>Experience: {agent.experience_years} years</p>
+                                        <p>Fee: {agent.fee}</p>
                                         <div className="button-container2">
                                             <button className="btn-primary" onClick={() => acceptRequest(agent)}>Accept</button>
                                             <span style={{ margin: '0 10px' }}></span>
@@ -470,24 +490,24 @@ const ProfileHomePage = (props) => {
                                 <div key={index} className="agent-box">
                                     <TiTick className='tick-button' onClick={()=>adminDecision(index, true)}/>
                                     <RxCross2 className='delete-button' onClick={()=>adminDecision(index, false)}/>
-                                    <h3>{trip.NAME}</h3>
-                                    <p>Cost: {trip.TOTAL_COST}</p>
+                                    <h3>{trip.name}</h3>
+                                    <p>Cost: {trip.total_cost}</p>
                                     <p>Start Date:&nbsp;
-                                        {new Date(trip.DEPARTURE_DATE).toLocaleDateString('en-US', {
+                                        {new Date(trip.departure_date).toLocaleDateString('en-US', {
                                             year: 'numeric',
                                             month: 'long',
                                             day: 'numeric'
                                         })}
                                     </p>
                                     <p>End Date:&nbsp;
-                                        {new Date(trip.RETURN_DATE).toLocaleDateString('en-US', {
+                                        {new Date(trip.return_date).toLocaleDateString('en-US', {
                                             year: 'numeric',
                                             month: 'long',
                                             day: 'numeric'
                                         })}
                                     </p>
-                                    <p>Agent: {trip.AGENT_NAME}</p>
-                                    <p>Customer: {trip.CUSTOMER_NAME}</p>
+                                    <p>Agent: {trip.agent_name}</p>
+                                    <p>Customer: {trip.customer_name}</p>
                                 </div>))}
                             </div>
                         </div>

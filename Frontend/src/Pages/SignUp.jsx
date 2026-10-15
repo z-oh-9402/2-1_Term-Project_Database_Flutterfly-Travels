@@ -6,6 +6,7 @@ import PropTypes from 'prop-types'
 import PasswordInput from "../Components/PasswordInput";
 import { ImCross } from "react-icons/im";
 import UserInfoContext from "../Context/UserInfoContext";
+import PhotoUploader from "../Components/PhotoUploader";
 
 const SignUp = (props) => {
     const { setInfo, setShowDetailedNotification } = useContext(UserInfoContext);
@@ -16,6 +17,7 @@ const SignUp = (props) => {
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
     const [email, setEmail] = useState("");
+    const [selectedFile, setSelectedFile] = useState(null);
     const [passportNumber, setPassportNumber] = useState("");
     const [experience, setExperience] = useState("");
     const [fee, setFee] = useState("");
@@ -100,8 +102,6 @@ const SignUp = (props) => {
     }
 
     const handleForm = (page) => {
-        let correct = false;
-
         if (page === 2 && (username === "" || userType === "" || password ==="" || rePassword === "")) {
             alert("Important field(s) empty!");
         }
@@ -117,75 +117,59 @@ const SignUp = (props) => {
         else if (page === 3 && (username === "" || firstName === "" || lastName === "" || email === "" || (userType === "customer" && passportNumber === "") || (userType === "agent" && (experience === "" || fee === "")))) {
             alert("Important field(s) empty!");
         }
+        else if (page === 3 & !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            alert("Invalid Email ID.");
+        }
         else if (page === 3 & !isValidPassport) {
             alert("Invalid passport number.");
         }
         else {
-            correct = true;
-        }
-
-        if (correct) {
             togglePage(page);
         }
     }
 
     const handleDataSubmit = async () => {
         let result;
+
+        let formData = new FormData();
+        formData.append('file', selectedFile);
+        formData.append('username', username);
+        formData.append('firstName', firstName);
+        formData.append('lastName', lastName);
+        formData.append('email', email);
+        formData.append('password', password);
+
         if (userType === 'customer') {
             
             let pref = []
             for (let i = 1; i <= 7; i++) {
-                let check = document.getElementById("preference" + i);
-                if (check.checked) {
-                    pref.push(check.value);
+                let item = document.getElementById("preference" + i);
+                if (item.checked) {
+                    pref.push({id: i, name: item.value});
                 }
             }
+            
+            formData.append('passportNumber', passportNumber);
+            formData.append('userType', 'customer');
+            formData.append('preferences', JSON.stringify(pref));
 
-            const info = {
-                "username": username,
-                "firstName": firstName,
-                "lastName": lastName,
-                "email": email,
-                "passportNumber": passportNumber,
-                "tripBooked": 0,
-                "password": password,
-                "userType": "customer",
-                "preferences": pref
-            }
             let response = await fetch(`http://localhost:3000/customer`, {
                 method: "POST",
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(info)
+                body: formData
             });
 
             result = await response.json();
-
-            response = await fetch(`http://localhost:3000/trip/for-customer?customerId=${result.USER_ID}`, {
-                method: "GET"
-            });
-
-            const result2 = await response.json();
-            result.TRIPS = result2;
+            result.trips = [];
         }
+        
         else {
-            const info = {
-                "username": username,
-                "firstName": firstName,
-                "lastName": lastName,
-                "email": email,
-                "experience": experience,
-                "fee": fee,
-                "password": password,
-                "userType": "agent"
-            }
+            formData.append('userType', 'agent');
+            formData.append('experience', experience);
+            formData.append('fee', fee);
+
             let response = await fetch(`http://localhost:3000/agent`, {
                 method: "POST",
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(info)
+                body: formData
             });
             result = await response.json();
 
@@ -240,11 +224,12 @@ const SignUp = (props) => {
                     </> :
                     (page === 2 ?
                         <>
+                            <PhotoUploader height={60} selectedFile={selectedFile} setSelectedFile={setSelectedFile}/>
                             <label>First Name: <input value={firstName} placeholder='Enter first name' onChange={handleFirstNameChange} /><span style={{ color: "red" }}> *</span></label><br /><br />
 
                             <label>Last Name: <input value={lastName} placeholder='Enter last name' onChange={handleLastNameChange} /><span style={{ color: "red" }}> *</span></label><br /><br />
 
-                            <label>Email: <input value={email} placeholder='Enter email' onChange={handleEmailChange} /><span style={{ color: "red" }}> *</span></label><br /><br />
+                            <label>Email: <input value={email} placeholder='Enter email' style={{width: '200px'}} onChange={handleEmailChange} /><span style={{ color: "red" }}> *</span></label><br /><br />
 
                             {userType === 'customer' ? <label>Passport Number: <input value={passportNumber} placeholder='Enter passport number' onChange={handlePassportNumberChange} /><span style={{ color: "red" }}> *</span></label>
                                 : <><label>Years of Experience: <input value={experience} placeholder='Enter years of experience' onChange={handleExperienceChange} /><span style={{ color: "red" }}> *</span></label><br /><br />
@@ -253,12 +238,15 @@ const SignUp = (props) => {
                             {userType === "customer" && !isValidPassport && !isPassportStarting ? <h5 style={{ color: "red" }}>passport number must contain 12 characters</h5>
                                 : <><br /><br /></>}
 
-                            <div><button className="custom-btn" style={{color: "black"}} onClick={() => { togglePage(1) }}>Prev</button>
+                            <div>
+                                <button className="custom-btn" style={{color: "black"}} onClick={() => { togglePage(1) }}>Prev</button>
 
-                            {userType === "customer" ? <button className="custom-btn" style={{color: "black"}} onClick={() => { handleForm(3) }}>Next</button> :
-                                <><button className="custom-btn" onClick={handleDataSubmit}>Sign Up</button><br /><br /></>}
-                            </div><br /><br />
-                        </> :
+                                {userType === "customer" ? <button className="custom-btn" style={{color: "black"}} onClick={() => { handleForm(3) }}>Next</button> :
+                                    <><button className="custom-btn" style={{color: "black"}} onClick={handleDataSubmit}>Sign Up</button><br /><br /></>}
+                            </div>
+                            <br /><br />
+                        </> 
+                        :
                         userType === "customer" &&
                         <>
                             <h3>Choose Your Destination Preferences: (Optional)</h3>
@@ -270,8 +258,8 @@ const SignUp = (props) => {
                             <label><input type="checkbox" id="preference6" value="Tea Gardens" />Tea Gardens</label><br />
                             <label><input type="checkbox" id="preference7" value="Historical Places" />Historical Places</label><br /><br />
 
-                            <div><button className="custom-btn" onClick={() => { togglePage(2) }}>Prev</button>
-                                <button className="custom-btn" onClick={handleDataSubmit}>Sign Up</button></div><br /><br />
+                            <div><button className="custom-btn" style={{color: "black"}} onClick={() => { togglePage(2) }}>Prev</button>
+                                <button className="custom-btn" style={{color: "black"}} onClick={handleDataSubmit}>Sign Up</button></div><br /><br />
                         </>)
                 }
 

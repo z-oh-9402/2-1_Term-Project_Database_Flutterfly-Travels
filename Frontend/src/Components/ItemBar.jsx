@@ -20,7 +20,7 @@ const ItemBar = (props) => {
             {
                 if(itemType==='destination')
                 {
-                    const response = await fetch(`http://localhost:3000/wishlist/destination?userId=${userInfo.USER_ID}&itemId=${item.DESTINATION_ID}`,{
+                    const response = await fetch(`http://localhost:3000/wishlist/destination?userId=${userInfo.user_id}&itemId=${item.destination_id}`,{
                         method: "GET",
                     });
 
@@ -29,7 +29,7 @@ const ItemBar = (props) => {
                 }
                 else if(itemType==='accommodation')
                 {
-                    const response = await fetch(`http://localhost:3000/wishlist/accommodation?userId=${userInfo.USER_ID}&itemId=${item.ACCOMMODATION_ID}`,{
+                    const response = await fetch(`http://localhost:3000/wishlist/accommodation?userId=${userInfo.user_id}&itemId=${item.accommodation_id}`,{
                         method: "GET",
                     });
 
@@ -38,7 +38,7 @@ const ItemBar = (props) => {
                 }
                 else
                 {
-                    const response = await fetch(`http://localhost:3000/wishlist/restaurant?userId=${userInfo.USER_ID}&itemId=${item.RESTAURANT_ID}`,{
+                    const response = await fetch(`http://localhost:3000/wishlist/restaurant?userId=${userInfo.user_id}&itemId=${item.restaurant_id}`,{
                         method: "GET",
                     });
 
@@ -64,8 +64,8 @@ const ItemBar = (props) => {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        userId: userInfo.USER_ID,
-                        itemId: item.DESTINATION_ID
+                        userId: userInfo.user_id,
+                        itemId: item.destination_id
                     })
                 });
 
@@ -79,8 +79,8 @@ const ItemBar = (props) => {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        userId: userInfo.USER_ID,
-                        itemId: item.ACCOMMODATION_ID
+                        userId: userInfo.user_id,
+                        itemId: item.accommodation_id
                     })
                 });
 
@@ -94,8 +94,8 @@ const ItemBar = (props) => {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        userId: userInfo.USER_ID,
-                        itemId: item.RESTAURANT_ID
+                        userId: userInfo.user_id,
+                        itemId: item.restaurant_id
                     })
                 });
 
@@ -105,28 +105,28 @@ const ItemBar = (props) => {
     }
 
     const departureTime = itemType==='flight' ? 
-        new Date(item.DEPARTURE_TIME).toLocaleTimeString('en-US', {
+        new Date(item.departure_time).toLocaleTimeString('en-US', {
             hour: '2-digit',
             minute: '2-digit',
             hour12: true
         }) : null;
 
     const arrivalTime = itemType==='flight' ? 
-        new Date(item.ARRIVAL_TIME).toLocaleTimeString('en-US', {
+        new Date(item.arrival_time).toLocaleTimeString('en-US', {
             hour: '2-digit',
             minute: '2-digit',
             hour12: true
         }) : null;
 
     const showPopup = () => {
-        if(itemType!=='flight' || userInfo===null || userInfo.USER_TYPE!=='admin')
+        if(itemType!=='flight' || userInfo===null || userInfo.user_type!=='admin')
         {
             document.getElementById(`${props.index}`).style.display = 'flex';
         }
     }
 
     const hidePopup = () => {
-        if(itemType!=='flight' || userInfo===null || userInfo.USER_TYPE!=='admin')
+        if(itemType!=='flight' || userInfo===null || userInfo.user_type!=='admin')
         {
             document.getElementById(`${props.index}`).style.display = 'none';
         }
@@ -139,34 +139,34 @@ const ItemBar = (props) => {
     const navigatePage = () => {
         if(itemType === 'destination')
         {
-            navigate(`/destinations/${item.NAME}`)
+            navigate(`/destinations/${item.name}`)
         }
         if(itemType === 'accommodation')
         {
-            navigate(`/accommodations/${item.NAME}`)
+            navigate(`/accommodations/${item.name}`)
         }
         if(itemType === 'restaurant')
         {
-            navigate(`/restaurants/${item.NAME}`)
+            navigate(`/restaurants/${item.name}`)
         }
     }
 
     return (
         <div className="bar" id={`bar${index}`}>
-            {itemType!=='flight' && userInfo.USER_TYPE==='customer' && (addedToFav ? <FaHeart className='fav-icon' onClick={updateFavourite}/> : <FaRegHeart className='fav-icon' onClick={updateFavourite}/>)}
+            {itemType!=='flight' && userInfo.user_type==='customer' && (addedToFav ? <FaHeart className='fav-icon' onClick={updateFavourite}/> : <FaRegHeart className='fav-icon' onClick={updateFavourite}/>)}
             <div style={{width: '100%', height: '100%', display:'flex', alignItems: 'center'}} onMouseOver={showPopup} onMouseOut={hidePopup} onClick={navigatePage}>
                 <div className='main-info-container'>
-                    <img className='cover-img' src={item.IMAGE} alt="Card Image"/>
+                    <img className='cover-img' src={item.image} alt="Card Image"/>
                     <div>
-                        <h3 className='title'>{itemType!=='flight' ? item.NAME : item.AIRLINE_NAME}</h3>
+                        <h3 className='title'>{itemType!=='flight' ? item.name : item.airline_name}</h3>
                         {itemType!=='flight' ? 
                         <>
-                            <p>{item.LOCATION_NAME}</p>
-                            <p>{item.DISTRICT_NAME}, {item.DIVISION_NAME}</p>
+                            <p>{item.location_name}</p>
+                            <p>{item.district_name}, {item.division_name}</p>
                         </>:
                         <>
-                            <p>{item.DEPARTURE_AIRPORT} =&gt; {item.ARRIVAL_AIRPORT}</p>
-                            {item.FLIGHT_STYLE==='Round Trip' && <p>{item.ARRIVAL_AIRPORT} =&gt; {item.DEPARTURE_AIRPORT}</p>}
+                            <p>{item.departure_airport} =&gt; {item.arrival_airport}</p>
+                            {item.flight_style==='Round Trip' && <p>{item.arrival_airport} =&gt; {item.departure_airport}</p>}
                             <p>Departure Time: {departureTime}</p>
                             <p>Arrival Time: {arrivalTime}</p>
                         </>}
@@ -176,18 +176,18 @@ const ItemBar = (props) => {
                 
                 <div className='item-rating-container'>
                     {itemType!=='flight' ?
-                    <label>Rating: <Rating rating={item.RATING} state={0} setRating={null}/></label>
+                    <label>Rating: <Rating rating={parseFloat(item.rating)} isChanging={false} setRating={null}/></label>
                     :
-                    <label>{item.SEAT_CLASS} Class: ৳ {item.SEAT_PRICE}</label>}
+                    <label>{item.seat_class} Class: ৳ {item.seat_price}</label>}
                 </div>
 
                 {itemType==='destination' && <div className="popup" id={index}>
-                    <p className="description"><span style={{fontWeight:"bold",color:"white"}}>Description: </span><br/>{item.DESCRIPTION}</p>
+                    <p className="description"><span style={{fontWeight:"bold",color:"white"}}>Description: </span><br/>{item.description}</p>
                     <p></p>
                 </div>}
 
                 {(itemType==='accommodation' || itemType==='restaurant') && <div className="popup" id={index}>
-                    <p className="description"><span style={{fontWeight:"bold",color:"white"}}>Address: </span><br/>{item.ADDRESS}</p>
+                    <p className="description"><span style={{fontWeight:"bold",color:"white"}}>Address: </span><br/>{item.address}</p>
                     <p></p>
                 </div>}
 

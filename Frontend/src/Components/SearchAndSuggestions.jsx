@@ -68,32 +68,32 @@ const SearchAndSuggestions = (props) => {
                 {data.suggestions!==undefined &&
                     <div id="suggestions-container">
                         {data.suggestions.destination.map((item,index)=>
-                            <div key={index} className="suggested-items" onClick={functions.showItem}>
+                            <div key={index} className="suggested-items" onClick={() => functions.showItem(item.name)}>
                                 {data.category==='destination' ? <FaLocationArrow size={30} style={{paddingRight: "8px"}}/> 
                                                           : (data.category ==='accommodation' ? <FaHotel size={30} style={{paddingRight: "8px"}}/> 
                                                                                  : <IoIosRestaurant size={30} style={{paddingRight: "8px"}}/>)}
-                                <div><h3>{item.NAME}</h3>
-                                {item.LOCATION_NAME}, {item.DISTRICT_NAME}</div>
+                                <div><h3>{item.name}</h3>
+                                {item.location_name}, {item.district_name}</div>
                             </div>
                         )}
                         {data.suggestions.location.subDistrict.map((item,index)=>
-                            <div key={index} className="suggested-items">
+                            <div key={index} className="suggested-items" onClick={()=>functions.placeSelected(1,item.location_name)}>
                                 <MdLocationPin size={30} style={{paddingRight: "8px"}}/>
-                                <div><h3 onClick={(e)=>{functions.placeSelected(1,e.target.innerText)}}>{item.LOCATION_NAME}</h3>
-                                {item.DISTRICT_NAME}, {item.DIVISION_NAME}</div>
+                                <div><h3>{item.location_name}</h3>
+                                {item.district_name}, {item.division_name}</div>
                             </div>
                         )}
                         {data.suggestions.location.district.map((item,index)=>
-                            <div key={index} className="suggested-items">
+                            <div key={index} className="suggested-items" onClick={()=>functions.placeSelected(2,item.district_name)}>
                                 <MdLocationPin size={30} style={{paddingRight: "8px"}}/>
-                                <div><h3 onClick={(e)=>functions.placeSelected(2,e.target.innerText)}>{item.DISTRICT_NAME}</h3>
-                                {item.DIVISION_NAME} Division</div>
+                                <div><h3>{item.district_name}</h3>
+                                {item.division_name} Division</div>
                             </div>
                         )}
                         {data.suggestions.location.division.map((item,index)=>
-                            <div key={index} className="suggested-items">
+                            <div key={index} className="suggested-items" onClick={()=>functions.placeSelected(3,item.division_name)}>
                                 <MdLocationPin size={30} style={{paddingRight: "8px"}}/>
-                                <div><h3 onClick={(e)=>functions.placeSelected(3,e.target.innerText)}>{item.DIVISION_NAME}</h3>
+                                <div><h3>{item.division_name}</h3>
                                 Bangladesh</div>
                             </div>
                         )}

@@ -15,6 +15,7 @@ const db_query = async (query,params) =>{
         return result.rows;
     }
     catch(error){
+        console.log(`"`+query+`"`);
         console.log(error.message);
     }
 }

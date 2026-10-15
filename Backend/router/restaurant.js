@@ -175,7 +175,7 @@ router.get("/review-rating/:restaurantId/:customerId",async(req,res)=>{
     }
     else
     {
-        result = ans[0].RATING;
+        result = ans[0].rating;
     }
 
     res.status(200).json(result);
@@ -186,7 +186,7 @@ router.get("/review-rating/:restaurantId",async(req,res)=>{
 
     const query = 
     `
-        SELECT RE.REVIEW, RA.RATING, TO_CHAR(RE.CREATED_AT, 'DD Mon, YYYY ... HH12:MI:SS AM') AS CREATED_AT, U.USERNAME
+        SELECT RE.REVIEW, RA.RATING, TO_CHAR(RE.CREATED_AT, 'DD Mon, YYYY - HH12:MI:SS AM') AS CREATED_AT, U.USERNAME
         FROM REVIEW RE JOIN RATING RA ON RE.ITEM_ID=RA.ITEM_ID AND RE.ITEM_TYPE=RA.ITEM_TYPE AND RE.CUSTOMER_ID=RA.CUSTOMER_ID JOIN USERS U ON U.USER_ID=RE.CUSTOMER_ID
         WHERE RE.ITEM_ID=${id} AND RE.ITEM_TYPE='restaurant'
         ORDER BY RE.CREATED_AT DESC

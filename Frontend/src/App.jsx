@@ -3,7 +3,6 @@ import {useContext, useEffect, useState} from 'react';
 import UserInfoContext from './Context/UserInfoContext.jsx';
 
 import Header from './Components/Header.jsx';
-
 import Login from './Pages/Login.jsx';
 import SignUp from './Pages/SignUp.jsx';
 import ProfileHomePage from './Pages/ProfileHomePage.jsx';
@@ -28,31 +27,31 @@ function App() {
   const [instantNotifications, setInstantNotifications] = useState([]);
   const [showWishlist, setShowWishlist] = useState(false);
 
-  useEffect(() => {
-    const fetchNotification = async () => {
-      if(userInfo!==null)
-      {
-        const response = await fetch(`http://localhost:3000/user/fetch-notification/${userInfo.USER_ID}`, {
-          method: "GET"
-        });
+  // useEffect(() => {
+  //   const fetchNotification = async () => {
+  //     if(userInfo!==null)
+  //     {
+  //       const response = await fetch(`http://localhost:3000/user/fetch-notification/${userInfo.USER_ID}`, {
+  //         method: "GET"
+  //       });
 
-        const result = await response.json();
+  //       const result = await response.json();
         
-        if(result.length>0)
-        {
-          setNotifications(prevNotifications => [...prevNotifications, ...result]);
-          setShowDetailedNotification(true);
-        }
-        setInstantNotifications(result);
-      }
-    };
+  //       if(result.length>0)
+  //       {
+  //         setNotifications(prevNotifications => [...prevNotifications, ...result]);
+  //         setShowDetailedNotification(true);
+  //       }
+  //       setInstantNotifications(result);
+  //     }
+  //   };
 
-    const intervalId = setInterval(() => {
-      fetchNotification();
-    }, 1500);
+  //   const intervalId = setInterval(() => {
+  //     fetchNotification();
+  //   }, 1500);
 
-    return () => clearInterval(intervalId);
-  }, [userInfo, notifications]);
+  //   return () => clearInterval(intervalId);
+  // }, [userInfo, notifications]);
 
   useEffect(() => {
     const updateTripStatus = async () => {
@@ -70,26 +69,26 @@ function App() {
 
       await response.json();
       
-      if(userInfo && userInfo.USER_TYPE!=='admin')
+      if(userInfo && userInfo.user_type!=='admin')
       {
         let result;
-        if(userInfo.USER_TYPE === 'customer')
+        if(userInfo.user_type === 'customer')
         {
-            const response = await fetch(`http://localhost:3000/trip/for-customer?customerId=${userInfo.USER_ID}`, {
+            const response = await fetch(`http://localhost:3000/trip/for-customer?customerId=${userInfo.user_id}`, {
                 method: "GET"
             });
 
             result = await response.json();
         }
-        if(userInfo.USER_TYPE === 'agent')
+        if(userInfo.user_type === 'agent')
         {
-            const response = await fetch(`http://localhost:3000/trip/for-agent?agentId=${userInfo.USER_ID}`, {
+            const response = await fetch(`http://localhost:3000/trip/for-agent?agentId=${userInfo.user_id}`, {
                 method: "GET"
             });
 
             result = await response.json();
         }
-        userInfo.TRIPS = result;
+        userInfo.trips = result;
         setInfo(userInfo);
       }
     }
@@ -112,7 +111,7 @@ function App() {
     setIsLoginOrSignUpPageLoaded(false);
   }
 
-  const handleUserInfo = (isLoggingOut)=>
+  const handleLogOut = (isLoggingOut)=>
   {
     setIsLoginOrSignUpPageLoaded(isLoggingOut);
     setIsInLoginPage(isLoggingOut);
@@ -121,13 +120,13 @@ function App() {
   return (
     <>
       {isLoginOrSignUpPageLoaded && 
-        (isInLoginPage ? <Login goToHome={goToHome} setUserInfo={handleUserInfo} goToSignUp={handleChangeBetweenLoginAndSignUp} setNotifications={setNotifications}/> 
-                       : <SignUp goToHome={goToHome} setUserInfo={handleUserInfo} goToLogin={handleChangeBetweenLoginAndSignUp} setNotifications={setNotifications}/>)}
+        (isInLoginPage ? <Login goToHome={goToHome} setUserInfo={handleLogOut} goToSignUp={handleChangeBetweenLoginAndSignUp} setNotifications={setNotifications}/> 
+                       : <SignUp goToHome={goToHome} setUserInfo={handleLogOut} goToLogin={handleChangeBetweenLoginAndSignUp} setNotifications={setNotifications}/>)}
       {userInfo!==null && showTrips && <Trips setShowTrips={setShowTrips}/>}
       {userInfo!==null && showWishlist && <Wishlist setShowWishlist={setShowWishlist} isWishlist={true}/>}
       <Header handleIsInLoginOrSignUpFromNavbar={handleIsInLoginOrSignUpFromNavbar} setShowTrips={setShowTrips} setShowWishlist={setShowWishlist} notifications={instantNotifications}/>
 
-      <br/><br/><br/><br/>
+      <br/><br/><br/>
 
       <Routes>
         <Route path='' element={<Homepage/>}/>
@@ -144,7 +143,7 @@ function App() {
           <Route path=':name' element={<RestaurantProfile/>}/> 
         </Route>
         <Route path='flights' element={<Flights/>}/>
-        {userInfo!==null && <Route path='user' element={<ProfileHomePage setLogOut={handleUserInfo}/>}/>}
+        {userInfo!==null && <Route path='user' element={<ProfileHomePage setLogOut={handleLogOut}/>} />}
         <Route path='*' element={<NoMatch/>}/>
       </Routes>
     </>

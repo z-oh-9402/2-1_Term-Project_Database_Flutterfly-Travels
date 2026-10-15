@@ -1,6 +1,7 @@
 const router = require("express-promise-router")();
 const database = require('../database');
 const bcrypt = require('bcryptjs');
+const { upload, deleting } = require('../file_handling');
 
 router.get("/review-rating/:agentId/:customerId",async(req,res)=>{
     const id = req.params.agentId;
@@ -34,7 +35,7 @@ router.get("/review-rating/:agentId",async(req,res)=>{
 
     const query = 
     `
-        SELECT RE.REVIEW, RA.RATING, TO_CHAR(RE.CREATED_AT, 'DD Mon, YYYY ... HH12:MI:SS AM') AS CREATED_AT, U.USERNAME
+        SELECT RE.REVIEW, RA.RATING, TO_CHAR(RE.CREATED_AT, 'DD Mon, YYYY - HH12:MI:SS AM') AS CREATED_AT, U.USERNAME
         FROM REVIEW RE JOIN RATING RA ON RE.ITEM_ID=RA.ITEM_ID AND RE.ITEM_TYPE=RA.ITEM_TYPE AND RE.CUSTOMER_ID=RA.CUSTOMER_ID JOIN USERS U ON U.USER_ID=RE.CUSTOMER_ID
         WHERE RE.ITEM_ID=${id} AND RE.ITEM_TYPE='agent'
         ORDER BY RE.CREATED_AT DESC
@@ -57,7 +58,7 @@ router.get("/pending-agents",async(req,res)=>{
 });
 
 router.get("/search",async(req,res)=>{
-    const query = `SELECT U.*, A.EXPERIENCE_YEARS, A.FEE
+    const query = `SELECT U.*, A.EXPERIENCE_YEARS, A.FEE, A.RATING
                    FROM USERS U JOIN Agent A ON U.USER_ID = A.AGENT_ID 
                    WHERE U.USERNAME LIKE '%${req.query.keyword}%' AND A.ACC_STATUS='OK'`;
     const params = [];
@@ -71,7 +72,7 @@ router.get("/search",async(req,res)=>{
 
 router.get("/fetch/:agentId",async(req,res)=>{
     
-    const query = `SELECT U.*, A.EXPERIENCE_YEARS, A.FEE
+    const query = `SELECT U.*, A.EXPERIENCE_YEARS, A.FEE, A.RATING
                    FROM USERS U JOIN Agent A ON U.USER_ID = A.AGENT_ID 
                    WHERE A.AGENT_ID=${req.params.agentId}`;
     const params = [];
@@ -81,9 +82,8 @@ router.get("/fetch/:agentId",async(req,res)=>{
 });
 
 router.get("/:agentId",async(req,res)=>{
-    
     const query = `SELECT *
-                   FROM Agent A JOIN Users U ON A.AGENT_ID=U.USER_ID
+                   FROM Agent
                    WHERE AGENT_ID=${req.params.agentId}`;
     const params = [];
     const ans = await database.query(query,params);
@@ -151,31 +151,38 @@ router.post("/review-rating/:id",async(req,res)=>{
     res.status(200).json({status:'ok'});
 });
 
-router.post("/",async(req,res)=>{
+router.post("/", upload.single('file'), async(req,res)=>{
     const user = req.body;
 
     const plaintextPassword = user.password;
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(plaintextPassword, salt);
 
-    const query = `INSERT INTO Users (USERNAME, PASSWORD, FIRST_NAME, LAST_NAME, USER_TYPE, EMAIL)
-                   VALUES ('${user.username}','${hashedPassword}','${user.firstName}','${user.lastName}','${user.userType}','${user.email}')`;
-    const params = [];
+    if(req.file === undefined) {
+        req.file = { filename: "" }
+    }
+
+    const query = `INSERT INTO Users (USERNAME, PASSWORD, FIRST_NAME, LAST_NAME, USER_TYPE, EMAIL, PHOTO)
+                   VALUES ($1, $2, $3, $4, $5, $6, $7)`;
+    let params = [user.username, hashedPassword, user.firstName, user.lastName, user.userType, user.email, req.file.filename];
     await database.query(query,params);
 
     const res_query = `SELECT *
                        FROM Users
                        WHERE USERNAME='${user.username}'`;
+    params = [];
     let ans = await database.query(res_query,params);
 
-    const query2 = `INSERT INTO Agent (AGENT_ID,EXPERIENCE_YEARS,FEE, ACC_STATUS)
-                    VALUES (${ans[0].USER_ID},${user.experience},${user.fee},'PENDING')`
+    const query2 = `INSERT INTO Agent (AGENT_ID,EXPERIENCE_YEARS,FEE, ACC_STATUS, RATING)
+                    VALUES (${ans[0].user_id},${user.experience},${user.fee},'PENDING', 0)`;
     await database.query(query2,params);
 
-    ans[0].PASSWORD = user.password;
-    ans[0].EXPERIENCE_YEARS = user.experience;
-    ans[0].FEE = user.fee;
-    ans[0].ACC_STATUS = "PENDING";
+    ans[0].password = user.password;
+    ans[0].experience_years = user.experience;
+    ans[0].fee = user.fee;
+    ans[0].acc_status = "PENDING";
+    ans[0].rating = 0;
+
     await database.query('commit',params);
 
     res.status(200).json(ans[0]);
@@ -246,17 +253,6 @@ router.put("/:userId",async(req,res)=>{
     }
 
     res.status(200).json(result);
-});
-
-router.delete("/:userId",async(req,res)=>{
-    const query = `DELETE FROM Users 
-                   WHERE USER_ID = ${req.params.userId}`;
-    const params = [];
-    await database.query(query,params);
-    await database.query('commit',params);
-    res.status(200).json({
-        status: "ok"
-    });
 });
 
 module.exports = router;

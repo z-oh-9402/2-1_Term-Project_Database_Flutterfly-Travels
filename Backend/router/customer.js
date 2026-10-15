@@ -1,6 +1,7 @@
 const router = require("express-promise-router")();
 const database = require('../database');
 const bcrypt = require('bcryptjs');
+const { upload, deleting } = require('../file_handling');
 
 router.get("/fetch",async(req,res)=>{
     const query = `SELECT C.passport_number, C.trip_booked, P.type_name
@@ -12,126 +13,136 @@ router.get("/fetch",async(req,res)=>{
     let pref = [];
     for(let data of ans)
     {
-        if(data.TYPE_NAME!=null)
+        if(data.type_name!=null)
         {
-            pref.push(data.TYPE_NAME);
+            pref.push(data.type_name);
         }    
     }
-    ans[0].PREFERENCES = pref;
+    ans[0].preferences = pref;
 
     res.status(200).json(ans[0]);
 });
 
-router.get("/:username",async(req,res)=>{
-    const query = `SELECT *
-                   FROM Users
-                   WHERE USERNAME='${req.params.username}'`;
-    const params = [];
-    const ans = await database.query(query,params);
+// router.get("/:username",async(req,res)=>{
+//     const query = `SELECT *
+//                    FROM Users
+//                    WHERE USERNAME='${req.params.username}'`;
+//     const params = [];
+//     const ans = await database.query(query,params);
 
-    const result = {
-        status: ans.length === 0
-    }
+//     const result = {
+//         status: ans.length === 0
+//     }
 
-    res.status(200).json(result);
-});
+//     res.status(200).json(result);
+// });
 
-router.post("/",async(req,res)=>{
+router.post("/", upload.single('file'), async(req,res)=>{
     const user = req.body;
+    user.preferences = JSON.parse(user.preferences);
 
     const plaintextPassword = user.password;
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(plaintextPassword, salt);
+    
+    if(req.file === undefined) {
+        req.file = { filename: "" }
+    }
 
-    const query = `INSERT INTO Users (USERNAME, PASSWORD, FIRST_NAME, LAST_NAME, USER_TYPE, EMAIL)
-                   VALUES ('${user.username}','${hashedPassword}','${user.firstName}','${user.lastName}','${user.userType}','${user.email}')`;
-    const params = [];
+    let query = `INSERT INTO Users (USERNAME, PASSWORD, FIRST_NAME, LAST_NAME, USER_TYPE, EMAIL, PHOTO)
+                   VALUES ($1, $2, $3, $4, $5, $6, $7)`;
+    let params = [user.username, hashedPassword, user.firstName, user.lastName, user.userType, user.email, req.file.filename];
     await database.query(query,params);
 
-    const res_query = `SELECT *
-                       FROM Users
-                       WHERE USERNAME='${user.username}'`;
-    let ans = await database.query(res_query,params);
+    query = `SELECT *
+             FROM Users
+             WHERE USERNAME = $1`;
+    params = [user.username]
+    let ans = await database.query(query,params);
 
-    const query2 = `INSERT INTO Customer (CUSTOMER_ID,PASSPORT_NUMBER,TRIP_BOOKED)
-                    VALUES (${ans[0].USER_ID},'${user.passportNumber}',${user.tripBooked})`
-    await database.query(query2,params);
+    query = `INSERT INTO Customer (CUSTOMER_ID,PASSPORT_NUMBER,TRIP_BOOKED)
+             VALUES ($1,$2,$3)`;
+    params = [ans[0].user_id, user.passportNumber, 0]
+    await database.query(query,params);
 
-    ans[0].PASSWORD = user.password;
-    ans[0].PASSPORT_NUMBER = user.passportNumber;
-    ans[0].TRIP_BOOKED = user.tripBooked;
-    ans[0].PREFERENCES = user.preferences;
+    ans[0].password = user.password;
+    ans[0].passport_number = user.passportNumber;
+    ans[0].trip_booked = 0;
+    ans[0].preferences = [];
     
     for(let i=0;i<user.preferences.length;i++)
     {
-        const param_query = `SELECT place_type_id FROM Place_Type WHERE TYPE_NAME = '${user.preferences[i]}'`;
-        const id = await database.query(param_query,params);
+        query = `INSERT INTO Customer_Preference (CUSTOMER_ID,PREFERENCE_ID) 
+                VALUES ($1,$2)`;
+        params = [ans[0].user_id, user.preferences[i].id];
+        await database.query(query,params);
 
-        const query3 = `INSERT INTO Customer_Preference (CUSTOMER_ID,PREFERENCE_ID) 
-                        VALUES (${ans[0].USER_ID},${id[0].PLACE_TYPE_ID})`;
-        await database.query(query3,params);
+        ans[0].preferences.push(user.preferences[i].name);
     }
+
+    params = [];
     await database.query('commit',params);
 
     res.status(200).json(ans[0]);
 });
 
-router.put("/:userId",async(req,res)=>{
+router.put("/:userId", upload.single('file'), async(req,res)=>{
     const user = req.body;
+    user.preferences = JSON.parse(user.preferences);
 
-    const check_query = `SELECT * FROM Users WHERE USERNAME='${user.username}'`;
-    const params = [];
-    let ans = await database.query(check_query,params);
+    let query = `SELECT PHOTO
+                FROM Users
+                WHERE USER_ID = ${req.params.userId}`;
+    let params = [];
+    const prev_user = await database.query(query,params);
+
+    prev_user[0].photo.length && deleting("uploads/"+prev_user[0].photo);
     
     const plaintextPassword = user.password;
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(plaintextPassword, salt);
 
-    const query = `UPDATE Users
-                   SET USERNAME='${user.username}',PASSWORD='${hashedPassword}',FIRST_NAME='${user.firstName}',LAST_NAME='${user.lastName}',EMAIL='${user.email}'
-                   WHERE USER_ID=${req.params.userId}`;
+    if(req.file === undefined) {
+        req.file = { filename: "" }
+    }
+
+    query = `UPDATE Users
+             SET USERNAME=$1, PASSWORD=$2,FIRST_NAME=$3,LAST_NAME=$4,EMAIL=$5, PHOTO=$6
+             WHERE USER_ID=${req.params.userId}`;
+    params = [user.username, hashedPassword, user.firstName, user.lastName, user.email, req.file.filename];
     await database.query(query,params);
 
-    const query2 = `UPDATE Customer
-                    SET PASSPORT_NUMBER='${user.passportNumber}'
-                    WHERE CUSTOMER_ID=${req.params.userId}`
-    await database.query(query2,params);
+    query = `UPDATE Customer
+             SET PASSPORT_NUMBER='${user.passportNumber}'
+             WHERE CUSTOMER_ID=${req.params.userId}`
+    params = [];
+    await database.query(query,params);
 
-    const query3 = `DELETE FROM Customer_Preference
-                    WHERE CUSTOMER_ID=${req.params.userId}`;
-    await database.query(query3,params);
+    query = `DELETE FROM Customer_Preference
+             WHERE CUSTOMER_ID=${req.params.userId}`;
+    await database.query(query,params);
 
+    let preferences = [];
     for(let i=0;i<user.preferences.length;i++)
     {
-        const param_query = `SELECT place_type_id FROM Place_Type WHERE TYPE_NAME = '${user.preferences[i]}'`;
-        const id = await database.query(param_query,params);
+        query = `INSERT INTO Customer_Preference (CUSTOMER_ID,PREFERENCE_ID) 
+                 VALUES (${req.params.userId},${user.preferences[i].id})`;
+        await database.query(query,params);
 
-        const query4 = `INSERT INTO Customer_Preference (CUSTOMER_ID,PREFERENCE_ID) 
-                        VALUES (${req.params.userId},${id[0].PLACE_TYPE_ID})`;
-        await database.query(query4,params);
+        preferences.push(user.preferences[i].name);
     }
     await database.query('commit',params);
 
     const res_query = `SELECT U.*,C.PASSPORT_NUMBER,C.TRIP_BOOKED
                        FROM Users U LEFT JOIN Customer C ON  U.USER_ID=C.CUSTOMER_ID
                        WHERE USER_ID=${req.params.userId}`;
-    ans = await database.query(res_query,params);
-    ans[0].PREFERENCES = user.preferences;
-    ans[0].PASSWORD = user.password;
+    let ans = await database.query(res_query,params);
+
+    ans[0].preferences = preferences;
+    ans[0].password = user.password;
     
     result = ans[0];
     res.status(200).json(result);
-});
-
-router.delete("/:userId",async(req,res)=>{
-    const query = `DELETE FROM Users 
-                   WHERE USER_ID = ${req.params.userId}`;
-    const params = [];
-    await database.query(query,params);
-    await database.query('commit',params);
-    res.status(200).json({
-        status: "ok"
-    });
 });
 
 module.exports = router;

@@ -144,12 +144,12 @@ const Restaurants = ()=>{
     const filterCheck = (restaurant) => {
         let isChecked = true;
         
-        if(restaurant.RATING < ratingValue)
+        if(restaurant.rating < ratingValue)
         {
             isChecked = false;
         }
 
-        if(isChecked && restaurant.RESTAURANT_CLASS<restaurantClass)
+        if(isChecked && restaurant.restaurant_class<restaurantClass)
         {
             isChecked = false;
         }
@@ -158,7 +158,7 @@ const Restaurants = ()=>{
         {
             for(let i=0;i<=priceRange;i++)
             {
-                if(restaurant.PRICE_RANGE===PRarray[i])
+                if(restaurant.price_range===PRarray[i])
                 {
                     isChecked = true;
                     break;
@@ -176,7 +176,7 @@ const Restaurants = ()=>{
             {
                 if(cuisineArray[i])
                 {
-                    if(restaurant.CUISINE_TYPE===cuisines[i])
+                    if(restaurant.cuisine_type===cuisines[i])
                     {
                         isChecked = true;
                         break;
@@ -189,32 +189,32 @@ const Restaurants = ()=>{
             }
         }
 
-        if(isChecked && privArray[0] && restaurant.FREE_WIFI==="N")
+        if(isChecked && privArray[0] && restaurant.free_wifi==="N")
         {
             isChecked = false;
         }
 
-        if(isChecked && privArray[1] && restaurant.PARKING==="N")
+        if(isChecked && privArray[1] && restaurant.parkign==="N")
         {
             isChecked = false;
         }
 
-        if(isChecked && privArray[2] && restaurant.DELIVERY==="N")
+        if(isChecked && privArray[2] && restaurant.delivery==="N")
         {
             isChecked = false;
         }
 
-        if(isChecked && privArray[3] && restaurant.TAKEAWAY==="N")
+        if(isChecked && privArray[3] && restaurant.takeaway==="N")
         {
             isChecked = false;
         }
 
-        if(isChecked && privArray[4] && restaurant.DINE_IN==="N")
+        if(isChecked && privArray[4] && restaurant.dine_in==="N")
         {
             isChecked = false;
         }
 
-        if(isChecked && privArray[5] && restaurant.ACCESSIBLE==="N")
+        if(isChecked && privArray[5] && restaurant.accessible==="N")
         {
             isChecked = false;
         }

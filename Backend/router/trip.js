@@ -25,9 +25,9 @@ router.get('/for-customer', async (req, res) => {
                        FROM Trip_Destination TD JOIN DESTINATION D ON TD.DESTINATION_ID = D.DESTINATION_ID 
                        JOIN LOCATION L ON D.LOCATION_ID=L.LOCATION_ID 
                        JOIN DISTRICT DIS ON L.DISTRICT_ID=DIS.DISTRICT_ID
-                       WHERE TD.TRIP_ID = ${trip.TRIP_ID}`;
+                       WHERE TD.TRIP_ID = ${trip.trip_id}`;
         const reservations = await database.query(query, params);
-        trip.DESTINATIONS = reservations;
+        trip.destinations = reservations;
     }
 
     for(let trip of result)
@@ -35,9 +35,9 @@ router.get('/for-customer', async (req, res) => {
         const query = `SELECT A.ACCOMMODATION_ID, A.NAME, AD.*, B.* 
                        FROM BOOKING B JOIN ACCOMMODATION_BOOKING AD ON B.BOOKING_ID=AD.ACCOMMODATION_BOOKING_ID
                        JOIN ACCOMMODATION A ON A.ACCOMMODATION_ID=AD.ACCOMMODATION_ID
-                       WHERE B.TRIP_ID = ${trip.TRIP_ID}`;
+                       WHERE B.TRIP_ID = ${trip.trip_id}`;
         const reservations = await database.query(query, params);
-        trip.ACCOMMODATIONS = reservations;
+        trip.accomodations = reservations;
     }
 
     for(let trip of result)
@@ -45,9 +45,9 @@ router.get('/for-customer', async (req, res) => {
         const query = `SELECT R.RESTAURANT_ID, R.NAME, RD.*, B.* 
                        FROM BOOKING B JOIN RESTAURANT_BOOKING RD ON B.BOOKING_ID=RD.RESTAURANT_BOOKING_ID
                        JOIN RESTAURANT R ON R.RESTAURANT_ID=RD.RESTAURANT_ID
-                       WHERE B.TRIP_ID = ${trip.TRIP_ID}`;
+                       WHERE B.TRIP_ID = ${trip.trip_id}`;
         const reservations = await database.query(query, params);
-        trip.RESTAURANTS = reservations;
+        trip.restaurants = reservations;
     }
 
     for(let trip of result)
@@ -55,9 +55,9 @@ router.get('/for-customer', async (req, res) => {
         const query = `SELECT * 
                        FROM BOOKING B JOIN FLIGHT_BOOKING FD ON B.BOOKING_ID=FD.FLIGHT_BOOKING_ID
                        JOIN FLIGHT F ON F.FLIGHT_ID=FD.FLIGHT_ID
-                       WHERE B.TRIP_ID = ${trip.TRIP_ID}`;
+                       WHERE B.TRIP_ID = ${trip.trip_id}`;
         const reservations = await database.query(query, params);
-        trip.FLIGHTS = reservations;
+        trip.flights = reservations;
     }
 
     res.json(result);
@@ -260,7 +260,7 @@ router.put('/update-trip-status', async (req, res) => {
     {
         query = `UPDATE Trip
                  SET TRIP_STATUS = '${tripStatus}'
-                 WHERE TRIP_STATUS='CONFIRMED' AND RETURN_DATE < SYSDATE`;
+                 WHERE TRIP_STATUS='CONFIRMED' AND RETURN_DATE < CURRENT_TIMESTAMP`;
     }
     if(tripStatus==='PENDING')
     {

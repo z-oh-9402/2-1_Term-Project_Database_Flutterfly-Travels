@@ -15,7 +15,7 @@ Table creation commands:
 	CREATE TABLE Customer (
 		customer_id SERIAL PRIMARY KEY,
 		passport_number VARCHAR(20) NOT NULL,
-		preferred_language VARCHAR(50),
+		trip_booked INTEGER,
 		FOREIGN KEY (customer_id) REFERENCES Users(user_id) ON DELETE CASCADE
 	);
 
@@ -286,7 +286,7 @@ Table creation commands:
 	CREATE TABLE Review(
 		review_id SERIAL PRIMARY KEY,
 		customer_id INTEGER,
-		rating NUMERIC(2,1) CHECK(rating>=0 and rating<=5),
+		rating INTEGER CHECK(rating>=0 and rating<=5),
 		item_type VARCHAR(20),
 		item_id INTEGER,
 		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -297,10 +297,12 @@ Table creation commands:
 	CREATE TABLE Notification(
 		notification_id SERIAL PRIMARY KEY,
 		user_id INTEGER,
+		sender_id INTEGER,
 		content VARCHAR(1000),
 		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 		notification_status VARCHAR(20) CHECK (notification_status IN ('SHOWED', 'NOT SHOWED')),
-		FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
+		FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
+		FOREIGN KEY (sender_id) REFERENCES Users(user_id) ON DELETE CASCADE
 	);
 
 --26. Destination_Wishlist

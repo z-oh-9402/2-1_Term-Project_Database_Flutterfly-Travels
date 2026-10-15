@@ -175,7 +175,7 @@ router.get("/review-rating/:accommodationId/:customerId",async(req,res)=>{
     }
     else
     {
-        result = ans[0].RATING;
+        result = ans[0].rating;
     }
 
     res.status(200).json(result);
@@ -186,7 +186,7 @@ router.get("/review-rating/:accommodationId",async(req,res)=>{
 
     const query = 
     `
-        SELECT RE.REVIEW, RA.RATING, TO_CHAR(RE.CREATED_AT, 'DD Mon, YYYY ... HH12:MI:SS AM') AS CREATED_AT, U.USERNAME
+        SELECT RE.REVIEW, RA.RATING, TO_CHAR(RE.CREATED_AT, 'DD Mon, YYYY - HH12:MI:SS AM') AS CREATED_AT, U.USERNAME
         FROM REVIEW RE JOIN RATING RA ON RE.ITEM_ID=RA.ITEM_ID AND RE.ITEM_TYPE=RA.ITEM_TYPE AND RE.CUSTOMER_ID=RA.CUSTOMER_ID JOIN USERS U ON U.USER_ID=RE.CUSTOMER_ID
         WHERE RE.ITEM_ID=${id} AND RE.ITEM_TYPE='accommodation'
         ORDER BY RE.CREATED_AT DESC
@@ -212,6 +212,7 @@ router.put('/update-favourite',async(req,res)=>{
 
 router.post("/review-rating/:id",async(req,res)=>{
     const id = req.params.id;
+    console.log(req.body);
     const reviews = req.body.review;
     const rating = req.body.rating;
     const customerId = req.body.customerId;
@@ -233,7 +234,7 @@ router.post("/review-rating/:id",async(req,res)=>{
             const query2 = 
             `
                 INSERT INTO RATING (ITEM_ID,ITEM_TYPE,RATING,CUSTOMER_ID)
-                VALUES (${id},'accommodation','${rating}',${customerId})
+                VALUES (${id},'accommodation',${rating},${customerId})
             `
             await database.query(query2,params);
         }

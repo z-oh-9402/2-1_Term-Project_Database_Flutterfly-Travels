@@ -93,7 +93,7 @@ const RestaurantProfile = () => {
                             <h3>Location: {result.LOCATION_NAME}, {result.DISTRICT_NAME}</h3><br />
                             <h3>Address: {result.ADDRESS}</h3><br />
                             <h3>Price Range: {result.PRICE_RANGE}</h3><br />
-                            <h3>Rating: <Rating rating={result.RATING} state={0} setRating={null} /></h3><br />
+                            <h3>Rating: <Rating rating={result.RATING} isChanging={false} setRating={null} /></h3><br />
                             <div>
                                 {result.ACCESSIBLE === 'Y' && <h3 style={{ marginRight: '20px' }}>Accessible &#x2713;</h3>}
                                 {result.FREE_WIFI === 'Y' && <h3 style={{ marginRight: '20px' }}>Free Wifi &#x2713;</h3>}

@@ -8,7 +8,7 @@ router.post("/add-accommodation-booking", async (req, res) => {
     let params = [tripId, bookingType, totalCost]
     let query = `SELECT GET_BOOKING_ID($1, $2, $3)`;
     const ans = await database.query(query,params);
-    const bookingId = ans[0].GET_BOOKING_ID;
+    const bookingId = ans[0].get_booking_id;
 
     query = `INSERT INTO ACCOMMODATION_BOOKING (ACCOMMODATION_BOOKING_ID, NUMBER_OF_ROOMS, ACCOMMODATION_ID, CHECK_IN, CHECK_OUT)
              VALUES (${bookingId}, ${numberOfRooms}, ${itemId}, TO_TIMESTAMP('${checkInDate}', 'MM/DD/YYYY, HH24:MI:SS'), TO_TIMESTAMP('${checkOutDate}', 'MM/DD/YYYY, HH24:MI:SS'))`;
@@ -38,7 +38,7 @@ router.post("/add-restaurant-booking", async (req, res) => {
     let params = [tripId, bookingType, totalCost]
     let query = `SELECT GET_BOOKING_ID($1, $2, $3)`;
     const ans = await database.query(query,params);
-    const bookingId = ans[0].GET_BOOKING_ID;
+    const bookingId = ans[0].get_booking_id;
 
     query = `INSERT INTO RESTAURANT_BOOKING (RESTAURANT_BOOKING_ID, NUMBER_OF_SEATS, RESTAURANT_ID, BOOKING_DATE, ARRIVAL_TIME, DEPARTURE_TIME)
              VALUES (${bookingId}, ${numberOfSeats}, ${itemId}, TO_DATE('${bookingDate}', 'MM/DD/YYYY, HH24:MI:SS'), TO_TIMESTAMP('${arrivalTime}', 'HH:MI AM'), TO_TIMESTAMP('${departureTime}', 'HH:MI AM'))`;
@@ -55,7 +55,7 @@ router.post("/add-flight-booking", async (req, res) => {
     let params = [tripId, bookingType, totalCost]
     let query = `SELECT GET_BOOKING_ID($1, $2, $3)`;
     const ans = await database.query(query,params);
-    const bookingId = ans[0].GET_BOOKING_ID;
+    const bookingId = ans[0].get_booking_id;
 
     if(returnDate !== undefined)
     {
@@ -81,8 +81,8 @@ router.delete("/delete-booking", async (req, res) => {
     const params = []
     const ans = await database.query(query,params);
 
-    const cost = ans[0].COST;
-    const tripId = ans[0].TRIP_ID;
+    const cost = ans[0].cost;
+    const tripId = ans[0].trip_id;
 
     query = `DELETE FROM BOOKING WHERE BOOKING_ID = ${bookingId}`;
     await database.query(query,params);

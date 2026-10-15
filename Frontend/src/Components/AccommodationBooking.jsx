@@ -1,6 +1,8 @@
-import { ImCross } from 'react-icons/im';
 import '../Styles/confirmation-message.css';
 import '../Styles/login-signup.css';
+import '../Styles/button.css';
+
+import { ImCross } from 'react-icons/im';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import PropTypes from 'prop-types';
@@ -9,18 +11,23 @@ import { FaMinus, FaPlus, FaRegCalendarAlt } from 'react-icons/fa';
 import UserInfoContext from '../Context/UserInfoContext';
 import CreateTrip from './CreateTrip';
 
-const AccommodationBooking = ({ header, accommodation, setShowConfirmationMessage }) => {
+
+const message = ["Would you like to book this accommodation?",
+    "How would you like to add this accommodation to your package?",
+    "No already created trip package exists. Would you like to create a new one?"];
+
+const AccommodationBooking = ({ accommodation, setShowConfirmationMessage }) => {
     const {userInfo, setInfo} = useContext(UserInfoContext);
     const [trips, setTrips] = useState([]);
 
     const filterTrips = (trip) => {
         let found = false;
 
-        if(trip.TRIP_STATUS==='UPDATING')
+        if(trip.trip_status==='UPDATING')
         {
-            for(let a of trip.ACCOMMODATIONS)
+            for(let a of trip.accommodations)
             {
-                if(a.ACCOMMODATION_ID === accommodation.ACCOMMODATION_ID)
+                if(a.accommodation_id === accommodation.accommodation_id)
                 {
                     found = true;
                     break;
@@ -36,15 +43,12 @@ const AccommodationBooking = ({ header, accommodation, setShowConfirmationMessag
     }
 
     useEffect(() => {
-        const t = userInfo.TRIPS.filter(trip => !filterTrips(trip));
+        const t = userInfo.trips.filter(trip => !filterTrips(trip));
         setTrips(t);
-    }, [userInfo.TRIPS]);
+    }, [userInfo.trips]);
 
-    const roomPrice = accommodation.ROOM_PRICE;
+    const roomPrice = accommodation.room_price;
     const [page, setPage] = useState(1);
-    const message = ["Would you like to book this accommodation?",
-                     "How would you like to add this accommodation to your package?",
-                     "No already created trip package exists. Would you like to create a new one?"];
 
     const [numberOfRooms, setNumberOfRooms] = useState(1);
 
@@ -59,7 +63,7 @@ const AccommodationBooking = ({ header, accommodation, setShowConfirmationMessag
             if(page===2 || page===5 || page===6)
             {
                 const loginSignupContainer = document.querySelector('.confirmation-message-container');
-                loginSignupContainer.style.height = '400px';
+                loginSignupContainer.style.height = '420px';
             }
             else
             {
@@ -185,7 +189,7 @@ const AccommodationBooking = ({ header, accommodation, setShowConfirmationMessag
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                itemId: accommodation.ACCOMMODATION_ID,
+                itemId: accommodation.accommodation_id,
                 tripId: tripId,
                 checkInDate: inDate,
                 checkOutDate: outDate,
@@ -198,23 +202,23 @@ const AccommodationBooking = ({ header, accommodation, setShowConfirmationMessag
         const data = await response.json();
         if(data.status === "ok")
         {
-            if(userInfo.USER_TYPE === 'customer')
+            if(userInfo.user_type === 'customer')
             {
-                const response = await fetch(`http://localhost:3000/trip/for-customer?customerId=${userInfo.USER_ID}`, {
+                const response = await fetch(`http://localhost:3000/trip/for-customer?customerId=${userInfo.user_id}`, {
                     method: "GET"
                 });
 
                 const result = await response.json();
-                userInfo.TRIPS = result;
+                userInfo.trips = result;
             }
-            if(userInfo.USER_TYPE === 'agent')
+            if(userInfo.user_type === 'agent')
             {
-                const response = await fetch(`http://localhost:3000/trip/for-agent?agentId=${userInfo.USER_ID}`, {
+                const response = await fetch(`http://localhost:3000/trip/for-agent?agentId=${userInfo.user_id}`, {
                     method: "GET"
                 });
 
                 const result = await response.json();
-                userInfo.TRIPS = result;
+                userInfo.trips = result;
             }
             setInfo(userInfo);
             setShowConfirmationMessage(false);
@@ -235,17 +239,17 @@ const AccommodationBooking = ({ header, accommodation, setShowConfirmationMessag
                     <ImCross className='close2' onClick={handleGoToCurrentPage}/>
                     {page===1 && 
                     <>
-                        <div className='message-title'>{header}</div>
+                        <div className='message-title'>Book accommodation -</div>
                         <p className='message-content'>{message[page-1]}</p>
-                        <div>
-                            <button className='custom-btn' onClick={goToNextPage}>Yes</button>
-                            <button className='custom-btn' onClick={handleGoToCurrentPage}>Cancel</button>
+                        <div style={{width: '150px', display: 'flex', justifyContent: 'space-between'}}>
+                            <button className='custom-btn btn-yes' onClick={goToNextPage}>Yes</button>
+                            <button className='custom-btn btn-no' onClick={handleGoToCurrentPage}>Cancel</button>
                         </div>
                     </>}
 
                     {page===2 &&
                     <>
-                        <div className='message-title'>{header}</div>
+                        <div className='message-title'>Book accommodation -</div>
                         <label>Number of rooms: 
                             <div style={{position: "relative", display: 'inline-block', marginLeft: "5px"}}>
                                 <input className='seat-number' type="text" value={numberOfRooms} onChange={handleSeatNumberChange} onBlur={fixValue}/>
@@ -291,12 +295,12 @@ const AccommodationBooking = ({ header, accommodation, setShowConfirmationMessag
                             </div>
                         </div>
                         
-                        <button className='custom-btn' onClick={()=>setPage(trips.length!==0 ? (userInfo.USER_TYPE==='customer' ? 3 : 5) : 4)}>Next</button>
+                        <button className='custom-btn' onClick={()=>setPage(trips.length!==0 ? (userInfo.user_type==='customer' ? 3 : 5) : 4)}>Next</button>
                     </>}
 
                     {page===3 &&
                     <>
-                        <div className='message-title'>{header}</div>
+                        <div className='message-title'>Book accommodation -</div>
                         <p className='message-content'>{message[1]}</p>
                         <div>
                             <button className='custom-btn' onClick={() => setPage(5)}>Add to an existing package</button>
@@ -306,7 +310,7 @@ const AccommodationBooking = ({ header, accommodation, setShowConfirmationMessag
 
                     {page===4 &&
                     <>
-                        <div className='message-title'>{header}</div>
+                        <div className='message-title'>Book accommodation -</div>
                         <p className='message-content'>{message[2]}</p>
                         <div>
                             <button className='custom-btn' onClick={() => setPage(6)}>Create a new package</button>
@@ -315,37 +319,37 @@ const AccommodationBooking = ({ header, accommodation, setShowConfirmationMessag
 
                     {page===5 &&
                     <>
-                        <div className='message-title'>{header}</div>
+                        <div className='message-title'>Book accommodation -</div>
                         <div className='trips-container'>
                             {trips.map((trip, index) => 
                             <div key={index} className='trip-item'>
                                 <div>
-                                    <div className='trip-name'>{trip.NAME}</div>
+                                    <div className='trip-name'>{trip.name}</div>
                                     <div>Departure Date:&nbsp;
-                                        {new Date(trip.DEPARTURE_DATE).toLocaleDateString('en-US', {
+                                        {new Date(trip.departure_date).toLocaleDateString('en-US', {
                                             year: 'numeric',
                                             month: 'long',
                                             day: 'numeric'
                                         })}
                                     </div>
                                     <div>Return Date:&nbsp;
-                                        {new Date(trip.RETURN_DATE).toLocaleDateString('en-US', {
+                                        {new Date(trip.return_date).toLocaleDateString('en-US', {
                                             year: 'numeric',
                                             month: 'long',
                                             day: 'numeric'
                                         })}
                                     </div>
-                                    <div>Total Cost: ৳ {(trip.TOTAL_COST).toLocaleString('en-US')}</div>
-                                    <div>Agent: {trip.USERNAME ? trip.USERNAME : 'Not Set'}</div>
+                                    <div>Total Cost: ৳ {(trip.total_cost).toLocaleString('en-US')}</div>
+                                    <div>Agent: {trip.username ? trip.username : 'Not Set'}</div>
                                 </div>
-                                <button className='custom-btn plus-button' onClick={()=>addBooking(trip.TRIP_ID)}>+</button>
+                                <button className='custom-btn plus-button' onClick={()=>addBooking(trip.trip_id)}>+</button>
                             </div>)}
                         </div>
                     </>}
 
                     {page===6 &&
                     <>
-                        <CreateTrip setCreateTrip={setCreateTrip}/>
+                        <CreateTrip initDepartureDate={checkInDate} initReturnDate={checkOutDate} setCreateTrip={setCreateTrip}/>
                     </>}
                 </div>
             </div>
@@ -354,7 +358,6 @@ const AccommodationBooking = ({ header, accommodation, setShowConfirmationMessag
 };
 
 AccommodationBooking.propTypes = {
-    header: PropTypes.string,
     accommodation: PropTypes.object,
     setShowConfirmationMessage: PropTypes.func
 };

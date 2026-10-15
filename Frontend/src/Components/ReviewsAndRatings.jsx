@@ -9,6 +9,20 @@ import { useContext, useState } from "react";
 
 const max_review_length = 700;
 
+const textareaStyle = { 
+                        color: "white", 
+                        margin: "30px 0px 10px 0px", 
+                        width: "90%", 
+                        minHeight: "80px",
+                        maxHeight: "80px", 
+                        padding: "10px", 
+                        border: "1px solid #ccc", 
+                        borderRadius: "5px", 
+                        resize: "vertical", 
+                        fontFamily: "Arial, sans-serif", 
+                        background: "linear-gradient(to right, #2C2A2A, #292424)" 
+                    }
+
 const ReviewsAndRatings = (props) => {
     const { personalRating, personalReview, reviews, handleSubmit } = props;
     const { rating, setRating } = personalRating;
@@ -28,20 +42,20 @@ const ReviewsAndRatings = (props) => {
 
     return (
         <>
-            <div style={{ display: 'flex', marginBottom: "20px", justifyContent: (userInfo !== null && userInfo.USER_TYPE === 'customer') ? "space-between" : 'center', width: "600px" }}>
-                {userInfo !== null && userInfo.USER_TYPE === 'customer' &&
-                    <div className="review-section" style={{ maxWidth: "400px", margin: "20px auto", padding: "20px", border: "1px solid #ccc", borderRadius: "5px", fontFamily: "Arial, sans-serif" }}>
-                        <h2 style={{ marginBottom: "20px", fontFamily: "Arial, sans-serif" }}>Leave your feedback</h2>
+            <div style={{ display: 'flex', marginBottom: "20px", justifyContent: (userInfo && userInfo.user_type === 'customer') ? "space-between" : 'center', alignItems: 'flex-start', width: "600px" }}>
+                {userInfo && userInfo.user_type === 'customer' &&
+                    <div className="review-section" style={{ display: 'inline-block', margin: "20px auto 0px auto", padding: "20px", border: "1px solid #ccc", borderRadius: "5px", fontFamily: "Arial, sans-serif" }}>
+                        <h2 style={{ marginBottom: "20px", fontFamily: "Arial, sans-serif" }}>Leave your feedback - </h2>
 
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                            <label style={{ marginBottom: "10px", fontFamily: "Arial, sans-serif" }}>Your Rating:</label>
-                            <div style={{ display: 'flex', alignItems: 'center', marginBottom: "20px" }}>
-                                <Rating rating={rating} state={1} setRating={setRating} />
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', margin: "20px 0px 0px 0px" }}>
+                                <label style={{ marginBottom: "10px", fontFamily: "Arial, sans-serif" }}>Your Rating:</label>
+                                <Rating rating={parseFloat(rating)} isChanging={true} setRating={setRating} />
                             </div>
 
-                            <textarea style={{ color: "white", marginBottom: "20px", width: "90%", minHeight: "100px", padding: "10px", border: "1px solid #ccc", borderRadius: "5px", resize: "vertical", fontFamily: "Arial, sans-serif", background: "linear-gradient(to right, #2C2A2A, #292424)" }} value={review} placeholder="Write your review here..." onChange={handleReviewChange} />
+                            <textarea style={textareaStyle} value={review} placeholder="Write your review here..." onChange={handleReviewChange} />
                             <p style={{ marginBottom: "10px", fontFamily: "Arial, sans-serif" }}>{review.length}/{max_review_length}</p>
-                            <button className="btn-primary" style={{ borderRadius: "5px", fontFamily: "Arial, sans-serif" }} onClick={handleSubmit}>Submit Review</button>
+                            <button className="btn-primary" style={{ borderRadius: "5px", fontFamily: "Arial, sans-serif", margin: '30px 0px' }} onClick={handleSubmit}>Submit Review</button>
                         </div>
                     </div>
 
@@ -50,7 +64,7 @@ const ReviewsAndRatings = (props) => {
 
             <div className="all-review" style={{ width: "300px" }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '10px' }}>
-                    <h2 style={{ marginBottom: '0' }}>All Reviews ({reviews.length})</h2>
+                    <h2 style={{ marginBottom: '0' }}>{reviews.length ? `All Reviews (${reviews.length})` : <><>No reviews yet...</><br/><br/><>Be the first one to leave a review...</></>}</h2>
                     {reviews.length > 3 && (
                         <div className="see-all-link" style={{ cursor: 'pointer' }} onClick={() => setSeeAllReviews(true)}>see all</div>
                     )}
@@ -60,10 +74,10 @@ const ReviewsAndRatings = (props) => {
                         <div key={index} style={{
                             border: "2px solid", borderRadius: "5px", padding: "20px", marginBottom: "20px", backgroundColor: "transparent"
                         }}>
-                            <p style={{fontWeight: "bold", fontSize: 18, color: 'lightgrey'}}>{item.USERNAME}</p>
-                            <Rating rating={item.RATING} state={0} setRating={null} />
-                            <p>{item.REVIEW}</p>
-                            <p>{item.CREATED_AT}</p>
+                            <p style={{fontWeight: "bold", fontSize: 18, color: 'lightgrey'}}>{item.username}</p>
+                            <Rating rating={parseFloat(item.rating)} isChanging={false} setRating={null}/>
+                            <p style={{margin: '8px 0px'}}>{item.review}</p>
+                            <p style={{textAlign: 'right', fontSize: '12px', color: 'lightgray'}}>{item.created_at}</p>
                         </div>
                     )
                 ))}
@@ -78,10 +92,10 @@ const ReviewsAndRatings = (props) => {
                                 <h1>Reviews and Ratings</h1>
                                 {reviews.map((item, index) => (
                                     <div key={index} style={{ border: "1px solid gray", borderRadius: "5px", padding: "20px", marginBottom: "20px", background: "linear-gradient(to right, rgba(100, 100, 100, 0.5), rgba(20, 20, 20, 0.5))" }}>
-                                        <p style={{ fontSize: "18px", fontWeight: "bold" }}>{item.USERNAME}</p>
-                                        <Rating rating={item.RATING} state={0} setRating={null} />
-                                        <p>{item.REVIEW}</p>
-                                        <p>{item.CREATED_AT}</p>
+                                        <p style={{ fontSize: "18px", fontWeight: "bold" }}>{item.username}</p>
+                                        <Rating rating={parseFloat(item.rating)} isChanging={false} setRating={null} />
+                                        <p>{item.review}</p>
+                                        <p>{item.created_at}</p>
                                     </div>
                                 ))}
                             </div>

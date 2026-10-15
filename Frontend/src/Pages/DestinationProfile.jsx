@@ -4,7 +4,6 @@ import ImageSlider from "../Components/ImageSlider";
 import Rating from "../Components/Rating";
 import UserInfoContext from "../Context/UserInfoContext";
 import ReviewsAndRatings from "../Components/ReviewsAndRatings";
-import DestinationBooking from "../Components/DestinationBooking";
 
 const DestinationProfile = () => {
     const {userInfo} = useContext(UserInfoContext);
@@ -16,7 +15,6 @@ const DestinationProfile = () => {
     const [rating, setRating] = useState(0);
     const personalRating = {rating, setRating};
     const [allReviewRatings,setAllReviewRatings] = useState([{}]);
-    const [showConfirmationMessage, setShowConfirmationMessage] = useState(false);
     
     useEffect(()=>{
         const fetchData = async () => {
@@ -27,15 +25,15 @@ const DestinationProfile = () => {
 
             let data = await response.json();
 
-            response = await fetch(`http://localhost:3000/destination/review-rating/${data.DESTINATION_ID}`, {
+            response = await fetch(`http://localhost:3000/destination/review-rating/${data.destination_id}`, {
                 method: "GET",
             });
             const data2 = await response.json();
             setAllReviewRatings(data2);
 
-            if(userInfo!==null && userInfo.USER_TYPE==='customer')
+            if(userInfo && userInfo.user_type==='customer')
             {
-                response = await fetch(`http://localhost:3000/destination/review-rating/${data.DESTINATION_ID}/${userInfo.USER_ID}`, {
+                response = await fetch(`http://localhost:3000/destination/review-rating/${data.destination_id}/${userInfo.user_id}`, {
                     method: "GET",
                 });
 
@@ -43,16 +41,16 @@ const DestinationProfile = () => {
                 setRating(data3);
             }
 
-            setImages([data.IMAGE1,data.IMAGE2,data.IMAGE3]);
+            setImages([data.image1, data.image2, data.image3]);
             setResult(data);
         };
         fetchData()}
     ,[]);
 
     const handleSubmit = async () => {
-        if(rating!==0)
+        if(rating)
         {
-            await fetch(`http://localhost:3000/destination/review-rating/${result.DESTINATION_ID}`, {
+            await fetch(`http://localhost:3000/destination/review-rating/${result.destination_id}`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -60,7 +58,7 @@ const DestinationProfile = () => {
                 body: JSON.stringify({
                     review: review,
                     rating: rating,
-                    customerId: userInfo.USER_ID
+                    customerId: userInfo.user_id
                 }),
             });
 
@@ -77,29 +75,21 @@ const DestinationProfile = () => {
         <>
             {result && 
             <>
-                {showConfirmationMessage && <DestinationBooking header='Book destination -' destination={result} setShowConfirmationMessage={setShowConfirmationMessage}/>}
-                <div 
-                    style={{display: 'flex', 
-                            justifyContent: userInfo && userInfo.USER_TYPE!=='admin' ? 'space-between' : 'start', 
-                            padding: '0px 40px',fontFamily: 'Brush Script, cursive'}}
-                >
-                    <h2 style={{margin: '0px', color:"white"}}>{result.NAME}</h2>
-                    {userInfo && userInfo.USER_TYPE!=='admin' && <button className="custom-btn" onClick={()=>setShowConfirmationMessage(true)}>Book Now!</button>}
-                </div>
-                
                 <div style={{marginLeft: '0px',padding: '40px', display: 'flex', justifyContent:'space-between', fontFamily: 'Brush Script, cursive'}}>
-                <ImageSlider images={images}/>
                     <div className="information-container" style={{width: '500px'}}>
-                        <h3>Location: {result.LOCATION_NAME}, {result.DISTRICT_NAME}</h3><br/>
-                        <h3>Travel Tips: {result.TRAVEL_TIPS}</h3><br/>
-                        <h3>Atrractions: {result.ATTRACTIONS}</h3><br/>
-                        <h3>Weather Info: {result.WEATHER_INFO}</h3><br/>
-                        <h3>Rating: <Rating rating={result.RATING} state={0} setRating={null}/></h3><br/>
+                        <h1 style={{margin: '0px 0px 40px 0px', color:"white"}}>{result.name}</h1>
+                        <h3><span style={{color: '#03fcf8'}}>Location: </span>{result.location_name}, {result.district_name}</h3><br/>
+                        <h3><span style={{color: '#03fcf8'}}>Travel Tips: </span>{result.travel_tips}</h3><br/>
+                        <h3><span style={{color: '#03fcf8'}}>Atrractions: </span>{result.attractions}</h3><br/>
+                        <h3><span style={{color: '#03fcf8'}}>Weather Info: </span>{result.weather_info}</h3><br/>
+                        <h3><span style={{color: '#03fcf8'}}>Rating: </span><Rating rating={parseFloat(result.rating)} isChanging={false} setRating={null}/></h3><br/>
                     </div>
+                    
+                    <ImageSlider images={images}/>
                 </div>
 
                 <div style={{padding:'40px', display: "flex", justifyContent: 'space-between',color:"white"}}>
-                    <iframe src={result.MAP} width="400" height="300" allowFullScreen="" loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
+                    <iframe src={result.map} width="400" height="300" allowFullScreen="" loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
                     <ReviewsAndRatings personalRating={personalRating} personalReview={personalReview} reviews={allReviewRatings} handleSubmit={handleSubmit}/>
                 </div>
             </>}

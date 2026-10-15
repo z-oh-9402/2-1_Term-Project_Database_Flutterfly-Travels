@@ -58,7 +58,7 @@ const WishlistBar = (props) => {
                     <div>
                         <h3 className='title'>{item.NAME}</h3>
                             <div className='item-rating-container'>
-                            <label>Rating: <Rating rating={item.RATING} state={0} setRating={null}/></label>
+                            <label>Rating: <Rating rating={item.RATING} isChanging={false} setRating={null}/></label>
                         </div>
                     </div>
                 </div>

@@ -12,7 +12,7 @@
         transform: translateY(0%);
     }
     to {
-        transform: translateY(-160%);
+        transform: translateY(-260%);
     }
 }
 
@@ -60,6 +60,7 @@
     border-radius: 30px;
     padding: 8px;
     z-index: 10;
+    cursor: pointer;
 }
 
 .go-to:hover{

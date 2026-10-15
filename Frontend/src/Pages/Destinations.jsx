@@ -82,7 +82,7 @@ const Destinations = ()=>{
     const placeSelected = async (category,text) =>{
         if(category===1)
         {
-            const response = await fetch(`http://localhost:3000/destination/fetch/location/?name=${text}`,{
+            const response = await fetch(`http://localhost:3000/destination/fetch/location?name=${text}`,{
                 method: "GET",
             });
 
@@ -111,16 +111,15 @@ const Destinations = ()=>{
         setSearch("");
     }
 
-    const showDestination = async (e) => {
-        navigate(`${e.target.innerText}`);
+    const showDestination = async (name) => {
+        navigate(`${name}`);
     }
 
     const filterCheck = (destination) => {
         let  isChecked = true;
         
-        if(destination.RATING < ratingValue)
+        if(destination.rating < ratingValue)
         {
-            
             isChecked = false;
         }
 
@@ -134,9 +133,9 @@ const Destinations = ()=>{
                 {
                     const item = document.getElementById('preference'+(i+1));
                     anySelected = true;
-                    for(let i=0;i<destination.TYPE.length;i++)
+                    for(let i=0;i<destination.type.length;i++)
                     {
-                        if(destination.TYPE[i].TYPE_NAME === item.value)
+                        if(destination.type[i].type_name === item.value)
                         {
                             flag = true;
                             break;
@@ -195,7 +194,8 @@ const Destinations = ()=>{
                         <h1>Searched Destinations -</h1>
                         <div className='bar-container'>
                             {destinations.map((destination,index)=>
-                                (isFilterApplied ? filterCheck(destination) : true) && <ItemBar key={index} itemType='destination' item={destination} index={`${index}`}/>
+                                (isFilterApplied ? filterCheck(destination) : true) && 
+                                    <ItemBar key={index} itemType='destination' item={destination} index={`${index}`}/>
                             )}
                         </div>
                     </div>

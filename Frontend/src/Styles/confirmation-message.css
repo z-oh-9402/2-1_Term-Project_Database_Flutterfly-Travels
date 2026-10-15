@@ -3,6 +3,7 @@
     font-size: 18px;
     top: 10px;
     right: 10px;
+    cursor: pointer;
 }
 
 .blur-background{
@@ -11,7 +12,6 @@
 
 .confirmation-message-container{
     width: 400px;
-    height: 150px;
     animation: none;
     display: flex;
     flex-direction: column;
