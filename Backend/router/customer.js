@@ -2,12 +2,13 @@ const router = require("express-promise-router")();
 const database = require('../database');
 const bcrypt = require('bcryptjs');
 const { upload, deleting } = require('../file_handling');
+const { signToken, requireAuth, requireSelfOrAdmin } = require('../auth');
 
-router.get("/fetch",async(req,res)=>{
+router.get("/fetch", requireAuth, requireSelfOrAdmin(req => req.query.customerId), async(req,res)=>{
     const query = `SELECT C.passport_number, C.trip_booked, P.type_name
                    FROM Customer C LEFT JOIN CUSTOMER_PREFERENCE CP ON C.CUSTOMER_ID=CP.CUSTOMER_ID LEFT JOIN Place_Type P ON CP.PREFERENCE_ID=P.PLACE_TYPE_ID
-                   WHERE C.CUSTOMER_ID=${req.query.customerId}`;
-    const params = [];
+                   WHERE C.CUSTOMER_ID=$1`;
+    const params = [req.query.customerId];
     const ans = await database.query(query,params);
 
     let pref = [];
@@ -26,8 +27,8 @@ router.get("/fetch",async(req,res)=>{
 // router.get("/:username",async(req,res)=>{
 //     const query = `SELECT *
 //                    FROM Users
-//                    WHERE USERNAME='${req.params.username}'`;
-//     const params = [];
+//                    WHERE USERNAME=$1`;
+//     const params = [req.params.username];
 //     const ans = await database.query(query,params);
 
 //     const result = {
@@ -49,99 +50,123 @@ router.post("/", upload.single('file'), async(req,res)=>{
         req.file = { filename: "" }
     }
 
-    let query = `INSERT INTO Users (USERNAME, PASSWORD, FIRST_NAME, LAST_NAME, USER_TYPE, EMAIL, PHOTO)
-                   VALUES ($1, $2, $3, $4, $5, $6, $7)`;
-    let params = [user.username, hashedPassword, user.firstName, user.lastName, user.userType, user.email, req.file.filename];
-    await database.query(query,params);
+    // The user, customer and preference rows are created together or not at all
+    let newUser;
+    try {
+        newUser = await database.transaction(async (client) => {
+            let query = `INSERT INTO Users (USERNAME, PASSWORD, FIRST_NAME, LAST_NAME, USER_TYPE, EMAIL, PHOTO)
+                         VALUES ($1, $2, $3, $4, $5, $6, $7)
+                         RETURNING *`;
+            let params = [user.username, hashedPassword, user.firstName, user.lastName, 'customer', user.email, req.file.filename];
+            const ans = (await client.query(query,params)).rows;
 
-    query = `SELECT *
-             FROM Users
-             WHERE USERNAME = $1`;
-    params = [user.username]
-    let ans = await database.query(query,params);
+            query = `INSERT INTO Customer (CUSTOMER_ID,PASSPORT_NUMBER,TRIP_BOOKED)
+                     VALUES ($1,$2,$3)`;
+            params = [ans[0].user_id, user.passportNumber, 0]
+            await client.query(query,params);
 
-    query = `INSERT INTO Customer (CUSTOMER_ID,PASSPORT_NUMBER,TRIP_BOOKED)
-             VALUES ($1,$2,$3)`;
-    params = [ans[0].user_id, user.passportNumber, 0]
-    await database.query(query,params);
+            delete ans[0].password;
+            ans[0].passport_number = user.passportNumber;
+            ans[0].trip_booked = 0;
+            ans[0].preferences = [];
+            
+            for(let i=0;i<user.preferences.length;i++)
+            {
+                query = `INSERT INTO Customer_Preference (CUSTOMER_ID,PREFERENCE_ID) 
+                         VALUES ($1,$2)`;
+                params = [ans[0].user_id, user.preferences[i].id];
+                await client.query(query,params);
 
-    ans[0].password = user.password;
-    ans[0].passport_number = user.passportNumber;
-    ans[0].trip_booked = 0;
-    ans[0].preferences = [];
-    
-    for(let i=0;i<user.preferences.length;i++)
-    {
-        query = `INSERT INTO Customer_Preference (CUSTOMER_ID,PREFERENCE_ID) 
-                VALUES ($1,$2)`;
-        params = [ans[0].user_id, user.preferences[i].id];
-        await database.query(query,params);
+                ans[0].preferences.push(user.preferences[i].name);
+            }
 
-        ans[0].preferences.push(user.preferences[i].name);
+            return ans[0];
+        });
+    }
+    catch(error) {
+        // Discard the photo multer already saved for this failed signup
+        req.file.filename && deleting("uploads/"+req.file.filename);
+        throw error;
     }
 
-    params = [];
-    await database.query('commit',params);
-
-    res.status(200).json(ans[0]);
+    newUser.token = signToken(newUser);
+    res.status(200).json(newUser);
 });
 
-router.put("/:userId", upload.single('file'), async(req,res)=>{
+router.put("/:userId", requireAuth, requireSelfOrAdmin(req => req.params.userId), upload.single('file'), async(req,res)=>{
     const user = req.body;
     user.preferences = JSON.parse(user.preferences);
+    const userId = req.params.userId;
 
-    let query = `SELECT PHOTO
-                FROM Users
-                WHERE USER_ID = ${req.params.userId}`;
-    let params = [];
-    const prev_user = await database.query(query,params);
-
-    prev_user[0].photo.length && deleting("uploads/"+prev_user[0].photo);
-    
-    const plaintextPassword = user.password;
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(plaintextPassword, salt);
-
-    if(req.file === undefined) {
-        req.file = { filename: "" }
+    // The username must be free, or already belong to this user
+    const taken = await database.query(`SELECT USER_ID FROM Users WHERE USERNAME=$1 AND USER_ID<>$2`,[user.username, userId]);
+    if(taken.length!==0) {
+        req.file && deleting("uploads/"+req.file.filename);
+        res.status(409).json({ message: "This username is already taken. Use another one." });
+        return;
     }
 
-    query = `UPDATE Users
-             SET USERNAME=$1, PASSWORD=$2,FIRST_NAME=$3,LAST_NAME=$4,EMAIL=$5, PHOTO=$6
-             WHERE USER_ID=${req.params.userId}`;
-    params = [user.username, hashedPassword, user.firstName, user.lastName, user.email, req.file.filename];
-    await database.query(query,params);
+    const photo_query = `SELECT PHOTO
+                         FROM Users
+                         WHERE USER_ID = $1`;
+    const prev_user = await database.query(photo_query,[userId]);
 
-    query = `UPDATE Customer
-             SET PASSPORT_NUMBER='${user.passportNumber}'
-             WHERE CUSTOMER_ID=${req.params.userId}`
-    params = [];
-    await database.query(query,params);
+    // An empty password means "keep the current one"
+    let hashedPassword = null;
+    if(user.password) {
+        const salt = await bcrypt.genSalt(10);
+        hashedPassword = await bcrypt.hash(user.password, salt);
+    }
 
-    query = `DELETE FROM Customer_Preference
-             WHERE CUSTOMER_ID=${req.params.userId}`;
-    await database.query(query,params);
-
+    // Users, Customer and the preference list are updated together or not at all
     let preferences = [];
-    for(let i=0;i<user.preferences.length;i++)
-    {
-        query = `INSERT INTO Customer_Preference (CUSTOMER_ID,PREFERENCE_ID) 
-                 VALUES (${req.params.userId},${user.preferences[i].id})`;
-        await database.query(query,params);
+    try {
+        await database.transaction(async (client) => {
+            let query = `UPDATE Users
+                         SET USERNAME=$1, PASSWORD=COALESCE($2, PASSWORD),FIRST_NAME=$3,LAST_NAME=$4,EMAIL=$5, PHOTO=COALESCE($6, PHOTO)
+                         WHERE USER_ID=$7`;
+            let params = [user.username, hashedPassword, user.firstName, user.lastName, user.email, req.file ? req.file.filename : null, userId];
+            await client.query(query,params);
 
-        preferences.push(user.preferences[i].name);
+            query = `UPDATE Customer
+                     SET PASSPORT_NUMBER=$1
+                     WHERE CUSTOMER_ID=$2`
+            await client.query(query,[user.passportNumber, userId]);
+
+            query = `DELETE FROM Customer_Preference
+                     WHERE CUSTOMER_ID=$1`;
+            await client.query(query,[userId]);
+
+            for(let i=0;i<user.preferences.length;i++)
+            {
+                query = `INSERT INTO Customer_Preference (CUSTOMER_ID,PREFERENCE_ID) 
+                         VALUES ($1,$2)`;
+                await client.query(query,[userId, user.preferences[i].id]);
+
+                preferences.push(user.preferences[i].name);
+            }
+        });
     }
-    await database.query('commit',params);
+    catch(error) {
+        // Discard the photo multer already saved for this failed update
+        req.file && deleting("uploads/"+req.file.filename);
+        throw error;
+    }
+
+    // Replace the photo only when a new one was uploaded (old file removed once the update succeeded)
+    if(req.file && prev_user.length!==0 && prev_user[0].photo) {
+        deleting("uploads/"+prev_user[0].photo);
+    }
 
     const res_query = `SELECT U.*,C.PASSPORT_NUMBER,C.TRIP_BOOKED
                        FROM Users U LEFT JOIN Customer C ON  U.USER_ID=C.CUSTOMER_ID
-                       WHERE USER_ID=${req.params.userId}`;
-    let ans = await database.query(res_query,params);
+                       WHERE USER_ID=$1`;
+    let ans = await database.query(res_query,[userId]);
 
     ans[0].preferences = preferences;
-    ans[0].password = user.password;
+    delete ans[0].password;
     
-    result = ans[0];
+    const result = ans[0];
     res.status(200).json(result);
 });
 

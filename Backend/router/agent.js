@@ -2,6 +2,7 @@ const router = require("express-promise-router")();
 const database = require('../database');
 const bcrypt = require('bcryptjs');
 const { upload, deleting } = require('../file_handling');
+const { signToken, requireAuth, requireRole, requireSelfOrAdmin } = require('../auth');
 
 router.get("/review-rating/:agentId/:customerId",async(req,res)=>{
     const id = req.params.agentId;
@@ -10,10 +11,10 @@ router.get("/review-rating/:agentId/:customerId",async(req,res)=>{
     const query = 
     `
         SELECT RATING FROM RATING
-        WHERE CUSTOMER_ID=${customerId} AND ITEM_ID=${id} AND ITEM_TYPE='agent'
+        WHERE CUSTOMER_ID=$1 AND ITEM_ID=$2 AND ITEM_TYPE='agent'
     `;
 
-    const params = [];
+    const params = [customerId, id];
 
     const ans = await database.query(query,params);
 
@@ -24,7 +25,7 @@ router.get("/review-rating/:agentId/:customerId",async(req,res)=>{
     }
     else
     {
-        result = ans[0].RATING;
+        result = ans[0].rating;
     }
 
     res.status(200).json(result);
@@ -37,22 +38,23 @@ router.get("/review-rating/:agentId",async(req,res)=>{
     `
         SELECT RE.REVIEW, RA.RATING, TO_CHAR(RE.CREATED_AT, 'DD Mon, YYYY - HH12:MI:SS AM') AS CREATED_AT, U.USERNAME
         FROM REVIEW RE JOIN RATING RA ON RE.ITEM_ID=RA.ITEM_ID AND RE.ITEM_TYPE=RA.ITEM_TYPE AND RE.CUSTOMER_ID=RA.CUSTOMER_ID JOIN USERS U ON U.USER_ID=RE.CUSTOMER_ID
-        WHERE RE.ITEM_ID=${id} AND RE.ITEM_TYPE='agent'
+        WHERE RE.ITEM_ID=$1 AND RE.ITEM_TYPE='agent'
         ORDER BY RE.CREATED_AT DESC
     `;
 
-    const params = [];
+    const params = [id];
 
     const ans = await database.query(query,params);
     res.status(200).json(ans);
 });
 
-router.get("/pending-agents",async(req,res)=>{
+router.get("/pending-agents", requireAuth, requireRole('admin'), async(req,res)=>{
     const query = `SELECT U.*, A.EXPERIENCE_YEARS, A.FEE, A.ACC_STATUS
                    FROM Users U RIGHT JOIN Agent A ON U.USER_ID = A.AGENT_ID
                    WHERE ACC_STATUS = 'PENDING'`;
     const params = [];
     const ans = await database.query(query,params);
+    ans.forEach(agent => delete agent.password);
 
     res.status(200).json(ans);
 });
@@ -60,9 +62,10 @@ router.get("/pending-agents",async(req,res)=>{
 router.get("/search",async(req,res)=>{
     const query = `SELECT U.*, A.EXPERIENCE_YEARS, A.FEE, A.RATING
                    FROM USERS U JOIN Agent A ON U.USER_ID = A.AGENT_ID 
-                   WHERE U.USERNAME LIKE '%${req.query.keyword}%' AND A.ACC_STATUS='OK'`;
-    const params = [];
+                   WHERE U.USERNAME LIKE $1 AND A.ACC_STATUS='OK'`;
+    const params = [`%${req.query.keyword}%`];
     const ans = await database.query(query,params);
+    ans.forEach(agent => delete agent.password);
 
     res.status(200).json({
         status: ans.length>0,
@@ -74,9 +77,15 @@ router.get("/fetch/:agentId",async(req,res)=>{
     
     const query = `SELECT U.*, A.EXPERIENCE_YEARS, A.FEE, A.RATING
                    FROM USERS U JOIN Agent A ON U.USER_ID = A.AGENT_ID 
-                   WHERE A.AGENT_ID=${req.params.agentId}`;
-    const params = [];
+                   WHERE A.AGENT_ID=$1`;
+    const params = [req.params.agentId];
     const ans = await database.query(query,params);
+    ans.forEach(agent => delete agent.password);
+
+    if(ans.length===0) {
+        res.status(404).json({ message: "Not found" });
+        return;
+    }
 
     res.status(200).json(ans[0]);
 });
@@ -84,69 +93,73 @@ router.get("/fetch/:agentId",async(req,res)=>{
 router.get("/:agentId",async(req,res)=>{
     const query = `SELECT *
                    FROM Agent
-                   WHERE AGENT_ID=${req.params.agentId}`;
-    const params = [];
+                   WHERE AGENT_ID=$1`;
+    const params = [req.params.agentId];
     const ans = await database.query(query,params);
+
+    if(ans.length===0) {
+        res.status(404).json({ message: "Not found" });
+        return;
+    }
 
     res.status(200).json(ans[0]);
 });
 
-router.post("/review-rating/:id",async(req,res)=>{
+// Only customers can rate/review; the reviewer is always the logged-in user
+router.post("/review-rating/:id", requireAuth, requireRole('customer'), async(req,res)=>{
     const id = req.params.id;
-    const reviews = req.body.review;
+    const review = req.body.review;
     const rating = req.body.rating;
-    const customerId = req.body.customerId;
+    const customerId = req.user.id;
 
-    const review = reviews.replace(`'`,`''`);
-
-    const params = [];
-    if(rating!==0)
-    {
-        const query1 = 
-        `
-            SELECT * FROM RATING
-            WHERE CUSTOMER_ID=${customerId} AND ITEM_ID=${id} AND ITEM_TYPE='agent'
-        `
-        const ans = await database.query(query1,params);
-
-        if(ans.length===0)
+    // Rating upsert, average recompute and review insert succeed or fail together
+    await database.transaction(async (client) => {
+        if(rating!==0)
         {
-            const query2 = 
+            const query1 = 
             `
-                INSERT INTO RATING (ITEM_ID,ITEM_TYPE,RATING,CUSTOMER_ID)
-                VALUES (${id},'agent','${rating}',${customerId})
+                SELECT * FROM RATING
+                WHERE CUSTOMER_ID=$1 AND ITEM_ID=$2 AND ITEM_TYPE='agent'
             `
-            await database.query(query2,params);
+            const ans = (await client.query(query1,[customerId, id])).rows;
+
+            if(ans.length===0)
+            {
+                const query2 = 
+                `
+                    INSERT INTO RATING (ITEM_ID,ITEM_TYPE,RATING,CUSTOMER_ID)
+                    VALUES ($1,'agent',$2,$3)
+                `
+                await client.query(query2,[id, rating, customerId]);
+            }
+            else
+            {
+                const query2 = 
+                `
+                    UPDATE RATING SET RATING=$1 WHERE ITEM_ID=$2 AND ITEM_TYPE='agent' AND CUSTOMER_ID=$3
+                `
+                await client.query(query2,[rating, id, customerId]);
+            }
+
+            const ratingUpdateQuery = 
+            `
+                UPDATE AGENT
+                SET RATING=(SELECT ROUND(AVG(RATING),1) FROM RATING WHERE ITEM_ID=$1 AND ITEM_TYPE='agent') 
+                WHERE AGENT_ID=$1
+            `
+            await client.query(ratingUpdateQuery,[id]);
         }
-        else
+
+        if(review && review.length!==0)
         {
-            const query2 = 
+            const query3 = 
             `
-                UPDATE RATING SET RATING=${rating} WHERE ITEM_ID=${id} AND ITEM_TYPE='agent' AND CUSTOMER_ID=${customerId}
+                INSERT INTO REVIEW (ITEM_ID,ITEM_TYPE,REVIEW,CUSTOMER_ID)
+                VALUES ($1,'agent',$2,$3)
             `
-            await database.query(query2,params);
+            await client.query(query3,[id, review, customerId]);
         }
-
-        const ratingUpdateQuery = 
-        `
-            UPDATE AGENT
-            SET RATING=(SELECT ROUND(AVG(RATING),1) FROM RATING WHERE ITEM_ID=${id} AND ITEM_TYPE='agent') 
-            WHERE AGENT_ID=${id}
-        `
-        await database.query(ratingUpdateQuery,params);
-    }
-
-    if(review.length!==0)
-    {
-        const query3 = 
-        `
-            INSERT INTO REVIEW (ITEM_ID,ITEM_TYPE,REVIEW,CUSTOMER_ID)
-            VALUES (${id},'restaurant','${review}',${customerId})
-        `
-        await database.query(query3,params);
-    }
-
-    await database.query('commit',params);
+    });
 
     res.status(200).json({status:'ok'});
 });
@@ -162,41 +175,47 @@ router.post("/", upload.single('file'), async(req,res)=>{
         req.file = { filename: "" }
     }
 
-    const query = `INSERT INTO Users (USERNAME, PASSWORD, FIRST_NAME, LAST_NAME, USER_TYPE, EMAIL, PHOTO)
-                   VALUES ($1, $2, $3, $4, $5, $6, $7)`;
-    let params = [user.username, hashedPassword, user.firstName, user.lastName, user.userType, user.email, req.file.filename];
-    await database.query(query,params);
+    // The user row and the agent row are created together or not at all
+    let newUser;
+    try {
+        newUser = await database.transaction(async (client) => {
+            const query = `INSERT INTO Users (USERNAME, PASSWORD, FIRST_NAME, LAST_NAME, USER_TYPE, EMAIL, PHOTO)
+                           VALUES ($1, $2, $3, $4, $5, $6, $7)
+                           RETURNING *`;
+            const params = [user.username, hashedPassword, user.firstName, user.lastName, 'agent', user.email, req.file.filename];
+            const ans = (await client.query(query,params)).rows;
 
-    const res_query = `SELECT *
-                       FROM Users
-                       WHERE USERNAME='${user.username}'`;
-    params = [];
-    let ans = await database.query(res_query,params);
+            const query2 = `INSERT INTO Agent (AGENT_ID,EXPERIENCE_YEARS,FEE, ACC_STATUS, RATING)
+                            VALUES ($1,$2,$3,'PENDING', 0)`;
+            await client.query(query2,[ans[0].user_id, user.experience, user.fee]);
 
-    const query2 = `INSERT INTO Agent (AGENT_ID,EXPERIENCE_YEARS,FEE, ACC_STATUS, RATING)
-                    VALUES (${ans[0].user_id},${user.experience},${user.fee},'PENDING', 0)`;
-    await database.query(query2,params);
+            return ans[0];
+        });
+    }
+    catch(error) {
+        // Discard the photo multer already saved for this failed signup
+        req.file.filename && deleting("uploads/"+req.file.filename);
+        throw error;
+    }
 
-    ans[0].password = user.password;
-    ans[0].experience_years = user.experience;
-    ans[0].fee = user.fee;
-    ans[0].acc_status = "PENDING";
-    ans[0].rating = 0;
+    delete newUser.password;
+    newUser.experience_years = user.experience;
+    newUser.fee = user.fee;
+    newUser.acc_status = "PENDING";
+    newUser.rating = 0;
 
-    await database.query('commit',params);
-
-    res.status(200).json(ans[0]);
+    newUser.token = signToken(newUser);
+    res.status(200).json(newUser);
 });
 
-router.put("/acceptRequest/:agentId", async (req, res) => {
+router.put("/acceptRequest/:agentId", requireAuth, requireRole('admin'), async (req, res) => {
     const agentId = req.params.agentId;
 
     const query = `UPDATE Agent
                    SET ACC_STATUS = 'OK'
-                   WHERE AGENT_ID = ${agentId}`;
-    const params = [];
+                   WHERE AGENT_ID = $1`;
+    const params = [agentId];
     await database.query(query, params);
-    await database.query('commit', params);
 
     res.status(200).json({
         status: 1,
@@ -204,15 +223,14 @@ router.put("/acceptRequest/:agentId", async (req, res) => {
     });
 });
 
-router.put("/declineRequest/:agentId", async (req, res) => {
+router.put("/declineRequest/:agentId", requireAuth, requireRole('admin'), async (req, res) => {
     const agentId = req.params.agentId;
 
     const query = `UPDATE Agent
                    SET ACC_STATUS = 'DECLINED'
-                   WHERE AGENT_ID = ${agentId}`;
-    const params = [];
+                   WHERE AGENT_ID = $1`;
+    const params = [agentId];
     await database.query(query, params);
-    await database.query('commit', params);
 
     res.status(200).json({
         status: 1,
@@ -220,34 +238,50 @@ router.put("/declineRequest/:agentId", async (req, res) => {
     });
 });
 
-router.put("/:userId",async(req,res)=>{
+router.put("/:userId", requireAuth, requireSelfOrAdmin(req => req.params.userId), upload.single('file'), async(req,res)=>{
     const user = req.body;
+    const userId = Number(req.params.userId);
 
     let result = {
         status: false,
         data: undefined
     }
 
-    const check_query = `SELECT * FROM Users WHERE USERNAME='${user.username}'`;
-    const params = [];
-    let ans = await database.query(check_query,params);
+    const check_query = `SELECT USER_ID FROM Users WHERE USERNAME=$1`;
+    let ans = await database.query(check_query,[user.username]);
 
-    if(ans.length===0  || ans[0].USER_ID!==req.params.userId)
+    // The username must be free, or already belong to this user
+    if(ans.length!==0 && ans[0].user_id!==userId)
     {
-        const plaintextPassword = user.password;
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(plaintextPassword, salt);
+        // Discard the photo multer already saved for this rejected update
+        req.file && deleting("uploads/"+req.file.filename);
+    }
+    else
+    {
+        const prev_user = await database.query(`SELECT PHOTO FROM Users WHERE USER_ID=$1`,[userId]);
+
+        // An empty password means "keep the current one"
+        let hashedPassword = null;
+        if(user.password) {
+            const salt = await bcrypt.genSalt(10);
+            hashedPassword = await bcrypt.hash(user.password, salt);
+        }
 
         const query = `UPDATE Users
-                       SET USERNAME='${user.username}',PASSWORD='${hashedPassword}',FIRST_NAME='${user.firstName}',LAST_NAME='${user.lastName}',EMAIL='${user.email}'
-                       WHERE USER_ID=${req.params.userId}`;
-        await database.query(query,params);
-        await database.query('commit',params);
+                       SET USERNAME=$1, PASSWORD=COALESCE($2, PASSWORD), FIRST_NAME=$3, LAST_NAME=$4, EMAIL=$5, PHOTO=COALESCE($6, PHOTO)
+                       WHERE USER_ID=$7`;
+        await database.query(query,[user.username, hashedPassword, user.firstName, user.lastName, user.email, req.file ? req.file.filename : null, userId]);
+
+        // Replace the photo only when a new one was uploaded (old file removed once the update succeeded)
+        if(req.file && prev_user.length!==0 && prev_user[0].photo) {
+            deleting("uploads/"+prev_user[0].photo);
+        }
 
         const res_query = `SELECT U.*, A.EXPERIENCE_YEARS, A.FEE
                            FROM Users U LEFT JOIN Agent A ON U.USER_ID = A.AGENT_ID
-                           WHERE USER_ID=${req.params.userId}`;
-        ans = await database.query(res_query,params);
+                           WHERE USER_ID=$1`;
+        ans = await database.query(res_query,[userId]);
+        delete ans[0].password;
         result.status = true;
         result.data = ans[0];
     }

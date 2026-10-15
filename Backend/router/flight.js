@@ -16,14 +16,16 @@ router.post('/filtered-flights', async (req, res) => {
 
     let params = [departureAirport, arrivalAirport, seatClass, flightStyle, "filtered_flights_cursor"]
 
-    await database.query(`BEGIN`,[]);
-    
-    let result = await database.query(`CALL FETCH_FILTERED_FLIGHTS($1, $2, $3, $4, $5)`, params);
-    const cursor = result[0].p_cursor;
+    // The cursor opened by the procedure only exists on the connection that called it, so all steps share one
+    const result = await database.transaction(async (client) => {
+        const call = await client.query(`CALL FETCH_FILTERED_FLIGHTS($1, $2, $3, $4, $5)`, params);
+        const cursor = call.rows[0].p_cursor;
 
-    result = await database.query(`FETCH ALL IN "${cursor}"`, []);
+        const flights = await client.query(`FETCH ALL IN "${cursor}"`);
+        await client.query(`CLOSE "${cursor}"`);
 
-    await database.query(`CLOSE "${cursor}"`,[]);
+        return flights.rows;
+    });
 
     res.status(200).json(result);
 });
