@@ -307,15 +307,20 @@ BEGIN
     IF TG_OP = 'INSERT' THEN
         INSERT INTO notification (user_id, content, notification_status)
         VALUES (NEW.agent_id, 'You received a new request.', 'NOT SHOWED');
-				
-				INSERT INTO notification (user_id, content, notification_status)
+
+        INSERT INTO notification (user_id, content, notification_status)
         VALUES (NEW.customer_id, 'Your request has been sent.', 'NOT SHOWED');
-				
+
     ELSIF TG_OP = 'DELETE' THEN
         INSERT INTO notification (user_id, content, notification_status)
-        VALUES (OLD.customer_id, 'Your trip ''' || OLD.name || ''' was declined by the admin.', 'NOT SHOWED');
-				
+        VALUES (OLD.customer_id, 'Your trip ''' || OLD.name || ''' has been removed.', 'NOT SHOWED');
+
     ELSE
+        -- Only status or agent changes are news (e.g. total_cost updates from bookings are not)
+        IF NEW.trip_status IS NOT DISTINCT FROM OLD.trip_status AND NEW.agent_id IS NOT DISTINCT FROM OLD.agent_id THEN
+            RETURN NULL;
+        END IF;
+
         IF NEW.agent_id IS NULL THEN
             INSERT INTO notification (user_id, content, notification_status)
             VALUES (NEW.customer_id, 'Your request for trip ''' || NEW.name || ''' has been cancelled.', 'NOT SHOWED');
@@ -328,6 +333,9 @@ BEGIN
         ELSIF NEW.trip_status = 'CONFIRMED' THEN
             INSERT INTO notification (user_id, content, notification_status)
             VALUES (NEW.customer_id, 'Your trip ''' || NEW.name || ''' has been approved by admin.', 'NOT SHOWED');
+        ELSIF NEW.trip_status = 'COMPLETED' THEN
+            INSERT INTO notification (user_id, content, notification_status)
+            VALUES (NEW.customer_id, 'Your trip ''' || NEW.name || ''' has been completed.', 'NOT SHOWED');
         ELSE
             INSERT INTO notification (user_id, content, notification_status)
             VALUES (NEW.agent_id, 'You have received a new request.', 'NOT SHOWED');
@@ -1377,7 +1385,7 @@ CREATE TABLE public.trip (
     rating numeric(2,1),
     trip_status character varying(15),
     CONSTRAINT trip_rating_check CHECK ((rating <= (5)::numeric)),
-    CONSTRAINT trip_trip_status_check CHECK (((trip_status)::text = ANY (ARRAY[('UPDATING'::character varying)::text, ('REQUESTING'::character varying)::text, ('CONFIRMED'::character varying)::text, ('COMPLETED'::character varying)::text])))
+    CONSTRAINT trip_trip_status_check CHECK (((trip_status)::text = ANY ((ARRAY['REQUESTING'::character varying, 'UPDATING'::character varying, 'PENDING'::character varying, 'CONFIRMED'::character varying, 'COMPLETED'::character varying])::text[])))
 );
 
 
@@ -1841,6 +1849,14 @@ ALTER TABLE ONLY public.place_type
 
 ALTER TABLE ONLY public.rating
     ADD CONSTRAINT rating_pkey PRIMARY KEY (rating_id);
+
+
+--
+-- Name: rating rating_customer_item_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.rating
+    ADD CONSTRAINT rating_customer_item_key UNIQUE (customer_id, item_type, item_id);
 
 
 --
