@@ -47,7 +47,7 @@ INSERT INTO public.district VALUES (7, 'B.baria', 2);
 INSERT INTO public.district VALUES (8, 'Bandarban', 2);
 INSERT INTO public.district VALUES (9, 'Chandpur', 2);
 INSERT INTO public.district VALUES (10, 'Chittagong', 2);
-INSERT INTO public.district VALUES (11, 'Cox''s bazar', 2);
+INSERT INTO public.district VALUES (11, 'Cox''s Bazar', 2);
 INSERT INTO public.district VALUES (12, 'Cumilla', 2);
 INSERT INTO public.district VALUES (13, 'Feni', 2);
 INSERT INTO public.district VALUES (14, 'Khagrachari', 2);
@@ -684,7 +684,7 @@ INSERT INTO public.airport VALUES (1, 'Hazrat Shahjalal International Airport', 
 INSERT INTO public.airport VALUES (2, 'Shah Amanat International Airport', 'CGP', 502);
 INSERT INTO public.airport VALUES (3, 'Osmani International Airport', 'ZYL', 491);
 INSERT INTO public.airport VALUES (4, 'Shah Makhdum Airport', 'RJH', 510);
-INSERT INTO public.airport VALUES (5, 'Cox''s Bazar Airport', 'CXB', 83);
+INSERT INTO public.airport VALUES (5, 'Cox''s Bazar International Airport', 'CXB', 83);
 INSERT INTO public.airport VALUES (6, 'Jashore Airport', 'JSR', 250);
 INSERT INTO public.airport VALUES (7, 'Saidpur Airport', 'SPD', 434);
 INSERT INTO public.airport VALUES (8, 'Barishal Airport', 'BZL', 501);

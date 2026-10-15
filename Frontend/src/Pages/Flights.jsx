@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import FlightFliter from '../Components/FlightFliter';
 import RangeSlider from '../Components/RangeSlider';
 import { WiSunrise } from "react-icons/wi";
@@ -72,16 +72,22 @@ const Flights = () => {
 
     const [flight, setFlight] = useState(undefined);
 
-    const airportOptions = [
-        { value: 'DAC', label: `Hazrat Shahjalal International Airport (Dhaka)` },
-        { value: 'CGP', label: `Shah Amanat International Airport (Chittagong)` },
-        { value: 'ZYL', label: `Osmani International Airport (Sylhet)` },
-        { value: 'RJH', label: `Shah Makhdum Airport (Rajshahi)` },
-        { value: 'CXB', label: `Cox's Bazar Airport (Cox's Bazar)` },
-        { value: 'JSR', label: `Jashore Airport (Jessore)` },
-        { value: 'SPD', label: `Saidpur Airport (Sayedpur)` },
-        { value: 'BZL', label: `Barishal Airport (Barisal)` },
-    ];
+    const [airportOptions, setAirportOptions] = useState([]);
+
+    useEffect(()=>{
+        const fetchAirports = async () => {
+            const response = await fetch(`http://localhost:3000/flight/airports`, {
+                method: "GET",
+            });
+            const airports = await response.json();
+
+            setAirportOptions(airports.map((airport)=>({
+                value: airport.iata_code,
+                label: `${airport.name} (${airport.district_name})`
+            })));
+        }
+        fetchAirports();
+    }, []);
 
     const seatClassOptions = [
         { value: 'Economy', label: `Economy` },
