@@ -4,23 +4,27 @@ const bcrypt = require('bcryptjs');
 const { deleting } = require('../file_handling');
 const { signToken, requireAuth, requireSelfOrAdmin } = require('../auth');
 
-// router.get('/fetch-notification/:id', async (req, res) => {
-//     const query = `BEGIN 
-//                    FETCH_NOTIFICATION(:id, :cursor); 
-//                    END;`;
+// The logged-in user's most recent notifications, newest first (the triggers create them)
+router.get('/notifications', requireAuth, async (req, res) => {
+    const query = `SELECT NOTIFICATION_ID, CONTENT, CREATED_AT, NOTIFICATION_STATUS
+                   FROM NOTIFICATION
+                   WHERE USER_ID = $1
+                   ORDER BY CREATED_AT DESC, NOTIFICATION_ID DESC
+                   LIMIT 30`;
+    const result = await database.query(query, [req.user.id]);
 
-//     const binds = {
-//         id: req.params.id,
-//         cursor: { type: database.oracledb.CURSOR, dir: database.oracledb.BIND_OUT }
-//     };
+    res.status(200).json(result);
+});
 
-//     const result = await database.query2(query, binds);
+// Marks all of the logged-in user's unseen notifications as seen
+router.put('/notifications/seen', requireAuth, async (req, res) => {
+    const query = `UPDATE NOTIFICATION
+                   SET NOTIFICATION_STATUS = 'SHOWED'
+                   WHERE USER_ID = $1 AND NOTIFICATION_STATUS = 'NOT SHOWED'`;
+    await database.query(query, [req.user.id]);
 
-//     const resultSet = await result.cursor.getRows();
-//     await result.cursor.close();
-
-//     res.status(200).json(resultSet);
-// });
+    res.status(200).json({ status: "ok" });
+});
 
 router.post("/login",async(req,res)=>{
     const { username, password } = req.body;

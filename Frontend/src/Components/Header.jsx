@@ -14,8 +14,9 @@ import { FaRegHeart, FaTripadvisor } from "react-icons/fa";
 import Notification from "./Notification";
 
 const Header = (props)=>{
-    const {handleIsInLoginOrSignUpFromNavbar, setShowTrips, setShowWishlist, notifications} = props;
+    const {handleIsInLoginOrSignUpFromNavbar, setShowTrips, setShowWishlist, notifications, onNotificationsSeen} = props;
     const {userInfo, showDetailedNotification, setShowDetailedNotification} = useContext(UserInfoContext);
+    const unreadCount = notifications.filter(notification => notification.notification_status === 'NOT SHOWED').length;
     const navigate = useNavigate();
     const [isBottomStyles, setIsBottomStyles] = useState(false);
     const [placeholderHeight, setPlaceholderHeight] = useState(0);
@@ -54,7 +55,10 @@ const Header = (props)=>{
                 </div>
                 {userInfo!==null ? 
                     <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                        <IoMdNotifications className="header-icons notification-icon" onClick={()=>setShowDetailedNotification(!showDetailedNotification)}/>
+                        <div className="notification-bell" onClick={()=>setShowDetailedNotification(!showDetailedNotification)}>
+                            <IoMdNotifications className="header-icons notification-icon"/>
+                            {unreadCount!==0 && <span className="notification-badge">{unreadCount}</span>}
+                        </div>
                         {(userInfo.user_type==='customer' || userInfo.user_type==='agent') &&
                             <>
                                 <BsChatDots className="header-icons chat-icon" onClick={()=>navigate('/chats')}/>
@@ -65,7 +69,7 @@ const Header = (props)=>{
                                     <img src={userInfo.photo.length ? 'http://localhost:3000/uploads/'+userInfo.photo : "default_profile_pic.jpeg"}/>
                                 </div>
                         </Link>
-                        {/* <Notification notifications={notifications}/> */}
+                        <Notification notifications={notifications} onSeen={onNotificationsSeen}/>
                     </div> 
                     : 
                     <div style={{display: 'flex', alignItems: 'center'}}>
@@ -81,7 +85,8 @@ Header.propTypes = {
     handleIsInLoginOrSignUpFromNavbar: PropTypes.func,
     setShowTrips: PropTypes.func,
     setShowWishlist: PropTypes.func,
-    notifications: PropTypes.array
+    notifications: PropTypes.array,
+    onNotificationsSeen: PropTypes.func
 }
 
 export default Header;

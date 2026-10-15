@@ -1,5 +1,5 @@
 import {Routes, Route, Outlet} from 'react-router-dom';
-import {useContext, useEffect, useState} from 'react';
+import {useCallback, useContext, useEffect, useState} from 'react';
 import UserInfoContext from './Context/UserInfoContext.jsx';
 
 import Header from './Components/Header.jsx';
@@ -22,37 +22,50 @@ import { apiFetch } from './api';
 function App() {
   const [isLoginOrSignUpPageLoaded,setIsLoginOrSignUpPageLoaded] = useState(false);
   const [isInLoginPage, setIsInLoginPage] = useState(true);
-  const {userInfo, setInfo, setShowDetailedNotification} = useContext(UserInfoContext);
+  const {userInfo, setInfo} = useContext(UserInfoContext);
   const [showTrips, setShowTrips] = useState(false);
   const [notifications, setNotifications] = useState([]);
-  const [instantNotifications, setInstantNotifications] = useState([]);
   const [showWishlist, setShowWishlist] = useState(false);
 
-  // useEffect(() => {
-  //   const fetchNotification = async () => {
-  //     if(userInfo!==null)
-  //     {
-  //       const response = await apiFetch(`http://localhost:3000/user/fetch-notification/${userInfo.user_id}`, {
-  //         method: "GET"
-  //       });
+  const loggedInUserId = userInfo ? userInfo.user_id : null;
 
-  //       const result = await response.json();
-        
-  //       if(result.length>0)
-  //       {
-  //         setNotifications(prevNotifications => [...prevNotifications, ...result]);
-  //         setShowDetailedNotification(true);
-  //       }
-  //       setInstantNotifications(result);
-  //     }
-  //   };
+  // Keeps the logged-in user's notifications up to date (the database triggers create them)
+  useEffect(() => {
+    if(loggedInUserId===null)
+    {
+      setNotifications([]);
+      return;
+    }
 
-  //   const intervalId = setInterval(() => {
-  //     fetchNotification();
-  //   }, 1500);
+    let isActive = true;
+    const fetchNotifications = async () => {
+      const response = await apiFetch(`http://localhost:3000/user/notifications`, {
+        method: "GET"
+      });
 
-  //   return () => clearInterval(intervalId);
-  // }, [userInfo, notifications]);
+      if(isActive && response.ok)
+      {
+        setNotifications(await response.json());
+      }
+    };
+
+    fetchNotifications();
+    const intervalId = setInterval(fetchNotifications, 5000);
+
+    return () => {
+      isActive = false;
+      clearInterval(intervalId);
+    };
+  }, [loggedInUserId]);
+
+  // Called when the user opens the notification list
+  const markNotificationsSeen = useCallback(async () => {
+    await apiFetch(`http://localhost:3000/user/notifications/seen`, {
+      method: "PUT"
+    });
+
+    setNotifications(prevNotifications => prevNotifications.map(notification => ({...notification, notification_status: 'SHOWED'})));
+  }, []);
 
   useEffect(() => {
     const updateTripStatus = async () => {
@@ -131,7 +144,7 @@ function App() {
                        : <SignUp goToHome={goToHome} setUserInfo={handleLogOut} goToLogin={handleChangeBetweenLoginAndSignUp} setNotifications={setNotifications}/>)}
       {userInfo!==null && showTrips && <Trips setShowTrips={setShowTrips}/>}
       {userInfo!==null && showWishlist && <Wishlist setShowWishlist={setShowWishlist} isWishlist={true}/>}
-      <Header handleIsInLoginOrSignUpFromNavbar={handleIsInLoginOrSignUpFromNavbar} setShowTrips={setShowTrips} setShowWishlist={setShowWishlist} notifications={instantNotifications}/>
+      <Header handleIsInLoginOrSignUpFromNavbar={handleIsInLoginOrSignUpFromNavbar} setShowTrips={setShowTrips} setShowWishlist={setShowWishlist} notifications={notifications} onNotificationsSeen={markNotificationsSeen}/>
 
       <br/><br/><br/>
 

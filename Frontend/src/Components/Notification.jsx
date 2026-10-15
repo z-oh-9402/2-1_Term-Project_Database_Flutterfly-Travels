@@ -1,50 +1,71 @@
-import { useContext, useEffect} from 'react';
+import { useContext, useEffect, useState } from 'react';
 import '../Styles/notification.css';
 import PropTypes from 'prop-types';
 import '../Styles/login-signup.css';
 import UserInfoContext from '../Context/UserInfoContext';
 
 const Notification = (props) => {
-    const {notifications} = props;
+    const {notifications, onSeen} = props;
     const {showDetailedNotification} = useContext(UserInfoContext);
+    // Notifications that were unread while the list was open stay highlighted until it is closed
+    const [highlightedIds, setHighlightedIds] = useState([]);
 
     useEffect(() => {
-        const handleScroll = () => {
-            let element;
+        if(showDetailedNotification)
+        {
             const scrollThreshold = document.getElementById('main-nav').offsetHeight;
-            if(notifications.length!==0)
-            {
-                if(showDetailedNotification)
-                {
-                    element = document.getElementById('detailed-notif')
-                    element.style.top = `${scrollThreshold}px`;
-                }
-            }
+            document.getElementById('detailed-notif').style.top = `${scrollThreshold}px`;
+        }
+    }, [showDetailedNotification]);
+
+    useEffect(() => {
+        if(!showDetailedNotification)
+        {
+            setHighlightedIds([]);
+            return;
         }
 
-        handleScroll();
-    }
-    , [showDetailedNotification, notifications]);
+        const unreadIds = notifications
+            .filter(notification => notification.notification_status === 'NOT SHOWED')
+            .map(notification => notification.notification_id);
+
+        if(unreadIds.length!==0)
+        {
+            setHighlightedIds(prevIds => [...prevIds, ...unreadIds]);
+            onSeen();
+        }
+    }, [showDetailedNotification, notifications, onSeen]);
 
     return (
         <>
             <div style={{position: 'relative'}}>
-                {showDetailedNotification && notifications.length!==0 &&
+                {showDetailedNotification &&
                 <div id='detailed-notif' className='detailed-notification'>
-                    {notifications.map((notification, index) =>
-                        <div key={index} className="detailed-notification-item">
-                            <p>{notification.content}</p>
-                        </div>
+                    {notifications.length===0 ?
+                        <p className="no-notification">No notifications yet</p>
+                        :
+                        notifications.map((notification) =>
+                            <div key={notification.notification_id} className={"detailed-notification-item" + (highlightedIds.includes(notification.notification_id) ? " unread" : "")}>
+                                <p>{notification.content}</p>
+                                <span className="notification-time">
+                                    {new Date(notification.created_at).toLocaleString('en-US', {
+                                        month: 'short',
+                                        day: 'numeric',
+                                        hour: 'numeric',
+                                        minute: '2-digit'
+                                    })}
+                                </span>
+                            </div>
                     )}
                 </div>}
             </div>
         </>
-    ); 
+    );
 }
 
 Notification.propTypes = {
-    notifications: PropTypes.array,
-    instantNotifications: PropTypes.array
+    notifications: PropTypes.array.isRequired,
+    onSeen: PropTypes.func.isRequired
 }
 
 export default Notification;

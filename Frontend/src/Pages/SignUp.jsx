@@ -10,7 +10,7 @@ import PhotoUploader from "../Components/PhotoUploader";
 import { setToken, apiFetch } from "../api";
 
 const SignUp = (props) => {
-    const { setInfo, setShowDetailedNotification } = useContext(UserInfoContext);
+    const { setInfo } = useContext(UserInfoContext);
     const [userType, setUserType] = useState("");
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
@@ -181,7 +181,6 @@ const SignUp = (props) => {
         delete result.token;
 
         props.setNotifications([]);
-        setShowDetailedNotification(true);
         setInfo(result);
         props.setUserInfo(false);
     }

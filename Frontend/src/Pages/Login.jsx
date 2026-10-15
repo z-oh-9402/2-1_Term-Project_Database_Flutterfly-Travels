@@ -9,7 +9,7 @@ import UserInfoContext from '../Context/UserInfoContext';
 import { setToken, apiFetch } from '../api';
 
 const Login = (props) => {
-    const { setInfo, setShowDetailedNotification } = useContext(UserInfoContext);
+    const { setInfo } = useContext(UserInfoContext);
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
 
@@ -90,7 +90,6 @@ const Login = (props) => {
                     }
                     
                     props.setNotifications([]);
-                    setShowDetailedNotification(true);
                     setInfo(result.data);
                     props.setUserInfo(false);
                     setUsername("");

@@ -18,16 +18,13 @@ const UserInfoContextProvider = ({ children }) => {
 
     if(info)
     {
-      setShowDetailedNotification(true);
       localStorage.setItem('userInfo',JSON.stringify(info))
-      // localStorage.setItem('notification',JSON.stringify(notif))
     }
     else
     {
       setShowDetailedNotification(false);
       localStorage.removeItem('userInfo');
       setToken(null);
-      // localStorage.removeItem('notification');
     }
   };
 
