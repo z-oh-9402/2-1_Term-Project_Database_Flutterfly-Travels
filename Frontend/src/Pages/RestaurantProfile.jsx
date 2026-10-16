@@ -6,6 +6,7 @@ import ImageSlider from "../Components/ImageSlider";
 import { useParams } from "react-router-dom";
 import RestaurantBooking from "../Components/RestaurantBooking";
 import { apiFetch } from '../api';
+import WishlistHeart from "../Components/WishlistHeart";
 
 const RestaurantProfile = () => {
     const { userInfo } = useContext(UserInfoContext);
@@ -84,7 +85,7 @@ const RestaurantProfile = () => {
                             padding: '0px 40px'
                         }}
                     >
-                        <h2 style={{ margin: '0px', color: "white", fontFamily: 'Brush Script, cursive' }}>{result.name}</h2>
+                        <h2 style={{ margin: '0px', color: "white", fontFamily: 'Brush Script, cursive' }}>{result.name}<WishlistHeart itemType='restaurant' item={result} className='title-fav-icon'/></h2>
                         {userInfo && userInfo.user_type !== 'admin' && <button className="custom-btn" onClick={()=>setShowConfirmationMessage(true)}>Book Now!</button>}
                     </div>
 

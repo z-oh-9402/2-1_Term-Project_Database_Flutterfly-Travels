@@ -5,7 +5,7 @@ import "../Styles/item-bar.css"
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaHeart } from "react-icons/fa6";
-import { setInWishlist } from '../wishlist';
+import { setInWishlist, wishlistItemId } from '../wishlist';
 
 const ITEM_PAGES = {
     destination: 'destinations',
@@ -31,7 +31,7 @@ const WishlistBar = (props) => {
         try
         {
             // The panel reloads itself when the wishlist changes
-            await setInWishlist(itemType, item, false);
+            await setInWishlist(itemType, wishlistItemId(itemType, item), false);
         }
         catch(error)
         {

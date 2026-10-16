@@ -14,6 +14,7 @@ import { BiAccessibility } from "react-icons/bi";
 import { BsGlobe } from "react-icons/bs";
 import { MdEmail, MdPool, MdFreeBreakfast } from "react-icons/md";
 import { apiFetch } from '../api';
+import WishlistHeart from "../Components/WishlistHeart";
 
 const iconStyle = {
     color: "white",
@@ -98,7 +99,7 @@ const AccommodationProfile = () => {
                             padding: '0px 40px'
                         }}
                     >
-                        <h1 style={{ margin: '0px', color: "white", fontFamily: 'Brush Script, cursive' }}>{result.name}</h1>
+                        <h1 style={{ margin: '0px', color: "white", fontFamily: 'Brush Script, cursive' }}>{result.name}<WishlistHeart itemType='accommodation' item={result} className='title-fav-icon'/></h1>
                         {userInfo && userInfo.user_type !== 'admin' && <button className="btn-primary booking-btn" onClick={()=>setShowConfirmationMessage(true)}>Book Now!</button>}
                     </div>
                     

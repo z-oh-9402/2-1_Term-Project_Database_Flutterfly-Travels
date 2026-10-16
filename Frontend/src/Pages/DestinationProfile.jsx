@@ -5,6 +5,7 @@ import Rating from "../Components/Rating";
 import UserInfoContext from "../Context/UserInfoContext";
 import ReviewsAndRatings from "../Components/ReviewsAndRatings";
 import { apiFetch } from '../api';
+import WishlistHeart from "../Components/WishlistHeart";
 
 const DestinationProfile = () => {
     const {userInfo} = useContext(UserInfoContext);
@@ -78,7 +79,7 @@ const DestinationProfile = () => {
             <>
                 <div style={{marginLeft: '0px',padding: '40px', display: 'flex', justifyContent:'space-between', fontFamily: 'Brush Script, cursive'}}>
                     <div className="information-container" style={{width: '500px'}}>
-                        <h1 style={{margin: '0px 0px 40px 0px', color:"white"}}>{result.name}</h1>
+                        <h1 style={{margin: '0px 0px 40px 0px', color:"white"}}>{result.name}<WishlistHeart itemType='destination' item={result} className='title-fav-icon'/></h1>
                         <h3><span style={{color: '#03fcf8'}}>Location: </span>{result.location_name}, {result.district_name}</h3><br/>
                         <h3><span style={{color: '#03fcf8'}}>Travel Tips: </span>{result.travel_tips}</h3><br/>
                         <h3><span style={{color: '#03fcf8'}}>Atrractions: </span>{result.attractions}</h3><br/>

@@ -40,6 +40,42 @@
     object-fit: cover;
 }
 
+/* Photo with the wishlist heart in its top-right corner */
+.card .card-image {
+    position: relative;
+    width: 100%;
+    height: 55%;
+}
+
+.card .card-image .cover-img {
+    height: 100%;
+}
+
+.card-fav-icon {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 6px;
+    border-radius: 50%;
+    background-color: rgba(0, 0, 0, 0.55);
+    color: #f54242;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.card-fav-icon:hover {
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+/* Heart next to the name on destination, accommodation and restaurant pages */
+.title-fav-icon {
+    margin-left: 14px;
+    vertical-align: middle;
+    color: #f54242;
+    font-size: 0.7em;
+    cursor: pointer;
+}
+
 .card .title {
     margin-top: 15px;
     margin-bottom: 8px;

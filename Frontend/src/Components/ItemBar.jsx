@@ -3,58 +3,14 @@ import Rating from './Rating';
 import "../Styles/card.css"
 import "../Styles/item-bar.css"
 import { useNavigate } from 'react-router-dom';
-import { useContext, useEffect, useState } from 'react';
+import { useContext } from 'react';
 import UserInfoContext from '../Context/UserInfoContext';
-import { FaHeart } from "react-icons/fa6";
-import { FaRegHeart } from "react-icons/fa6";
-import { isInWishlist, setInWishlist, onWishlistChanged, wishlistItemId } from '../wishlist';
+import WishlistHeart from './WishlistHeart';
 
 const ItemBar = (props) => {
     const {userInfo} = useContext(UserInfoContext);
     const {item, index, itemType} = props;
-    const [addedToFav, setAddedToFav] = useState(false);
     const navigate = useNavigate();
-
-    // Only customers have wishlists, and flights can't be wishlisted
-    const hasHeart = itemType!=='flight' && userInfo!==null && userInfo.user_type==='customer';
-
-    useEffect(() => {
-        if(!hasHeart)
-        {
-            return;
-        }
-
-        let isActive = true;
-        isInWishlist(itemType, item).then(inWishlist => isActive && setAddedToFav(inWishlist));
-
-        // Keep this heart in sync when the item is added/removed elsewhere (e.g. in the wishlist panel)
-        const stopListening = onWishlistChanged(({itemType: changedType, itemId, inWishlist}) => {
-            if(changedType===itemType && itemId===wishlistItemId(itemType, item))
-            {
-                setAddedToFav(inWishlist);
-            }
-        });
-
-        return () => {
-            isActive = false;
-            stopListening();
-        };
-    }, [hasHeart, itemType, item]);
-
-    const updateFavourite = async () => {
-        const add = !addedToFav;
-        setAddedToFav(add);
-
-        try
-        {
-            await setInWishlist(itemType, item, add);
-        }
-        catch(error)
-        {
-            setAddedToFav(!add);
-            alert(error.message);
-        }
-    }
 
     const departureTime = itemType==='flight' ? 
         new Date(item.departure_time).toLocaleTimeString('en-US', {
@@ -105,7 +61,7 @@ const ItemBar = (props) => {
 
     return (
         <div className="bar" id={`bar${index}`}>
-            {hasHeart && (addedToFav ? <FaHeart className='fav-icon' onClick={updateFavourite}/> : <FaRegHeart className='fav-icon' onClick={updateFavourite}/>)}
+            {itemType!=='flight' && <WishlistHeart itemType={itemType} item={item} className='fav-icon'/>}
             <div style={{width: '100%', height: '100%', display:'flex', alignItems: 'center'}} onMouseOver={showPopup} onMouseOut={hidePopup} onClick={navigatePage}>
                 <div className='main-info-container'>
                     <img className='cover-img' src={item.image} alt="Card Image"/>
