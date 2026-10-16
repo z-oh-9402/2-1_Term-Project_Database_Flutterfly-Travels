@@ -34,6 +34,12 @@ const ProfileHomePage = ({setLogOut}) => {
     const [isPref5Checked, setIsPref5Checked] = useState(pref ? pref.includes(list[4]) : pref);
     const [isPref6Checked, setIsPref6Checked] = useState(pref ? pref.includes(list[5]) : pref);
     const [isPref7Checked, setIsPref7Checked] = useState(pref ? pref.includes(list[6]) : pref);
+    // [checked, setChecked] for each entry of list, in the same order
+    const preferenceChecks = [
+        [isPref1Checked, setIsPref1Checked], [isPref2Checked, setIsPref2Checked], [isPref3Checked, setIsPref3Checked],
+        [isPref4Checked, setIsPref4Checked], [isPref5Checked, setIsPref5Checked], [isPref6Checked, setIsPref6Checked],
+        [isPref7Checked, setIsPref7Checked],
+    ];
 
     const navigate = useNavigate();
     const [isBeingUpdated, setIsBeingUpdated] = useState(false);
@@ -439,38 +445,74 @@ const ProfileHomePage = ({setLogOut}) => {
                     </div>
                 </div> :
 
-                <div>
-                    <h2>Update Profile:</h2>
+                <div className="profile-form">
+                    <h2 className="profile-form-title">Edit Profile</h2>
                     <PhotoUploader height={120}  selectedFile={selectedFile} setSelectedFile={setSelectedFile} />
-                    <label>Username: <input value={username} placeholder='Enter username' onChange={handleUsernameChange} /><span style={{ color: "red" }}> *</span></label><br/>
-                    {!isValidUsername ? <h5 style={{ color: "red" }}>username already exists</h5> : <br />}
-                    <label>First Name: <input value={firstName} placeholder='Enter first name' onChange={handleFirstNameChange} /><span style={{ color: "red" }}> *</span></label><br /><br />
-                    <label>Last Name: <input value={lastName} placeholder='Enter last name' onChange={handleLastNameChange} /><span style={{ color: "red" }}> *</span></label><br /><br />
-                    <label>Email: <input value={email} placeholder='Enter email' onChange={handleEmailChange} /><span style={{ color: "red" }}> *</span></label><br /><br />
-                    
-                    {user.user_type === 'customer' && 
-                    <>
-                        <label>Passport Number: <input value={passportNumber} placeholder='Enter passport number' onChange={handlePassportNumberChange} /><span style={{ color: "red" }}> *</span></label>
-                        {!isValidPassport && !isPassportStarting ? <h5 style={{ color: "red" }}>passport number must contain 12 characters</h5> : <><br /><br /></>}
 
-                        <h4>Edit Your Destination Preferences: (Optional)</h4>
-                        <label><input type="checkbox" id="pref0" checked={isPref1Checked} onChange={() => { setIsPref1Checked(!isPref1Checked) }} value={list[0]} />{list[0]}</label><br />
-                        <label><input type="checkbox" id="pref1" checked={isPref2Checked} onChange={() => { setIsPref2Checked(!isPref2Checked) }} value={list[1]} />{list[1]}</label><br />
-                        <label><input type="checkbox" id="pref2" checked={isPref3Checked} onChange={() => { setIsPref3Checked(!isPref3Checked) }} value={list[2]} />{list[2]}</label><br />
-                        <label><input type="checkbox" id="pref3" checked={isPref4Checked} onChange={() => { setIsPref4Checked(!isPref4Checked) }} value={list[3]} />{list[3]}</label><br />
-                        <label><input type="checkbox" id="pref4" checked={isPref5Checked} onChange={() => { setIsPref5Checked(!isPref5Checked) }} value={list[4]} />{list[4]}</label><br />
-                        <label><input type="checkbox" id="pref5" checked={isPref6Checked} onChange={() => { setIsPref6Checked(!isPref6Checked) }} value={list[5]} />{list[5]}</label><br />
-                        <label><input type="checkbox" id="pref6" checked={isPref7Checked} onChange={() => { setIsPref7Checked(!isPref7Checked) }} value={list[6]} />{list[6]}</label><br />
-                        <br />
+                    <div className="profile-form-field">
+                        <label><span>Username <span className="required">*</span></span>
+                            <input value={username} placeholder='Enter username' onChange={handleUsernameChange} />
+                        </label>
+                        {!isValidUsername && <p className="field-error">This username is already taken</p>}
+                    </div>
+                    <div className="profile-form-field">
+                        <label><span>First Name <span className="required">*</span></span>
+                            <input value={firstName} placeholder='Enter first name' onChange={handleFirstNameChange} />
+                        </label>
+                    </div>
+                    <div className="profile-form-field">
+                        <label><span>Last Name <span className="required">*</span></span>
+                            <input value={lastName} placeholder='Enter last name' onChange={handleLastNameChange} />
+                        </label>
+                    </div>
+                    <div className="profile-form-field">
+                        <label><span>Email <span className="required">*</span></span>
+                            <input type="email" value={email} placeholder='Enter email' onChange={handleEmailChange} />
+                        </label>
+                    </div>
+
+                    {user.user_type === 'customer' &&
+                    <>
+                        <div className="profile-form-field">
+                            <label><span>Passport Number <span className="required">*</span></span>
+                                <input value={passportNumber} placeholder='Enter passport number' onChange={handlePassportNumberChange} />
+                            </label>
+                            {!isValidPassport && !isPassportStarting && <p className="field-error">Passport number must be 12 characters</p>}
+                        </div>
+
+                        <div className="profile-form-section">
+                            <h4 className="profile-form-heading">Destination Preferences <span className="optional">(optional)</span></h4>
+                            {/* Still real checkboxes with ids pref0..pref6: updateInfo reads them when saving */}
+                            <div className="profile-chips">
+                                {list.map((name, index) => {
+                                    const [isChecked, setIsChecked] = preferenceChecks[index];
+                                    return (
+                                        <label key={name} className={"profile-chip pref-chip" + (isChecked ? " selected" : "")}>
+                                            <input type="checkbox" id={"pref" + index} checked={isChecked} onChange={() => setIsChecked(!isChecked)} value={name} />
+                                            {name}
+                                        </label>
+                                    );
+                                })}
+                            </div>
+                        </div>
                     </>}
 
-                    <PasswordInput Label="Enter Password: " password={password} setPassword={handlePasswordChange} /><span style={{ color: "red" }}> *</span>
-                    {!isValidPassword && !isPasswordStarting ? <h5 style={{ color: "red" }}>password must be at least 8 characters long</h5> : <><br /><br /></>}
-                    <PasswordInput Label="Confirm Password: " password={rePassword} setPassword={handleRePasswordChange} /><span style={{ color: "red" }}> *</span><br /><br />
+                    <div className="profile-form-section">
+                        <h4 className="profile-form-heading">Change Password <span className="optional">(optional)</span></h4>
+                        <p className="profile-form-hint">Leave both fields empty to keep your current password.</p>
+                        <div className="profile-form-field">
+                            <PasswordInput Label="New Password" password={password} setPassword={handlePasswordChange} />
+                            {!isValidPassword && !isPasswordStarting && <p className="field-error">Password must be at least 8 characters</p>}
+                        </div>
+                        <div className="profile-form-field">
+                            <PasswordInput Label="Confirm New Password" password={rePassword} setPassword={handleRePasswordChange} />
+                        </div>
+                    </div>
 
-                    <div>
-                        <button className="btn-primary" style={{marginRight: '10px'}} onClick={user.user_type === 'customer' ? updateInfo : updateInfo2}>Update Profile</button>
-                        <button className="btn-primary" onClick={() => { setIsBeingUpdated(false) }}>Cancel</button></div>
+                    <div className="profile-form-actions">
+                        <button className="btn-primary" onClick={user.user_type === 'customer' ? updateInfo : updateInfo2}>Save Changes</button>
+                        <button className="btn-primary" onClick={() => { setIsBeingUpdated(false) }}>Cancel</button>
+                    </div>
                 </div>}
             </div>
             

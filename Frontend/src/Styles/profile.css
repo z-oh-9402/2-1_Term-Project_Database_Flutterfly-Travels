@@ -144,3 +144,112 @@
     color: #ff6b6f;
     border-color: #ff6b6f;
 }
+
+/* Edit profile form */
+.profile-form{
+    padding: 30px 0 40px;
+}
+
+.profile-form-title{
+    margin: 0 0 20px;
+    text-align: center;
+}
+
+.profile-form-field{
+    margin-bottom: 16px;
+}
+
+/* Label text above a full-width input */
+.profile-form-field label{
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    color: #9aa4ad;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.profile-form-field input{
+    width: 100%;
+    box-sizing: border-box;
+    padding: 9px 14px;
+    color: black;
+    font-size: 0.95rem;
+    letter-spacing: normal;
+    text-transform: none;
+    cursor: text;
+}
+
+.profile-form .password-input,
+.profile-form .password-field{
+    display: block !important;
+    width: 100%;
+}
+
+.profile-form .password-field input{
+    padding-right: 38px;
+}
+
+.profile-form .required{
+    color: #e5484d;
+}
+
+.field-error{
+    margin: 6px 0 0;
+    color: #ff6b6f;
+    font-size: 0.85rem;
+}
+
+.profile-form-section{
+    margin-top: 26px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.profile-form-heading{
+    margin: 0 0 12px;
+    color: white;
+    font-size: 1rem;
+}
+
+.profile-form-heading .optional,
+.profile-form-hint{
+    color: #9aa4ad;
+    font-size: 0.85rem;
+    font-weight: normal;
+}
+
+.profile-form-hint{
+    margin: -6px 0 14px;
+}
+
+/* Preference checkboxes shown as chips; the real checkbox stays focusable but invisible */
+.pref-chip{
+    position: relative;
+    user-select: none;
+}
+
+.pref-chip input{
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+    pointer-events: none;
+}
+
+.pref-chip:focus-within{
+    outline: 2px solid #45deec;
+    outline-offset: 2px;
+}
+
+.profile-form-actions{
+    display: flex;
+    gap: 12px;
+    margin-top: 28px;
+}
+
+.profile-form-actions .btn-primary{
+    flex: 1;
+}

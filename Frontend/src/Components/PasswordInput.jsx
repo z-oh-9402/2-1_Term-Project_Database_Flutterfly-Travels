@@ -16,25 +16,30 @@ const PasswordInput = (props) => {
 
   return (
     <>
-        <div style={{ position: 'relative', display:'inline-block'}}>
+        <div className='password-input' style={{ position: 'relative', display:'inline-block'}}>
             <label>{Label}
-            <input style={{position: 'relative'}}
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={(e) => {setPassword(e.target.value)}}
-            /></label>
-            <div
-                style={{
-                position: 'absolute',
-                right: '7px',
-                top: '53%',
-                transform: 'translateY(-50%)',
-                cursor: 'pointer',
-                }}
-                onClick={handleTogglePassword}
-            >
-                {password.length!==0 && (showPassword ? <FaEyeSlash /> : <FaEye />)}
-            </div>
+            {/* The eye icon is positioned on the input itself, wherever the label puts it */}
+            <span className='password-field' style={{ position: 'relative', display: 'inline-block' }}>
+                <input style={{position: 'relative'}}
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => {setPassword(e.target.value)}}
+                />
+                <span
+                    style={{
+                    position: 'absolute',
+                    right: '10px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    cursor: 'pointer',
+                    color: 'black',
+                    display: 'flex',
+                    }}
+                    onClick={handleTogglePassword}
+                >
+                    {password.length!==0 && (showPassword ? <FaEyeSlash /> : <FaEye />)}
+                </span>
+            </span></label>
         </div>
     </>
   );
