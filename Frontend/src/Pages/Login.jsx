@@ -118,11 +118,13 @@ const Login = (props) => {
         <div className='login-signup-popup'>
             <div className='login-signup-container'>
                 <ImCross className='close' onClick={handleGoToHomePage} />
-                <h1>Login Page</h1>
+                <h1>Login</h1>
+                <br />
                 <div style={{ display: 'flex', flexDirection: "column", alignItems: 'flex-end' }}>
                     <label>Username: <input value={username} placeholder='Enter username' onChange={handleUsernameChange} /></label><br />
                     <PasswordInput Label="Password: " password={password} setPassword={setPassword} /><br />
                 </div>
+                <br />
                 <button className="custom-btn" style={{color: "black"}} onClick={handleDataSubmit}>Login</button><br /><br />
                 <p style={{ textAlign: "center" }}>Don{"'"}t have an account? <span className='go-to' onClick={handleChangeToSignUp} style={{ color: "red" }}>Sign up now!</span></p>
             </div>

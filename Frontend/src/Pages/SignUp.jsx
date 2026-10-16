@@ -199,7 +199,7 @@ const SignUp = (props) => {
         <div className='login-signup-popup'>
             <div className='login-signup-container'>
                 <ImCross className='close' onClick={handleGoToHomePage} />
-                <h1>Sign Up Page</h1>
+                <h1>Sign up</h1>
 
                 {page === 1 ?
                     <>
