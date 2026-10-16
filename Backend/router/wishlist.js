@@ -78,7 +78,8 @@ router.post('/destination', async (req, res) => {
     const { itemId } = req.body;
 
     const params = [req.user.id, itemId];
-    let query = `INSERT INTO DESTINATION_WISHLIST(CUSTOMER_ID, DESTINATION_ID) VALUES($1, $2)`;
+    let query = `INSERT INTO DESTINATION_WISHLIST(CUSTOMER_ID, DESTINATION_ID) VALUES($1, $2)
+                 ON CONFLICT DO NOTHING`;
     await database.query(query, params);
 
     res.json({ status: true });
@@ -98,7 +99,8 @@ router.post('/accommodation', async (req, res) => {
     const { itemId } = req.body;
 
     const params = [req.user.id, itemId];
-    let query = `INSERT INTO ACCOMMODATION_WISHLIST(CUSTOMER_ID, ACCOMMODATION_ID) VALUES($1, $2)`;
+    let query = `INSERT INTO ACCOMMODATION_WISHLIST(CUSTOMER_ID, ACCOMMODATION_ID) VALUES($1, $2)
+                 ON CONFLICT DO NOTHING`;
     await database.query(query, params);
 
     res.json({ status: true });
@@ -118,7 +120,8 @@ router.post('/restaurant', async (req, res) => {
     const { itemId } = req.body;
 
     const params = [req.user.id, itemId];
-    let query = `INSERT INTO RESTAURANT_WISHLIST(CUSTOMER_ID, RESTAURANT_ID) VALUES($1, $2)`;
+    let query = `INSERT INTO RESTAURANT_WISHLIST(CUSTOMER_ID, RESTAURANT_ID) VALUES($1, $2)
+                 ON CONFLICT DO NOTHING`;
     await database.query(query, params);
 
     res.json({ status: true });

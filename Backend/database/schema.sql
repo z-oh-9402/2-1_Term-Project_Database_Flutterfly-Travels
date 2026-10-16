@@ -1700,6 +1700,14 @@ ALTER TABLE ONLY public.accommodation_wishlist
 
 
 --
+-- Name: accommodation_wishlist accommodation_wishlist_customer_item_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accommodation_wishlist
+    ADD CONSTRAINT accommodation_wishlist_customer_item_key UNIQUE (customer_id, accommodation_id);
+
+
+--
 -- Name: agent agent_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1769,6 +1777,14 @@ ALTER TABLE ONLY public.destination_type
 
 ALTER TABLE ONLY public.destination_wishlist
     ADD CONSTRAINT destination_wishlist_pkey PRIMARY KEY (wishlist_id);
+
+
+--
+-- Name: destination_wishlist destination_wishlist_customer_item_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.destination_wishlist
+    ADD CONSTRAINT destination_wishlist_customer_item_key UNIQUE (customer_id, destination_id);
 
 
 --
@@ -1881,6 +1897,14 @@ ALTER TABLE ONLY public.restaurant
 
 ALTER TABLE ONLY public.restaurant_wishlist
     ADD CONSTRAINT restaurant_wishlist_pkey PRIMARY KEY (wishlist_id);
+
+
+--
+-- Name: restaurant_wishlist restaurant_wishlist_customer_item_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.restaurant_wishlist
+    ADD CONSTRAINT restaurant_wishlist_customer_item_key UNIQUE (customer_id, restaurant_id);
 
 
 --

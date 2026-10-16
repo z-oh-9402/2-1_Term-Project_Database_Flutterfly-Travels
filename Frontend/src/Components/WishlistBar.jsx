@@ -2,65 +2,58 @@ import PropTypes from 'prop-types'
 import Rating from './Rating';
 import "../Styles/card.css"
 import "../Styles/item-bar.css"
-import { useContext, useEffect, useState } from 'react';
-import UserInfoContext from '../Context/UserInfoContext';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FaHeart } from "react-icons/fa6";
-import { FaRegHeart } from "react-icons/fa6";
-import { apiFetch } from '../api';
+import { setInWishlist } from '../wishlist';
 
+const ITEM_PAGES = {
+    destination: 'destinations',
+    accommodation: 'accommodations',
+    restaurant: 'restaurants',
+};
+
+// One saved item in the wishlist panel: click it to open its page, click the heart to remove it
 const WishlistBar = (props) => {
-    const {userInfo} = useContext(UserInfoContext);
-    const {item, index, itemType} = props;
-    const [addedToFav, setAddedToFav] = useState(false);
+    const {item, itemType, setShowWishlist} = props;
+    const navigate = useNavigate();
+    const [isRemoving, setIsRemoving] = useState(false);
 
-    useEffect(() => {
-        const checkFavourite = async () => {
-            if(userInfo!==null)
-            {
-                if(itemType==='destination')
-                {
-                    const response = await apiFetch(`http://localhost:3000/wishlist/destination?userId=${userInfo.user_id}&itemId=${item.destination_id}`,{
-                        method: "GET",
-                    });
-
-                    const result = await response.json();
-                    setAddedToFav(result);
-                }
-                else if(itemType==='accommodation')
-                {
-                    const response = await apiFetch(`http://localhost:3000/wishlist/accommodation?userId=${userInfo.user_id}&itemId=${item.accommodation_id}`,{
-                        method: "GET",
-                    });
-
-                    const result = await response.json();
-                    setAddedToFav(result);
-                }
-                else
-                {
-                    const response = await apiFetch(`http://localhost:3000/wishlist/restaurant?userId=${userInfo.user_id}&itemId=${item.restaurant_id}`,{
-                        method: "GET",
-                    });
-
-                    const result = await response.json();
-                    setAddedToFav(result);
-                }
-            }
+    const removeFromWishlist = async (event) => {
+        // Don't also open the item's page
+        event.stopPropagation();
+        if(isRemoving)
+        {
+            return;
         }
 
-        checkFavourite();
-    }, []);
+        setIsRemoving(true);
+        try
+        {
+            // The panel reloads itself when the wishlist changes
+            await setInWishlist(itemType, item, false);
+        }
+        catch(error)
+        {
+            setIsRemoving(false);
+            alert(error.message);
+        }
+    }
+
+    const openItem = () => {
+        setShowWishlist(false);
+        navigate(`/${ITEM_PAGES[itemType]}/${item.name}`);
+    }
 
     return (
-        <div className="bar" id={`bar${index}`} style={{display:'flex', alignItems: 'center', height: '120px', boxSizing:'border-box'}}>
-            {userInfo.user_type==='customer' && (addedToFav ? <FaHeart className='fav-icon'/> : <FaRegHeart className='fav-icon'/>)}
-            <div style={{width: '100%', height: '100px', display:'flex', alignItems: 'center'}}>
-                <div className='main-info-container wishlist-container'>
-                    <img className='cover-img wishlist-img' src={item.image} alt="Card Image"/>
-                    <div>
-                        <h3 className='title'>{item.name}</h3>
-                            <div className='item-rating-container'>
-                            <label>Rating: <Rating rating={parseFloat(item.rating)} isChanging={false} setRating={null}/></label>
-                        </div>
+        <div className={"bar wishlist-bar" + (isRemoving ? " removing" : "")} onClick={openItem}>
+            <FaHeart className='fav-icon' onClick={removeFromWishlist} title="Remove from wishlist" role="button" aria-label={`Remove ${item.name} from wishlist`}/>
+            <div className='main-info-container wishlist-container'>
+                <img className='cover-img wishlist-img' src={item.image} alt={item.name}/>
+                <div>
+                    <h3 className='title'>{item.name}</h3>
+                    <div className='item-rating-container'>
+                        <label>Rating: <Rating rating={parseFloat(item.rating)} isChanging={false} setRating={null}/></label>
                     </div>
                 </div>
             </div>
@@ -68,11 +61,10 @@ const WishlistBar = (props) => {
     )
 };
 
-WishlistBar.propTypes = { 
-    itemType: PropTypes.string,
-    item: PropTypes.object,
-    index: PropTypes.string,
-    setShowWishlist: PropTypes.func
+WishlistBar.propTypes = {
+    itemType: PropTypes.string.isRequired,
+    item: PropTypes.object.isRequired,
+    setShowWishlist: PropTypes.func.isRequired
 }
 
 export default WishlistBar;

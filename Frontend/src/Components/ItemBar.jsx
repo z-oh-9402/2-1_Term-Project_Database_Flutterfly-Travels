@@ -7,7 +7,7 @@ import { useContext, useEffect, useState } from 'react';
 import UserInfoContext from '../Context/UserInfoContext';
 import { FaHeart } from "react-icons/fa6";
 import { FaRegHeart } from "react-icons/fa6";
-import { apiFetch } from '../api';
+import { isInWishlist, setInWishlist, onWishlistChanged, wishlistItemId } from '../wishlist';
 
 const ItemBar = (props) => {
     const {userInfo} = useContext(UserInfoContext);
@@ -15,93 +15,44 @@ const ItemBar = (props) => {
     const [addedToFav, setAddedToFav] = useState(false);
     const navigate = useNavigate();
 
+    // Only customers have wishlists, and flights can't be wishlisted
+    const hasHeart = itemType!=='flight' && userInfo!==null && userInfo.user_type==='customer';
+
     useEffect(() => {
-        const checkFavourite = async () => {
-            if(userInfo!==null && userInfo.user_type==='customer')
-            {
-                if(itemType==='destination')
-                {
-                    const response = await apiFetch(`http://localhost:3000/wishlist/destination?userId=${userInfo.user_id}&itemId=${item.destination_id}`,{
-                        method: "GET",
-                    });
-
-                    const result = await response.json();
-                    setAddedToFav(result);
-                }
-                else if(itemType==='accommodation')
-                {
-                    const response = await apiFetch(`http://localhost:3000/wishlist/accommodation?userId=${userInfo.user_id}&itemId=${item.accommodation_id}`,{
-                        method: "GET",
-                    });
-
-                    const result = await response.json();
-                    setAddedToFav(result);
-                }
-                else
-                {
-                    const response = await apiFetch(`http://localhost:3000/wishlist/restaurant?userId=${userInfo.user_id}&itemId=${item.restaurant_id}`,{
-                        method: "GET",
-                    });
-
-                    const result = await response.json();
-                    setAddedToFav(result);
-                }
-            }
+        if(!hasHeart)
+        {
+            return;
         }
 
-        checkFavourite();
-    }, []);
+        let isActive = true;
+        isInWishlist(itemType, item).then(inWishlist => isActive && setAddedToFav(inWishlist));
+
+        // Keep this heart in sync when the item is added/removed elsewhere (e.g. in the wishlist panel)
+        const stopListening = onWishlistChanged(({itemType: changedType, itemId, inWishlist}) => {
+            if(changedType===itemType && itemId===wishlistItemId(itemType, item))
+            {
+                setAddedToFav(inWishlist);
+            }
+        });
+
+        return () => {
+            isActive = false;
+            stopListening();
+        };
+    }, [hasHeart, itemType, item]);
 
     const updateFavourite = async () => {
-        setAddedToFav(!addedToFav);
-        
-        if(userInfo!==null)
+        const add = !addedToFav;
+        setAddedToFav(add);
+
+        try
         {
-            if(itemType==='destination')
-            {
-                const response = await apiFetch(`http://localhost:3000/wishlist/destination`,{
-                    method: addedToFav ? "DELETE" : "POST",
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        userId: userInfo.user_id,
-                        itemId: item.destination_id
-                    })
-                });
-
-                await response.json();
-            }
-            else if(itemType==='accommodation')
-            {
-                const response = await apiFetch(`http://localhost:3000/wishlist/accommodation`,{
-                    method: addedToFav ? "DELETE" : "POST",
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        userId: userInfo.user_id,
-                        itemId: item.accommodation_id
-                    })
-                });
-
-                await response.json();
-            }
-            else
-            {
-                const response = await apiFetch(`http://localhost:3000/wishlist/restaurant`,{
-                    method: addedToFav ? "DELETE" : "POST",
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        userId: userInfo.user_id,
-                        itemId: item.restaurant_id
-                    })
-                });
-
-                await response.json();
-            }
+            await setInWishlist(itemType, item, add);
+        }
+        catch(error)
+        {
+            setAddedToFav(!add);
+            alert(error.message);
         }
     }
 
@@ -154,7 +105,7 @@ const ItemBar = (props) => {
 
     return (
         <div className="bar" id={`bar${index}`}>
-            {itemType!=='flight' && userInfo!==null && userInfo.user_type==='customer' && (addedToFav ? <FaHeart className='fav-icon' onClick={updateFavourite}/> : <FaRegHeart className='fav-icon' onClick={updateFavourite}/>)}
+            {hasHeart && (addedToFav ? <FaHeart className='fav-icon' onClick={updateFavourite}/> : <FaRegHeart className='fav-icon' onClick={updateFavourite}/>)}
             <div style={{width: '100%', height: '100%', display:'flex', alignItems: 'center'}} onMouseOver={showPopup} onMouseOut={hidePopup} onClick={navigatePage}>
                 <div className='main-info-container'>
                     <img className='cover-img' src={item.image} alt="Card Image"/>

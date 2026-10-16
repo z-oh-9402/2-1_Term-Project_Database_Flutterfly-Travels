@@ -110,3 +110,25 @@
     color: #f54242;
     cursor: pointer;
 }
+/* Wishlist panel */
+.wishlist-category h3{
+    margin: 4px 0 12px;
+}
+
+.wishlist-category + .wishlist-category{
+    margin-top: 24px;
+}
+
+.wishlist-bar{
+    height: 120px;
+}
+
+.wishlist-bar.removing{
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.wishlist-empty{
+    text-align: center;
+    line-height: 1.5;
+}
