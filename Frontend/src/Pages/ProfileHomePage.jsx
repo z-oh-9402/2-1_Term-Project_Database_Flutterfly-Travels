@@ -1,4 +1,5 @@
 import "../Styles/button.css"
+import "../Styles/profile.css"
 
 import PropTypes from 'prop-types'
 import { useContext, useEffect, useState } from 'react';
@@ -21,6 +22,8 @@ const ProfileHomePage = ({setLogOut}) => {
     const user = userInfo;
     const pref = user.user_type === 'customer' ? user.preferences : null;
     const [recommendedDestinations, setRecommendedDestinations] = useState([]);
+    // Preference chip the customer clicked to see only that category (null = all categories)
+    const [selectedPreference, setSelectedPreference] = useState(null);
     const [pendingAgents, setPendingAgents] = useState([]);
     const [pendingTrips, setPendingTrips] = useState([]);
 
@@ -347,75 +350,93 @@ const ProfileHomePage = ({setLogOut}) => {
         setPendingTrips(data);
     }
 
+    // Ignore a selection that's no longer one of the preferences (e.g. removed in Update Account)
+    const activePreference = pref && pref.includes(selectedPreference) ? selectedPreference : null;
+    const shownRecommendations = activePreference
+        ? recommendedDestinations.filter(category => category.category === activePreference)
+        : recommendedDestinations;
+
+    const roleLabels = { customer: 'Customer', agent: 'Travel Agent', admin: 'Admin' };
+    const isCustomer = user?.user_type === 'customer';
+    const isAgent = user?.user_type === 'agent';
+    const isApprovedAgent = isAgent && user.acc_status === 'OK';
+    const isDeclinedAgent = isAgent && user.acc_status !== 'OK' && user.acc_status !== 'PENDING';
+
     return (
         <div className='profile-page'>
             {showDeleteConfirmation && <DeleteConfirmation goBack={()=>setShowDeleteConfirmation(false)} shouldDelete={()=>handleLogOutOrDeleteAccount(true)}/>}
             <div className='profile-container'>
-                {!isBeingUpdated ? 
-                <div>
-                    <div className="profile-pic larger-profile-pic"><img src={user.photo.length ? 'http://localhost:3000/uploads/'+user.photo : "default_profile_pic.jpeg"}/></div><br/>
-                    <p>
-                        Username: {user.username}<br />
-                        First Name: {user.first_name}<br />
-                        Last Name: {user.last_name}<br />
-                        Email: {user.email}<br /><br />
+                {!isBeingUpdated ?
+                <div className="profile-card">
+                    <div className="profile-pic larger-profile-pic profile-card-pic"><img src={user.photo.length ? 'http://localhost:3000/uploads/'+user.photo : "default_profile_pic.jpeg"}/></div>
+                    <h2 className="profile-name">{user.first_name} {user.last_name}</h2>
+                    <p className="profile-username">@{user.username}</p>
+                    <span className="profile-role">{roleLabels[user.user_type]}</span>
 
-                        {user.user_type === 'customer' && (
-                            <>
-                                Passport Number: {user.passport_number}<br /><br />
-                                Trip Booked: {user.trip_booked}<br /><br />
-                                {pref.length !== 0 && "Preferences:"}
-                            </>
-                        )}
+                    <dl className="profile-details">
+                        <div className="profile-detail">
+                            <dt>Email</dt>
+                            <dd>{user.email}</dd>
+                        </div>
 
-                        {user.user_type === 'agent' && (
-                            <>
-                                Experience: {user.experience_years}<br />
-                                Fee: {user.fee}<br />
-                                {user.acc_status === 'OK' && <>Rating: <Rating rating={parseFloat(user.rating)} isChanging={false} setRating={null}/><br /><br /></>}
-                            </>
-                        )}
-                    </p>
+                        {isCustomer && <>
+                            <div className="profile-detail">
+                                <dt>Passport Number</dt>
+                                <dd>{user.passport_number}</dd>
+                            </div>
+                            <div className="profile-detail">
+                                <dt>Trips Booked</dt>
+                                <dd>{user.trip_booked}</dd>
+                            </div>
+                        </>}
 
-                    {user.user_type === 'customer' && pref.length !== 0 &&
-                        <>
-                            <ul>
+                        {isAgent && <>
+                            <div className="profile-detail">
+                                <dt>Experience</dt>
+                                <dd>{user.experience_years} {Number(user.experience_years) === 1 ? 'year' : 'years'}</dd>
+                            </div>
+                            <div className="profile-detail">
+                                <dt>Fee</dt>
+                                <dd>৳ {Number(user.fee).toLocaleString('en-US')}</dd>
+                            </div>
+                            {user.acc_status === 'OK' &&
+                            <div className="profile-detail">
+                                <dt>Rating</dt>
+                                <dd><Rating rating={parseFloat(user.rating)} isChanging={false} setRating={null}/></dd>
+                            </div>}
+                        </>}
+                    </dl>
+
+                    {isCustomer && pref.length !== 0 &&
+                        <div className="profile-section">
+                            <h4 className="profile-section-title">Preferences</h4>
+                            <div className="profile-chips">
                                 {pref.map((data, index) => (
-                                    <li key={index}>{data}</li>
+                                    <button
+                                        key={index}
+                                        type="button"
+                                        className={"profile-chip" + (activePreference === data ? " selected" : "")}
+                                        aria-pressed={activePreference === data}
+                                        onClick={() => setSelectedPreference(activePreference === data ? null : data)}
+                                    >
+                                        {data}
+                                    </button>
                                 ))}
-                            </ul>
-
-                            <button className="btn-primary" onClick={() => {handleLogOutOrDeleteAccount(false)}}>Log Out</button><br /><br />
-                            <button className="btn-primary" onClick={goToUpdate}>Update Account</button><br /><br />
-                            <button className="btn-primary" onClick={()=>setShowDeleteConfirmation(true)}>Delete Account</button>
-                        </>
-                    }
-                    
-                    {user.user_type === 'agent' && 
-                        (user.acc_status === 'OK' ?
-                        <>
-                            <button className="btn-primary" onClick={() => {handleLogOutOrDeleteAccount(false)}}>Log Out</button><br /><br />
-                            <button className="btn-primary" onClick={goToUpdate}>Update Account</button><br/><br/>
-                            <button className="btn-primary" onClick={() => {handleLogOutOrDeleteAccount(true)}}>Delete Account</button>
-                        </> :
-                        (user.acc_status === 'PENDING' ?
-                            <>
-                                <h3>Your request is still being processed!!!</h3>
-                                <button className="btn-primary" onClick={() => {handleLogOutOrDeleteAccount(false)}}>Log Out</button><br /><br />
-                            </> :
-                            <>
-                                <h3>Your request has been declined!!!</h3>
-                                <button className="btn-primary" onClick={() => {handleLogOutOrDeleteAccount(false)}}>Log Out</button><br /><br />
-                                <button className="btn-primary" onClick={() => {handleLogOutOrDeleteAccount(true)}}>Delete request</button>
-                            </>
-                        ))
+                            </div>
+                        </div>
                     }
 
-                    {user.user_type === 'admin' && 
-                        <>
-                            <button className="btn-primary" onClick={() => {handleLogOutOrDeleteAccount(false)}}>Log Out</button><br /><br />
-                        </>
-                    }
+                    {isAgent && user.acc_status === 'PENDING' &&
+                        <p className="profile-notice">Your registration is waiting for an admin to approve it.</p>}
+                    {isDeclinedAgent &&
+                        <p className="profile-notice profile-notice-declined">Your registration was declined.</p>}
+
+                    <div className="profile-actions">
+                        {(isCustomer || isApprovedAgent) && <button className="btn-primary" onClick={goToUpdate}>Update Account</button>}
+                        <button className="btn-primary" onClick={() => {handleLogOutOrDeleteAccount(false)}}>Log Out</button>
+                        {(isCustomer || isApprovedAgent || isDeclinedAgent) &&
+                            <button className="btn-primary btn-danger" onClick={()=>setShowDeleteConfirmation(true)}>{isDeclinedAgent ? 'Delete Request' : 'Delete Account'}</button>}
+                    </div>
                 </div> :
 
                 <div>
@@ -457,12 +478,12 @@ const ProfileHomePage = ({setLogOut}) => {
                 {user.user_type === 'customer' && recommendedDestinations.length !== 0 &&
                 <>
                     <h1>Recommended Destinations -</h1>
-                    <CategorizedDestination destinationObj={recommendedDestinations} />
+                    <CategorizedDestination destinationObj={shownRecommendations} />
+                    {activePreference && !shownRecommendations.some(category => category.destinations.length !== 0) &&
+                        <p>No destinations in {activePreference} yet.</p>}
                 </>}
 
-                {(user.user_type === 'agent' && user.acc_status === 'OK') ?
-                <AgentTrip/> :
-                <h1>Nothing to show here...</h1>}
+                {(user.user_type === 'agent' && user.acc_status === 'OK') && <AgentTrip/>}
 
                 {user.user_type === 'admin' &&
                 <>

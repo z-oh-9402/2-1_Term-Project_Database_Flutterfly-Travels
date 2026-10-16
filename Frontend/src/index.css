@@ -62,9 +62,8 @@ button {
 }
 
 .profile-container{
-    
-    padding: 0px 20px 0px 40px;
-    width: 320px;
+    padding: 0px 50px 0px 40px;
+    width: 25%;
     color:white;
     background-color: rgb(37, 36, 36);
     background-image: radial-gradient(ellipse at center, rgba(255,255,255,0.1) 0%,rgba(0,0,0,0.9) 100%); /* Add radial gradient for texture */
@@ -89,7 +88,7 @@ button {
     background-attachment: fixed; /* Fix background position */
     background-blend-mode: overlay; 
     
-    width: 70%;
+    width: 100%;
     /* display: flex;
     flex-direction: column; */
     color:white;
@@ -238,6 +237,6 @@ input[type="radio"]{
 }
 
 .larger-profile-pic{
-    height: 120px;
-    width: 120px;
+    height: 180px;
+    width: 180px;
 }

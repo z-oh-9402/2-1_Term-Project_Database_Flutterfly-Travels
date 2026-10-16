@@ -1,0 +1,146 @@
+/* Profile info column on the profile page */
+
+.profile-card{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px 0px 40px 0px;
+    text-align: center;
+}
+
+.profile-card-pic{
+    border: 3px solid #25afe6;
+    box-shadow: 0 0 20px rgba(37, 175, 230, 0.35);
+}
+
+.profile-card-pic img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-name{
+    margin: 18px 0 2px;
+    font-size: 1.5rem;
+}
+
+.profile-username{
+    margin: 0;
+    color: #9aa4ad;
+}
+
+.profile-role{
+    margin-top: 12px;
+    padding: 3px 12px;
+    border: 1px solid #25afe6;
+    border-radius: 999px;
+    color: #45deec;
+    font-size: 0.75rem;
+    font-weight: bold;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+/* Label above value, e.g. EMAIL / zaki@... */
+.profile-details{
+    width: 100%;
+    margin: 28px 0 0;
+    padding-top: 22px;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    text-align: left;
+}
+
+.profile-detail{
+    margin-bottom: 16px;
+}
+
+.profile-detail dt,
+.profile-section-title{
+    margin: 0 0 4px;
+    color: #9aa4ad;
+    font-size: 0.75rem;
+    font-weight: normal;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.profile-detail dd{
+    margin: 0;
+    font-size: 1rem;
+    overflow-wrap: anywhere;
+}
+
+.profile-section{
+    width: 100%;
+    text-align: left;
+}
+
+.profile-section-title{
+    margin-bottom: 8px;
+}
+
+.profile-chips{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.profile-chip{
+    padding: 4px 12px;
+    border: 1px solid rgba(37, 175, 230, 0.5);
+    border-radius: 999px;
+    background-color: rgba(37, 175, 230, 0.15);
+    color: inherit;
+    font-family: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+}
+
+.profile-chip:hover{
+    border-color: #45deec;
+}
+
+/* The chip whose category is the only one shown; click it again to show all */
+.profile-chip.selected{
+    background-color: #25afe6;
+    border-color: #25afe6;
+    color: black;
+    font-weight: bold;
+}
+
+.profile-notice{
+    width: 100%;
+    box-sizing: border-box;
+    margin: 8px 0 0;
+    padding: 10px 12px;
+    border-left: 3px solid #f0b429;
+    background-color: rgba(240, 180, 41, 0.1);
+    text-align: left;
+}
+
+.profile-notice-declined{
+    border-left-color: #e5484d;
+    background-color: rgba(229, 72, 77, 0.1);
+}
+
+.profile-actions{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 28px;
+}
+
+.profile-actions .btn-primary{
+    width: 100%;
+}
+
+.profile-actions .btn-danger{
+    border-color: rgba(229, 72, 77, 0.7);
+}
+
+.profile-actions .btn-danger:hover{
+    color: #ff6b6f;
+    border-color: #ff6b6f;
+}

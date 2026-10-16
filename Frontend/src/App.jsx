@@ -146,7 +146,7 @@ function App() {
       {userInfo!==null && showWishlist && <Wishlist setShowWishlist={setShowWishlist} isWishlist={true}/>}
       <Header handleIsInLoginOrSignUpFromNavbar={handleIsInLoginOrSignUpFromNavbar} setShowTrips={setShowTrips} setShowWishlist={setShowWishlist} notifications={notifications} onNotificationsSeen={markNotificationsSeen}/>
 
-      <br/><br/><br/>
+      <br/><br/>
 
       <Routes>
         <Route path='' element={<Homepage/>}/>
