@@ -630,29 +630,6 @@ reservation@hotelseacrownbd.com');
 
 
 --
--- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: -
---
-
-INSERT INTO public.users VALUES (28, 'agent007', '$2a$10$HLwf0MiC.fep3WeUGP9dn.QPYmqY0gp8oPrr/kojOte0RloedB6em', 'James', 'Bond', 'agent', 'bond@example.com', '');
-INSERT INTO public.users VALUES (1, 'admin', '$2a$10$MlHQ660bBZ01gYiF1woUI.etTZd638ddhhoJgu9RTDWunQtSMN3fe', 'Sam', 'Jackson', 'admin', 'sam@example.com', '');
-INSERT INTO public.users VALUES (27, 'zaki', '$2a$10$oUJHtdNI7.3htqSLZIg7T.eqzW2pGXG1u0cZNCvOrIu/dHOjPoXB6', 'Zaki', 'Rehnoom', 'customer', 'zakirehnoom9402@gmail.com', '1725607801445.jpg');
-
-
---
--- Data for Name: agent; Type: TABLE DATA; Schema: public; Owner: -
---
-
-INSERT INTO public.agent VALUES (28, 6, 10000, 'OK', 0.0);
-
-
---
--- Data for Name: customer; Type: TABLE DATA; Schema: public; Owner: -
---
-
-INSERT INTO public.customer VALUES (27, '1b2yetv2888d', 0);
-
-
---
 -- Data for Name: trip; Type: TABLE DATA; Schema: public; Owner: -
 --
 
@@ -701,16 +678,6 @@ INSERT INTO public.place_type VALUES (4, 'Forests');
 INSERT INTO public.place_type VALUES (5, 'Hill Tracks');
 INSERT INTO public.place_type VALUES (6, 'Tea Gardens');
 INSERT INTO public.place_type VALUES (7, 'Historical Places');
-
-
---
--- Data for Name: customer_preference; Type: TABLE DATA; Schema: public; Owner: -
---
-
-INSERT INTO public.customer_preference VALUES (575, 27, 1);
-INSERT INTO public.customer_preference VALUES (576, 27, 3);
-INSERT INTO public.customer_preference VALUES (577, 27, 4);
-INSERT INTO public.customer_preference VALUES (578, 27, 6);
 
 
 --
@@ -791,23 +758,9 @@ INSERT INTO public.flight VALUES (61, 'Biman Bangladesh', 3, 5, '1970-01-01 15:3
 
 
 --
--- Data for Name: notification; Type: TABLE DATA; Schema: public; Owner: -
---
-
-INSERT INTO public.notification VALUES (4, 28, 'Your registration request has been approved.', '2024-09-07 17:00:39.632856', 'NOT SHOWED', 1);
-
-
---
 -- Data for Name: payment; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-
-
---
--- Data for Name: rating; Type: TABLE DATA; Schema: public; Owner: -
---
-
-INSERT INTO public.rating VALUES (3, 27, 'accommodation', 2, 5);
 
 
 --
@@ -831,14 +784,6 @@ INSERT INTO public.restaurant VALUES (3, 'Handi', 'Indian', 3.9, 89, 'https://ww
 -- Data for Name: restaurant_wishlist; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-
-
---
--- Data for Name: review; Type: TABLE DATA; Schema: public; Owner: -
---
-
-INSERT INTO public.review VALUES (7, 27, 'accommodation', 2, '2024-09-07 20:30:57.508056', 'Hello.');
-INSERT INTO public.review VALUES (8, 27, 'accommodation', 2, '2024-09-07 20:35:04.001396', 'second check.');
 
 
 --
@@ -900,7 +845,7 @@ SELECT pg_catalog.setval('public.customer_customer_id_seq', 1, false);
 -- Name: customer_preference_customer_preference_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.customer_preference_customer_preference_id_seq', 578, true);
+SELECT pg_catalog.setval('public.customer_preference_customer_preference_id_seq', 1, false);
 
 
 --
@@ -970,7 +915,7 @@ SELECT pg_catalog.setval('public.location_location_id_seq', 1, false);
 -- Name: notification_notification_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.notification_notification_id_seq', 4, true);
+SELECT pg_catalog.setval('public.notification_notification_id_seq', 1, false);
 
 
 --
@@ -991,7 +936,7 @@ SELECT pg_catalog.setval('public.place_type_place_type_id_seq', 1, false);
 -- Name: rating_rating_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.rating_rating_id_seq', 3, true);
+SELECT pg_catalog.setval('public.rating_rating_id_seq', 1, false);
 
 
 --
@@ -1019,7 +964,7 @@ SELECT pg_catalog.setval('public.restaurant_wishlist_wishlist_id_seq', 1, false)
 -- Name: review_review_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.review_review_id_seq', 8, true);
+SELECT pg_catalog.setval('public.review_review_id_seq', 1, false);
 
 
 --
@@ -1040,7 +985,7 @@ SELECT pg_catalog.setval('public.trip_trip_id_seq', 1, false);
 -- Name: users_user_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.users_user_id_seq', 28, true);
+SELECT pg_catalog.setval('public.users_user_id_seq', 1, false);
 
 
 --

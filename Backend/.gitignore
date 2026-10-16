@@ -1,4 +1,2 @@
 # Files users upload at runtime (the folder is created on startup by file_handling.js)
-uploads/*
-# Profile photo of the seed user 'zaki' in database/seed.sql
-!uploads/1725607801445.jpg
+uploads/

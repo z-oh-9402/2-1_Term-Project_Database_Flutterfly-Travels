@@ -16,7 +16,8 @@ Backend/
   router/             API routes, one file per resource
   database/
     schema.sql        Tables, constraints, functions, procedure and triggers
-    seed.sql          Sample data (locations, airports, flights, destinations, ...)
+    seed.sql          Sample data (locations, airports, flights, destinations, ...), no user accounts
+  create-admin.js     Creates an admin account (npm run create-admin)
   uploads/            Profile photos uploaded at runtime
 Frontend/
   src/api.js          apiFetch: fetch wrapper that sends the login token
@@ -60,15 +61,17 @@ cd Frontend && npm install && npm run dev   # App on http://localhost:5000
 
 ## Accounts
 
-The seed data contains an `admin`, an agent (`agent007`) and a customer (`zaki`). Passwords are stored only as bcrypt hashes, so to use these accounts set a new password, or simply sign up as a new customer or agent. New agents can log in only after the admin approves them.
+The seed data contains no user accounts.
 
-To set a password for a seed account:
+- **Customers and agents:** sign up in the app. A new agent stays pending, and customers can't pick them for trips, until an admin approves them.
+- **Admins:** signup can't create admins. Create one from the command line after setting up the database:
 
 ```bash
 cd Backend
-HASH=$(node -e "console.log(require('bcryptjs').hashSync('your-new-password', 10))")
-sudo -u postgres psql -d flutterfly_travels -c "UPDATE users SET password='$HASH' WHERE username='admin'"
+npm run create-admin
 ```
+
+The script asks for a username, email, name and password. It stores the password as a bcrypt hash.
 
 ## How it works
 
