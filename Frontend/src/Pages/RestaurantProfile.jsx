@@ -95,7 +95,7 @@ const RestaurantProfile = () => {
                             <h3>Location: {result.location_name}, {result.district_name}</h3><br />
                             <h3>Address: {result.address}</h3><br />
                             <h3>Price Range: {result.price_range}</h3><br />
-                            <h3>Rating: <Rating rating={parseFloat(result.rating)} isChanging={false} setRating={null} /></h3><br />
+                            <h3>Rating: <Rating rating={parseFloat(result.rating)} isChanging={false} setRating={null} count={Number(result.rating_count)} /></h3><br />
                             <div>
                                 {result.accessible === 'Y' && <h3 style={{ marginRight: '20px' }}>Accessible &#x2713;</h3>}
                                 {result.free_wifi === 'Y' && <h3 style={{ marginRight: '20px' }}>Free Wifi &#x2713;</h3>}

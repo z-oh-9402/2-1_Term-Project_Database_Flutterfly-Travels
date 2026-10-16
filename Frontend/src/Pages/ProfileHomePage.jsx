@@ -402,7 +402,7 @@ const ProfileHomePage = ({setLogOut}) => {
                             {user.acc_status === 'OK' &&
                             <div className="profile-detail">
                                 <dt>Rating</dt>
-                                <dd><Rating rating={parseFloat(user.rating)} isChanging={false} setRating={null}/></dd>
+                                <dd><Rating rating={parseFloat(user.rating)} isChanging={false} setRating={null} count={Number(user.rating_count)}/></dd>
                             </div>}
                         </>}
                     </dl>

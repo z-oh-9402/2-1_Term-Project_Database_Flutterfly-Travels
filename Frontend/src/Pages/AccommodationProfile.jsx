@@ -108,7 +108,7 @@ const AccommodationProfile = () => {
                             <h3><span style={{color: '#03fcf8'}}>Location: </span>{result.location_name}, {result.district_name}</h3><br />
                             <h3><span style={{color: '#03fcf8'}}>Address: </span>{result.address}</h3><br />
                             <h3><span style={{color: '#03fcf8'}}>Room Price Per Night: </span>৳ {result.room_price.toLocaleString('en-US')}</h3><br />
-                            <h3><span style={{color: '#03fcf8'}}>Rating: </span><Rating rating={parseFloat(result.rating)} isChanging={false} setRating={null} /></h3><br />
+                            <h3><span style={{color: '#03fcf8'}}>Rating: </span><Rating rating={parseFloat(result.rating)} isChanging={false} setRating={null} count={Number(result.rating_count)} /></h3><br />
                             <h3><span style={{color: '#03fcf8'}}>Room Capacity: </span>{result.room_capacity}</h3><br />
                             <div>
                                 <IoWifiSharp style={{...iconStyle , color: result.free_wifi === 'Y' ? 'lightgreen' : 'red'}}/>

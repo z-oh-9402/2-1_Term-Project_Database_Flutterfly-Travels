@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict eQugZRshfhvjqhwtWgOBBCxwDGME5WoZQLQVfRr1t4Y61OTffiJytWy8qv7FnXM
+\restrict UbQ4eTndQ1YlbIdPHsoH8VB8SNHOddUD7VKAc7A5DM0O2nCgTTwp0N5espAYhT8
 
 -- Dumped from database version 18.6 (Ubuntu 18.6-0ubuntu0.26.04.1)
 -- Dumped by pg_dump version 18.6 (Ubuntu 18.6-0ubuntu0.26.04.1)
@@ -394,22 +394,23 @@ CREATE FUNCTION public.refresh_item_rating(p_item_type character varying, p_item
     AS $$
 DECLARE
     average NUMERIC(2,1);
+    total INTEGER;
 BEGIN
-    -- Average of every customer's rating for the item, to one decimal; 0 when nobody has rated it yet
-    SELECT COALESCE(ROUND(AVG(rating), 1), 0) INTO average
+    -- Average of every customer's rating for the item, to one decimal, and how many there are; 0 and 0 when nobody has rated it yet
+    SELECT COALESCE(ROUND(AVG(rating), 1), 0), COUNT(rating) INTO average, total
     FROM rating
     WHERE item_type = p_item_type AND item_id = p_item_id;
 
     IF p_item_type = 'destination' THEN
-        UPDATE destination SET rating = average WHERE destination_id = p_item_id;
+        UPDATE destination SET rating = average, rating_count = total WHERE destination_id = p_item_id;
     ELSIF p_item_type = 'accommodation' THEN
-        UPDATE accommodation SET rating = average WHERE accommodation_id = p_item_id;
+        UPDATE accommodation SET rating = average, rating_count = total WHERE accommodation_id = p_item_id;
     ELSIF p_item_type = 'restaurant' THEN
-        UPDATE restaurant SET rating = average WHERE restaurant_id = p_item_id;
+        UPDATE restaurant SET rating = average, rating_count = total WHERE restaurant_id = p_item_id;
     ELSIF p_item_type = 'agent' THEN
-        UPDATE agent SET rating = average WHERE agent_id = p_item_id;
+        UPDATE agent SET rating = average, rating_count = total WHERE agent_id = p_item_id;
     ELSIF p_item_type = 'trip' THEN
-        UPDATE trip SET rating = average WHERE trip_id = p_item_id;
+        UPDATE trip SET rating = average, rating_count = total WHERE trip_id = p_item_id;
     END IF;
 END;
 $$;
@@ -605,6 +606,7 @@ CREATE TABLE public.accommodation (
     facebook character varying(1000),
     website character varying(1000),
     email character varying(50),
+    rating_count integer DEFAULT 0 NOT NULL,
     CONSTRAINT accommodation_accommodation_class_check CHECK ((accommodation_class <= 7)),
     CONSTRAINT accommodation_email_check CHECK (((email)::text ~~ '%@%.%'::text)),
     CONSTRAINT accommodation_phone_number_check CHECK (regexp_like((phone_number)::text, '^\d{11}$'::text)),
@@ -706,6 +708,7 @@ CREATE TABLE public.agent (
     fee integer,
     acc_status character varying(20),
     rating numeric(2,1) DEFAULT 0,
+    rating_count integer DEFAULT 0 NOT NULL,
     CONSTRAINT agent_rating_check CHECK (((rating >= (0)::numeric) AND (rating <= (5)::numeric)))
 );
 
@@ -875,6 +878,7 @@ CREATE TABLE public.destination (
     image1 character varying(1000),
     image2 character varying(1000),
     image3 character varying(1000),
+    rating_count integer DEFAULT 0 NOT NULL,
     CONSTRAINT destination_rating_check CHECK (((rating >= (0)::numeric) AND (rating <= (5)::numeric)))
 );
 
@@ -1325,6 +1329,7 @@ CREATE TABLE public.restaurant (
     parking character varying(1),
     price_range character varying(5),
     booking_cost integer,
+    rating_count integer DEFAULT 0 NOT NULL,
     CONSTRAINT restaurant_email_check CHECK (((email)::text ~~ '%@%.%'::text)),
     CONSTRAINT restaurant_phone_number_check CHECK (regexp_like((phone_number)::text, '^\d{11}$'::text)),
     CONSTRAINT restaurant_rating_check CHECK (((rating >= (0)::numeric) AND (rating <= (5)::numeric))),
@@ -1466,6 +1471,7 @@ CREATE TABLE public.trip (
     discount numeric(2,1),
     rating numeric(2,1) DEFAULT 0,
     trip_status character varying(15),
+    rating_count integer DEFAULT 0 NOT NULL,
     CONSTRAINT trip_rating_check CHECK ((rating <= (5)::numeric)),
     CONSTRAINT trip_trip_status_check CHECK (((trip_status)::text = ANY (ARRAY[('REQUESTING'::character varying)::text, ('UPDATING'::character varying)::text, ('PENDING'::character varying)::text, ('CONFIRMED'::character varying)::text, ('COMPLETED'::character varying)::text])))
 );
@@ -2442,5 +2448,5 @@ ALTER TABLE ONLY public.trip_destination
 -- PostgreSQL database dump complete
 --
 
-\unrestrict eQugZRshfhvjqhwtWgOBBCxwDGME5WoZQLQVfRr1t4Y61OTffiJytWy8qv7FnXM
+\unrestrict UbQ4eTndQ1YlbIdPHsoH8VB8SNHOddUD7VKAc7A5DM0O2nCgTTwp0N5espAYhT8
 

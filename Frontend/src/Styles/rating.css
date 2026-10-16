@@ -13,7 +13,9 @@
 .change-rating{
     cursor: pointer;
 }
-.no-rating{
+.rating-count{
+    margin-left: 6px;
     color: #9aa4ad;
-    font-style: italic;
+    font-size: 0.85em;
+    font-weight: normal;
 }

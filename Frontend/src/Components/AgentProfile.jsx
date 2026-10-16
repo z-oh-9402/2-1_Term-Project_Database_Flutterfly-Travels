@@ -69,7 +69,7 @@ const AgentProfile = (props) => {
                     <div className='category-data'>
                         <h3>Experience: {agent.experience_years} years</h3>
                         <h3>Fee: {agent.fee}</h3>
-                        <h3>Rating: <Rating rating={parseFloat(agent.rating)} isChanging={false} setRating={null}/></h3>
+                        <h3>Rating: <Rating rating={parseFloat(agent.rating)} isChanging={false} setRating={null} count={Number(agent.rating_count)}/></h3>
                     </div>
 
                     <ReviewsAndRatings personalRating={{rating, setRating}} personalReview={{review, setReview}} reviews={allReviews} handleSubmit={handleSubmit}/>

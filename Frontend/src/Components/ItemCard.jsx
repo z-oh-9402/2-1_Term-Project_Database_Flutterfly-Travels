@@ -29,7 +29,7 @@ const ItemCard = (props) => {
       <h3 className='title'>{item.name}</h3>
       <p>{item.location_name}</p>
       <p>{item.district_name}, {item.division_name}</p>
-      <Rating rating={parseFloat(item.rating)} isChanging={false} setRating={null}/>
+      <Rating rating={parseFloat(item.rating)} isChanging={false} setRating={null} count={Number(item.rating_count)}/>
 
       <div className="popup" id={index}>
           <p className="description"><span style={{fontWeight:"bold",color:"white"}}>Description: </span><br/>{item.description}</p>

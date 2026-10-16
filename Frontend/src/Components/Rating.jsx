@@ -1,16 +1,11 @@
 import PropTypes from 'prop-types'
 import "../Styles/rating.css"
 
-// Shows a rating as butterflies, e.g. 3.5 = three full, one half, one empty.
+// Shows a rating as butterflies, e.g. 3.5 = three full, one half, one empty; 0 (not rated yet) = five empty.
+// count, when given, is how many customers rated the item and is shown in brackets.
 // With isChanging, it's an input: clicking the n-th butterfly calls setRating(n) (the parent keeps the value).
-const Rating = ({rating, isChanging, setRating}) => {
+const Rating = ({rating, isChanging, setRating, count}) => {
     const value = Number.isFinite(rating) ? rating : 0;
-
-    // An item's rating is the average of its customers' ratings; 0 means nobody has rated it yet
-    if(!isChanging && value <= 0)
-    {
-        return <span className='item-rating no-rating'>Not rated yet</span>;
-    }
 
     const fullStars = Math.floor(value);
     const hasHalfStar = value % 1 !== 0;
@@ -30,6 +25,8 @@ const Rating = ({rating, isChanging, setRating}) => {
                 {Array.from({ length: fullStars }, (_, index) => star("/fullstar.png", index + 1))}
                 {hasHalfStar && star("/halfstar.png", fullStars + 1)}
                 {Array.from({ length: noStars }, (_, index) => star("/nostar.png", Math.ceil(value) + index + 1))}
+                {!isChanging && Number.isFinite(count) &&
+                    <span className='rating-count' title={`${count} ${count === 1 ? 'rating' : 'ratings'}`}>({count})</span>}
             </span>
         </span>
     )
@@ -38,7 +35,8 @@ const Rating = ({rating, isChanging, setRating}) => {
 Rating.propTypes = {
     rating: PropTypes.number,
     isChanging: PropTypes.bool.isRequired,
-    setRating: PropTypes.func
+    setRating: PropTypes.func,
+    count: PropTypes.number
 }
 
 export default Rating;

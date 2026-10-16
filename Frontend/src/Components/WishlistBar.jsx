@@ -53,7 +53,7 @@ const WishlistBar = (props) => {
                 <div>
                     <h3 className='title'>{item.name}</h3>
                     <div className='item-rating-container'>
-                        <label>Rating: <Rating rating={parseFloat(item.rating)} isChanging={false} setRating={null}/></label>
+                        <label>Rating: <Rating rating={parseFloat(item.rating)} isChanging={false} setRating={null} count={Number(item.rating_count)}/></label>
                     </div>
                 </div>
             </div>

@@ -84,7 +84,7 @@ const DestinationProfile = () => {
                         <h3><span style={{color: '#03fcf8'}}>Travel Tips: </span>{result.travel_tips}</h3><br/>
                         <h3><span style={{color: '#03fcf8'}}>Atrractions: </span>{result.attractions}</h3><br/>
                         <h3><span style={{color: '#03fcf8'}}>Weather Info: </span>{result.weather_info}</h3><br/>
-                        <h3><span style={{color: '#03fcf8'}}>Rating: </span><Rating rating={parseFloat(result.rating)} isChanging={false} setRating={null}/></h3><br/>
+                        <h3><span style={{color: '#03fcf8'}}>Rating: </span><Rating rating={parseFloat(result.rating)} isChanging={false} setRating={null} count={Number(result.rating_count)}/></h3><br/>
                     </div>
                     
                     <ImageSlider images={images}/>

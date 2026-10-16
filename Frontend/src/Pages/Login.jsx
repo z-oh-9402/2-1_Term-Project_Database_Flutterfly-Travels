@@ -74,6 +74,7 @@ const Login = (props) => {
                         result.data.fee = result1.fee;
                         result.data.acc_status = result1.acc_status;
                         result.data.rating = result1.rating;
+                        result.data.rating_count = result1.rating_count;
 
                         if (result1.acc_status === 'PENDING') {
                             alert("Your request is still being processed!!!");

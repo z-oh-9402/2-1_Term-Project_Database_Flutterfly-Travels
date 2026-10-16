@@ -60,7 +60,7 @@ router.get("/pending-agents", requireAuth, requireRole('admin'), async(req,res)=
 });
 
 router.get("/search",async(req,res)=>{
-    const query = `SELECT U.*, A.EXPERIENCE_YEARS, A.FEE, A.RATING
+    const query = `SELECT U.*, A.EXPERIENCE_YEARS, A.FEE, A.RATING, A.RATING_COUNT
                    FROM USERS U JOIN Agent A ON U.USER_ID = A.AGENT_ID 
                    WHERE U.USERNAME LIKE $1 AND A.ACC_STATUS='OK'`;
     const params = [`%${req.query.keyword}%`];
@@ -75,7 +75,7 @@ router.get("/search",async(req,res)=>{
 
 router.get("/fetch/:agentId",async(req,res)=>{
     
-    const query = `SELECT U.*, A.EXPERIENCE_YEARS, A.FEE, A.RATING
+    const query = `SELECT U.*, A.EXPERIENCE_YEARS, A.FEE, A.RATING, A.RATING_COUNT
                    FROM USERS U JOIN Agent A ON U.USER_ID = A.AGENT_ID 
                    WHERE A.AGENT_ID=$1`;
     const params = [req.params.agentId];

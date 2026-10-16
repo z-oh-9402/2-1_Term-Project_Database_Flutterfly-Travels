@@ -84,7 +84,7 @@ const ItemBar = (props) => {
                 
                 <div className='item-rating-container'>
                     {itemType!=='flight' ?
-                    <label>Rating: <Rating rating={parseFloat(item.rating)} isChanging={false} setRating={null}/></label>
+                    <label>Rating: <Rating rating={parseFloat(item.rating)} isChanging={false} setRating={null} count={Number(item.rating_count)}/></label>
                     :
                     <label>{item.seat_class} Class: ৳ {item.seat_price}</label>}
                 </div>
