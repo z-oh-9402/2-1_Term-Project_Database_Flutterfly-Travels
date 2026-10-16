@@ -367,6 +367,22 @@ $$;
 
 
 --
+-- Name: notify_notification_created(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.notify_notification_created() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    -- Tells the backend (LISTEN notification_created) about every new notification, so it can push it to
+    -- the user instantly. Postgres delivers it only when the inserting transaction commits.
+    PERFORM pg_notify('notification_created', NEW.notification_id::text);
+    RETURN NULL;
+END;
+$$;
+
+
+--
 -- Name: restaurant_delete_trigger_func(); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -1987,6 +2003,13 @@ CREATE TRIGGER notification_add_for_booking AFTER INSERT ON public.booking FOR E
 --
 
 CREATE TRIGGER notification_add_for_trip AFTER INSERT OR DELETE OR UPDATE ON public.trip FOR EACH ROW EXECUTE FUNCTION public.notification_add_for_trip_func();
+
+
+--
+-- Name: notification notification_created; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER notification_created AFTER INSERT ON public.notification FOR EACH ROW EXECUTE FUNCTION public.notify_notification_created();
 
 
 --

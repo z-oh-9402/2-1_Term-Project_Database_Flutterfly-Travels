@@ -3,6 +3,7 @@ const database = require('../database');
 const bcrypt = require('bcryptjs');
 const { deleting } = require('../file_handling');
 const { signToken, requireAuth, requireSelfOrAdmin } = require('../auth');
+const { emitToUser } = require('../realtime');
 
 // The logged-in user's most recent notifications, newest first (the triggers create them)
 router.get('/notifications', requireAuth, async (req, res) => {
@@ -22,6 +23,9 @@ router.put('/notifications/seen', requireAuth, async (req, res) => {
                    SET NOTIFICATION_STATUS = 'SHOWED'
                    WHERE USER_ID = $1 AND NOTIFICATION_STATUS = 'NOT SHOWED'`;
     await database.query(query, [req.user.id]);
+
+    // Clear the unread badge in the user's other open tabs too
+    emitToUser(req.user.id, 'notifications-seen');
 
     res.status(200).json({ status: "ok" });
 });

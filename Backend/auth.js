@@ -12,6 +12,17 @@ const signToken = (user) => {
     return jwt.sign({ id: user.user_id, role: user.user_type }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 }
 
+// { id, role } of the user a token belongs to, or null if the token is missing, invalid or expired
+const verifyToken = (token) => {
+    try {
+        const payload = jwt.verify(token, JWT_SECRET);
+        return { id: payload.id, role: payload.role };
+    }
+    catch (error) {
+        return null;
+    }
+}
+
 // Rejects the request unless it carries a valid "Authorization: Bearer <token>" header.
 // On success, req.user = { id, role } of the logged-in user.
 const requireAuth = (req, res, next) => {
@@ -22,14 +33,14 @@ const requireAuth = (req, res, next) => {
         return;
     }
 
-    try {
-        const payload = jwt.verify(token, JWT_SECRET);
-        req.user = { id: payload.id, role: payload.role };
-        next();
-    }
-    catch (error) {
+    const user = verifyToken(token);
+    if (!user) {
         res.status(401).json({ message: "Session expired or invalid, please log in again" });
+        return;
     }
+
+    req.user = user;
+    next();
 }
 
 // Use after requireAuth.
@@ -61,6 +72,7 @@ const canAccessTrip = async (user, tripId) => {
 }
 
 exports.signToken = signToken;
+exports.verifyToken = verifyToken;
 exports.canAccessTrip = canAccessTrip;
 exports.requireAuth = requireAuth;
 exports.requireRole = requireRole;

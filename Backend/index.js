@@ -23,6 +23,9 @@ app.use((err, req, res, next) => {
 });
 
 
-app.listen(PORT,()=>{
+const server = app.listen(PORT,()=>{
     console.log(`Server has started on port ${PORT}...`);
 });
+
+// Real-time notifications (socket.io) share the same port
+require('./realtime').attach(server);

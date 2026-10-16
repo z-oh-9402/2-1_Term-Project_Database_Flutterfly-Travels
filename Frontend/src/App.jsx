@@ -17,7 +17,8 @@ import Flights from './Pages/Flights.jsx';
 import RestaurantProfile from './Pages/RestaurantProfile.jsx';
 import Trips from './Pages/Trips.jsx';
 import Wishlist from './Components/Wishlist.jsx';
-import { apiFetch } from './api';
+import { apiFetch, getToken } from './api';
+import { io } from 'socket.io-client';
 
 function App() {
   const [isLoginOrSignUpPageLoaded,setIsLoginOrSignUpPageLoaded] = useState(false);
@@ -29,7 +30,8 @@ function App() {
 
   const loggedInUserId = userInfo ? userInfo.user_id : null;
 
-  // Keeps the logged-in user's notifications up to date (the database triggers create them)
+  // Keeps the logged-in user's notifications up to date. The server pushes each new one over socket.io
+  // the moment the database creates it (see Backend/realtime.js), so there's no polling.
   useEffect(() => {
     if(loggedInUserId===null)
     {
@@ -49,12 +51,32 @@ function App() {
       }
     };
 
-    fetchNotifications();
-    const intervalId = setInterval(fetchNotifications, 5000);
+    const socket = io('http://localhost:3000', { auth: { token: getToken() } });
+
+    // On every (re)connect load the full list, which also picks up anything created while disconnected
+    socket.on('connect', fetchNotifications);
+    socket.on('notifications-resync', fetchNotifications);
+    socket.on('notification', (notification) => {
+      setNotifications(prevNotifications => [
+        notification,
+        ...prevNotifications.filter(previous => previous.notification_id !== notification.notification_id)
+      ].slice(0, 30));
+    });
+    // Marked as seen in another tab
+    socket.on('notifications-seen', () => {
+      setNotifications(prevNotifications => prevNotifications.map(notification => ({...notification, notification_status: 'SHOWED'})));
+    });
+    // The server rejected the token (e.g. it expired): this request gets a 401, and apiFetch logs the user out
+    socket.on('connect_error', (error) => {
+      if(error.message==='Unauthorized')
+      {
+        fetchNotifications();
+      }
+    });
 
     return () => {
       isActive = false;
-      clearInterval(intervalId);
+      socket.disconnect();
     };
   }, [loggedInUserId]);
 

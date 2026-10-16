@@ -13,6 +13,7 @@ Backend/
   index.js            Express app (port from .env, default 3000)
   auth.js             JWT login checks (requireAuth, roles, trip ownership)
   database.js         Postgres connection pool (query, transaction)
+  realtime.js         Pushes new notifications to users instantly (socket.io + Postgres LISTEN)
   router/             API routes, one file per resource
   database/
     schema.sql        Tables, constraints, functions, procedure and triggers
@@ -93,6 +94,14 @@ The script asks for a username, email, name and password. It stores the password
   - count each customer's completed trips and issue discount coupons
   - delete the ratings and reviews of deleted items
   - send notifications for trip, booking, wishlist and agent-approval events
+
+### Real-time notifications
+
+Notifications reach the user instantly, without polling:
+
+1. The `notification_created` trigger calls `pg_notify('notification_created', <id>)` for every new row in `notification`. Postgres delivers this message only when the transaction commits.
+2. The backend (`Backend/realtime.js`) keeps one connection doing `LISTEN notification_created`. It looks up the row and sends it over socket.io to that user's open tabs.
+3. Socket connections log in with the same JWT, and each user only receives their own notifications. On every (re)connect the app reloads the list, so nothing is missed while it's offline.
 
 ### Authentication
 
