@@ -112,42 +112,18 @@ router.post("/review-rating/:id", requireAuth, requireRole('customer'), async(re
     const rating = req.body.rating;
     const customerId = req.user.id;
 
-    // Rating upsert, average recompute and review insert succeed or fail together
+    // Rating and review are saved together or not at all
     await database.transaction(async (client) => {
-        if(rating!==0)
+        if(rating)
         {
+            // One rating per customer per item; the update_item_rating trigger recalculates the item's average
             const query1 = 
             `
-                SELECT * FROM RATING
-                WHERE CUSTOMER_ID=$1 AND ITEM_ID=$2 AND ITEM_TYPE='agent'
+                INSERT INTO RATING (ITEM_ID,ITEM_TYPE,RATING,CUSTOMER_ID)
+                VALUES ($1,'agent',$2,$3)
+                ON CONFLICT (CUSTOMER_ID,ITEM_TYPE,ITEM_ID) DO UPDATE SET RATING = EXCLUDED.RATING
             `
-            const ans = (await client.query(query1,[customerId, id])).rows;
-
-            if(ans.length===0)
-            {
-                const query2 = 
-                `
-                    INSERT INTO RATING (ITEM_ID,ITEM_TYPE,RATING,CUSTOMER_ID)
-                    VALUES ($1,'agent',$2,$3)
-                `
-                await client.query(query2,[id, rating, customerId]);
-            }
-            else
-            {
-                const query2 = 
-                `
-                    UPDATE RATING SET RATING=$1 WHERE ITEM_ID=$2 AND ITEM_TYPE='agent' AND CUSTOMER_ID=$3
-                `
-                await client.query(query2,[rating, id, customerId]);
-            }
-
-            const ratingUpdateQuery = 
-            `
-                UPDATE AGENT
-                SET RATING=(SELECT ROUND(AVG(RATING),1) FROM RATING WHERE ITEM_ID=$1 AND ITEM_TYPE='agent') 
-                WHERE AGENT_ID=$1
-            `
-            await client.query(ratingUpdateQuery,[id]);
+            await client.query(query1,[id, rating, customerId]);
         }
 
         if(review && review.length!==0)

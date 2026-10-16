@@ -1,43 +1,37 @@
 import PropTypes from 'prop-types'
-import { useState } from 'react';
 import "../Styles/rating.css"
 
+// Shows a rating as butterflies, e.g. 3.5 = three full, one half, one empty.
+// With isChanging, it's an input: clicking the n-th butterfly calls setRating(n) (the parent keeps the value).
 const Rating = ({rating, isChanging, setRating}) => {
-    const [fullStars, setFullStars] = useState(Math.floor(rating));
-    const [noStars, setNoStars] = useState(5 - Math.ceil(rating));
+    const value = Number.isFinite(rating) ? rating : 0;
 
-    const rateItem = (rating) => {
-        if(isChanging)
-        {
-            setRating(rating);
-            setFullStars(rating);
-            setNoStars(5-rating);
-        }
+    // An item's rating is the average of its customers' ratings; 0 means nobody has rated it yet
+    if(!isChanging && value <= 0)
+    {
+        return <span className='item-rating no-rating'>Not rated yet</span>;
     }
 
-    const fullStarsArray = Array.from({ length: fullStars }, (_, index) => (
-        isChanging ?
-            <img className='rating change-rating' src="/fullstar.png" key={index} onClick={() => {rateItem(index+1)}}/>
-        :
-            <img className='rating' src="/fullstar.png" key={index}/>
-    ));
+    const fullStars = Math.floor(value);
+    const hasHalfStar = value % 1 !== 0;
+    const noStars = 5 - Math.ceil(value);
 
-    const noStarsArray = Array.from({ length: noStars }, (_, index) => (
+    const star = (src, starNumber) => (
         isChanging ?
-            <img className='rating change-rating' src="/nostar.png" key={index} onClick={() => {rateItem(Math.ceil(rating)+index+1)}}/>
+            <img className='rating change-rating' src={src} key={starNumber} onClick={() => setRating(starNumber)}/>
         :
-            <img className='rating' src="/nostar.png" key={index}/>
-    ));
+            <img className='rating' src={src} key={starNumber}/>
+    );
 
     return(
-        <div className='item-rating' style={{display: 'inline-block'}}>
-            <div className='rating-container'>
-                {!isChanging ? <span>{rating}</span> : null}
-                {fullStarsArray}
-                {rating%1!==0 && <img className='rating' src="/halfstar.png"/>}
-                {noStarsArray}
-            </div>
-        </div>
+        <span className='item-rating' style={{display: 'inline-block'}}>
+            <span className='rating-container'>
+                {!isChanging ? <span>{value}</span> : null}
+                {Array.from({ length: fullStars }, (_, index) => star("/fullstar.png", index + 1))}
+                {hasHalfStar && star("/halfstar.png", fullStars + 1)}
+                {Array.from({ length: noStars }, (_, index) => star("/nostar.png", Math.ceil(value) + index + 1))}
+            </span>
+        </span>
     )
 }
 

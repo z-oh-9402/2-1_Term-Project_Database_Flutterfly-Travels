@@ -13,3 +13,7 @@
 .change-rating{
     cursor: pointer;
 }
+.no-rating{
+    color: #9aa4ad;
+    font-style: italic;
+}

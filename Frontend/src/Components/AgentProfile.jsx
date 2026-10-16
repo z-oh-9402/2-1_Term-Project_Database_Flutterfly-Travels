@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import { ImCross } from 'react-icons/im';
 import ReviewsAndRatings from './ReviewsAndRatings';
+import Rating from './Rating';
 import UserInfoContext from '../Context/UserInfoContext';
 import { useContext, useEffect, useState } from 'react';
 import { apiFetch } from '../api';
@@ -68,7 +69,7 @@ const AgentProfile = (props) => {
                     <div className='category-data'>
                         <h3>Experience: {agent.experience_years} years</h3>
                         <h3>Fee: {agent.fee}</h3>
-                        <h3>Rating: {agent.rating}</h3>
+                        <h3>Rating: <Rating rating={parseFloat(agent.rating)} isChanging={false} setRating={null}/></h3>
                     </div>
 
                     <ReviewsAndRatings personalRating={{rating, setRating}} personalReview={{review, setReview}} reviews={allReviews} handleSubmit={handleSubmit}/>

@@ -91,6 +91,7 @@ The script asks for a username, email, name and password. It stores the password
 - **Procedure:** `fetch_filtered_flights` returns a cursor of flights between two airports for a seat class.
 - **Triggers:**
   - keep each trip's total cost up to date as bookings are added
+  - keep each destination's, accommodation's, restaurant's and agent's rating equal to the average of its customers' ratings (0 = not rated yet)
   - count each customer's completed trips and issue discount coupons
   - delete the ratings and reviews of deleted items
   - send notifications for trip, booking, wishlist and agent-approval events

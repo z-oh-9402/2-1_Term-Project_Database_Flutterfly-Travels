@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict tNEAy2MRhpcFcUGoep6jaFzGNXWbQiFobqVgaziQs9vRbm964wyT9RClOjNQ26E
+\restrict eQugZRshfhvjqhwtWgOBBCxwDGME5WoZQLQVfRr1t4Y61OTffiJytWy8qv7FnXM
 
 -- Dumped from database version 18.6 (Ubuntu 18.6-0ubuntu0.26.04.1)
 -- Dumped by pg_dump version 18.6 (Ubuntu 18.6-0ubuntu0.26.04.1)
@@ -312,8 +312,11 @@ BEGIN
         VALUES (NEW.customer_id, 'Your request has been sent.', 'NOT SHOWED');
 
     ELSIF TG_OP = 'DELETE' THEN
-        INSERT INTO notification (user_id, content, notification_status)
-        VALUES (OLD.customer_id, 'Your trip ''' || OLD.name || ''' has been removed.', 'NOT SHOWED');
+        -- Skip it when the customer is the one being deleted (this row is going with them)
+        IF EXISTS (SELECT 1 FROM users WHERE user_id = OLD.customer_id) THEN
+            INSERT INTO notification (user_id, content, notification_status)
+            VALUES (OLD.customer_id, 'Your trip ''' || OLD.name || ''' has been removed.', 'NOT SHOWED');
+        END IF;
 
     ELSE
         -- Only status or agent changes are news (e.g. total_cost updates from bookings are not)
@@ -383,6 +386,36 @@ $$;
 
 
 --
+-- Name: refresh_item_rating(character varying, integer); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.refresh_item_rating(p_item_type character varying, p_item_id integer) RETURNS void
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    average NUMERIC(2,1);
+BEGIN
+    -- Average of every customer's rating for the item, to one decimal; 0 when nobody has rated it yet
+    SELECT COALESCE(ROUND(AVG(rating), 1), 0) INTO average
+    FROM rating
+    WHERE item_type = p_item_type AND item_id = p_item_id;
+
+    IF p_item_type = 'destination' THEN
+        UPDATE destination SET rating = average WHERE destination_id = p_item_id;
+    ELSIF p_item_type = 'accommodation' THEN
+        UPDATE accommodation SET rating = average WHERE accommodation_id = p_item_id;
+    ELSIF p_item_type = 'restaurant' THEN
+        UPDATE restaurant SET rating = average WHERE restaurant_id = p_item_id;
+    ELSIF p_item_type = 'agent' THEN
+        UPDATE agent SET rating = average WHERE agent_id = p_item_id;
+    ELSIF p_item_type = 'trip' THEN
+        UPDATE trip SET rating = average WHERE trip_id = p_item_id;
+    END IF;
+END;
+$$;
+
+
+--
 -- Name: restaurant_delete_trigger_func(); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -432,8 +465,11 @@ BEGIN
         INSERT INTO notification (user_id, content, notification_status)
         VALUES (NEW.customer_id, 'Item has been added to wishlist.', 'NOT SHOWED');
     ELSIF TG_OP = 'DELETE' THEN
-        INSERT INTO notification (user_id, content, notification_status)
-        VALUES (OLD.customer_id, 'Item has been removed from wishlist.', 'NOT SHOWED');
+        -- Skip it when the customer is the one being deleted (this row is going with them)
+        IF EXISTS (SELECT 1 FROM users WHERE user_id = OLD.customer_id) THEN
+            INSERT INTO notification (user_id, content, notification_status)
+            VALUES (OLD.customer_id, 'Item has been removed from wishlist.', 'NOT SHOWED');
+        END IF;
     END IF;
     RETURN NULL;
 END;
@@ -452,9 +488,35 @@ BEGIN
         INSERT INTO notification (user_id, content, notification_status)
         VALUES (NEW.customer_id, 'Item has been added to wishlist.', 'NOT SHOWED');
     ELSIF TG_OP = 'DELETE' THEN
-        INSERT INTO notification (user_id, content, notification_status)
-        VALUES (OLD.customer_id, 'Item has been removed from wishlist.', 'NOT SHOWED');
+        -- Skip it when the customer is the one being deleted (this row is going with them)
+        IF EXISTS (SELECT 1 FROM users WHERE user_id = OLD.customer_id) THEN
+            INSERT INTO notification (user_id, content, notification_status)
+            VALUES (OLD.customer_id, 'Item has been removed from wishlist.', 'NOT SHOWED');
+        END IF;
     END IF;
+    RETURN NULL;
+END;
+$$;
+
+
+--
+-- Name: update_item_rating_func(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.update_item_rating_func() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    -- Keeps each item's rating column equal to the average of its rows in the rating table
+    IF TG_OP IN ('INSERT', 'UPDATE') THEN
+        PERFORM refresh_item_rating(NEW.item_type, NEW.item_id);
+    END IF;
+
+    -- A deleted rating (or one moved to another item) changes the old item's average too
+    IF TG_OP = 'DELETE' OR (TG_OP = 'UPDATE' AND (OLD.item_type, OLD.item_id) IS DISTINCT FROM (NEW.item_type, NEW.item_id)) THEN
+        PERFORM refresh_item_rating(OLD.item_type, OLD.item_id);
+    END IF;
+
     RETURN NULL;
 END;
 $$;
@@ -472,8 +534,11 @@ BEGIN
         INSERT INTO notification (user_id, content, notification_status)
         VALUES (NEW.customer_id, 'Item has been added to wishlist.', 'NOT SHOWED');
     ELSIF TG_OP = 'DELETE' THEN
-        INSERT INTO notification (user_id, content, notification_status)
-        VALUES (OLD.customer_id, 'Item has been removed from wishlist.', 'NOT SHOWED');
+        -- Skip it when the customer is the one being deleted (this row is going with them)
+        IF EXISTS (SELECT 1 FROM users WHERE user_id = OLD.customer_id) THEN
+            INSERT INTO notification (user_id, content, notification_status)
+            VALUES (OLD.customer_id, 'Item has been removed from wishlist.', 'NOT SHOWED');
+        END IF;
     END IF;
     RETURN NULL;
 END;
@@ -517,7 +582,7 @@ SET default_table_access_method = heap;
 CREATE TABLE public.accommodation (
     accommodation_id integer NOT NULL,
     name character varying(200),
-    rating numeric(2,1),
+    rating numeric(2,1) DEFAULT 0,
     room_capacity integer,
     room_price integer,
     accommodation_type character varying(100),
@@ -640,7 +705,7 @@ CREATE TABLE public.agent (
     experience_years integer,
     fee integer,
     acc_status character varying(20),
-    rating numeric(2,1),
+    rating numeric(2,1) DEFAULT 0,
     CONSTRAINT agent_rating_check CHECK (((rating >= (0)::numeric) AND (rating <= (5)::numeric)))
 );
 
@@ -804,7 +869,7 @@ CREATE TABLE public.destination (
     weather_info character varying(1000),
     travel_tips character varying(1000),
     image character varying(1000),
-    rating numeric(2,1),
+    rating numeric(2,1) DEFAULT 0,
     location_id integer,
     map character varying(1000),
     image1 character varying(1000),
@@ -1206,7 +1271,8 @@ CREATE TABLE public.rating (
     customer_id integer,
     item_type character varying(20),
     item_id integer,
-    rating integer
+    rating integer,
+    CONSTRAINT rating_rating_check CHECK (((rating >= 1) AND (rating <= 5)))
 );
 
 
@@ -1238,7 +1304,7 @@ CREATE TABLE public.restaurant (
     restaurant_id integer NOT NULL,
     name character varying(150),
     cuisine_type character varying(100),
-    rating numeric(2,1),
+    rating numeric(2,1) DEFAULT 0,
     location_id integer,
     map character varying(1000),
     restaurant_class integer,
@@ -1398,10 +1464,10 @@ CREATE TABLE public.trip (
     return_date date,
     total_cost integer,
     discount numeric(2,1),
-    rating numeric(2,1),
+    rating numeric(2,1) DEFAULT 0,
     trip_status character varying(15),
     CONSTRAINT trip_rating_check CHECK ((rating <= (5)::numeric)),
-    CONSTRAINT trip_trip_status_check CHECK (((trip_status)::text = ANY ((ARRAY['REQUESTING'::character varying, 'UPDATING'::character varying, 'PENDING'::character varying, 'CONFIRMED'::character varying, 'COMPLETED'::character varying])::text[])))
+    CONSTRAINT trip_trip_status_check CHECK (((trip_status)::text = ANY (ARRAY[('REQUESTING'::character varying)::text, ('UPDATING'::character varying)::text, ('PENDING'::character varying)::text, ('CONFIRMED'::character varying)::text, ('COMPLETED'::character varying)::text])))
 );
 
 
@@ -1708,19 +1774,19 @@ ALTER TABLE ONLY public.accommodation
 
 
 --
--- Name: accommodation_wishlist accommodation_wishlist_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.accommodation_wishlist
-    ADD CONSTRAINT accommodation_wishlist_pkey PRIMARY KEY (wishlist_id);
-
-
---
 -- Name: accommodation_wishlist accommodation_wishlist_customer_item_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.accommodation_wishlist
     ADD CONSTRAINT accommodation_wishlist_customer_item_key UNIQUE (customer_id, accommodation_id);
+
+
+--
+-- Name: accommodation_wishlist accommodation_wishlist_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accommodation_wishlist
+    ADD CONSTRAINT accommodation_wishlist_pkey PRIMARY KEY (wishlist_id);
 
 
 --
@@ -1788,19 +1854,19 @@ ALTER TABLE ONLY public.destination_type
 
 
 --
--- Name: destination_wishlist destination_wishlist_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.destination_wishlist
-    ADD CONSTRAINT destination_wishlist_pkey PRIMARY KEY (wishlist_id);
-
-
---
 -- Name: destination_wishlist destination_wishlist_customer_item_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.destination_wishlist
     ADD CONSTRAINT destination_wishlist_customer_item_key UNIQUE (customer_id, destination_id);
+
+
+--
+-- Name: destination_wishlist destination_wishlist_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.destination_wishlist
+    ADD CONSTRAINT destination_wishlist_pkey PRIMARY KEY (wishlist_id);
 
 
 --
@@ -1876,19 +1942,19 @@ ALTER TABLE ONLY public.place_type
 
 
 --
--- Name: rating rating_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.rating
-    ADD CONSTRAINT rating_pkey PRIMARY KEY (rating_id);
-
-
---
 -- Name: rating rating_customer_item_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.rating
     ADD CONSTRAINT rating_customer_item_key UNIQUE (customer_id, item_type, item_id);
+
+
+--
+-- Name: rating rating_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.rating
+    ADD CONSTRAINT rating_pkey PRIMARY KEY (rating_id);
 
 
 --
@@ -1908,19 +1974,19 @@ ALTER TABLE ONLY public.restaurant
 
 
 --
--- Name: restaurant_wishlist restaurant_wishlist_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.restaurant_wishlist
-    ADD CONSTRAINT restaurant_wishlist_pkey PRIMARY KEY (wishlist_id);
-
-
---
 -- Name: restaurant_wishlist restaurant_wishlist_customer_item_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.restaurant_wishlist
     ADD CONSTRAINT restaurant_wishlist_customer_item_key UNIQUE (customer_id, restaurant_id);
+
+
+--
+-- Name: restaurant_wishlist restaurant_wishlist_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.restaurant_wishlist
+    ADD CONSTRAINT restaurant_wishlist_pkey PRIMARY KEY (wishlist_id);
 
 
 --
@@ -2045,6 +2111,13 @@ CREATE TRIGGER update_accommodation_wishlist AFTER INSERT OR DELETE ON public.ac
 --
 
 CREATE TRIGGER update_destination_wishlist AFTER INSERT OR DELETE ON public.destination_wishlist FOR EACH ROW EXECUTE FUNCTION public.update_destination_wishlist_func();
+
+
+--
+-- Name: rating update_item_rating; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER update_item_rating AFTER INSERT OR DELETE OR UPDATE ON public.rating FOR EACH ROW EXECUTE FUNCTION public.update_item_rating_func();
 
 
 --
@@ -2369,5 +2442,5 @@ ALTER TABLE ONLY public.trip_destination
 -- PostgreSQL database dump complete
 --
 
-\unrestrict tNEAy2MRhpcFcUGoep6jaFzGNXWbQiFobqVgaziQs9vRbm964wyT9RClOjNQ26E
+\unrestrict eQugZRshfhvjqhwtWgOBBCxwDGME5WoZQLQVfRr1t4Y61OTffiJytWy8qv7FnXM
 
