@@ -6,7 +6,7 @@ import UserInfoContext from '../Context/UserInfoContext';
 
 const Notification = (props) => {
     const {notifications, onSeen} = props;
-    const {showDetailedNotification} = useContext(UserInfoContext);
+    const {showDetailedNotification, setShowDetailedNotification} = useContext(UserInfoContext);
     // Notifications that were unread while the list was open stay highlighted until it is closed
     const [highlightedIds, setHighlightedIds] = useState([]);
 
@@ -17,6 +17,36 @@ const Notification = (props) => {
             document.getElementById('detailed-notif').style.top = `${scrollThreshold}px`;
         }
     }, [showDetailedNotification]);
+
+    // While the list is open, a click anywhere outside it (or Escape) closes it.
+    // Clicks on the bell are left to the bell's own toggle, so clicking it again also closes the list.
+    useEffect(() => {
+        if(!showDetailedNotification)
+        {
+            return;
+        }
+
+        const closeOnOutsideClick = (event) => {
+            if(!event.target.closest('#detailed-notif, .notification-bell'))
+            {
+                setShowDetailedNotification(false);
+            }
+        }
+        const closeOnEscape = (event) => {
+            if(event.key === 'Escape')
+            {
+                setShowDetailedNotification(false);
+            }
+        }
+
+        document.addEventListener('mousedown', closeOnOutsideClick);
+        document.addEventListener('keydown', closeOnEscape);
+
+        return () => {
+            document.removeEventListener('mousedown', closeOnOutsideClick);
+            document.removeEventListener('keydown', closeOnEscape);
+        };
+    }, [showDetailedNotification, setShowDetailedNotification]);
 
     useEffect(() => {
         if(!showDetailedNotification)
