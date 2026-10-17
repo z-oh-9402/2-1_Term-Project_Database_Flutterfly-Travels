@@ -31,6 +31,14 @@
 .main-navbar .nav-button{
     font-size: 14px;
 }
+/* the section the user is currently in */
+.main-navbar .nav-button.active,
+.main-navbar .nav-button.active:hover{
+    color: white;
+    background-color: rgba(37, 175, 230, 0.28);
+    border-color: #45deec;
+    box-shadow: 0 0 0 0.2rem rgba(33, 181, 194, 0.308);
+}
 
 .username{
     margin: 0px;

@@ -1,7 +1,7 @@
 import "../Styles/button.css"
 import "../Styles/navbar.css"
 
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import PropTypes from 'prop-types';
 import { useContext, useEffect, useState } from "react";
 import UserInfoContext from "../Context/UserInfoContext";
@@ -18,6 +18,14 @@ const Header = (props)=>{
     const {userInfo, showDetailedNotification, setShowDetailedNotification} = useContext(UserInfoContext);
     const unreadCount = notifications.filter(notification => notification.notification_status === 'NOT SHOWED').length;
     const navigate = useNavigate();
+    const {pathname} = useLocation();
+    // a section stays highlighted on its own detail pages too, e.g. /destinations/Sylhet
+    const isActive = (path) => pathname === path || pathname.startsWith(`${path}/`);
+    const sectionButton = (path, label, Icon) => (
+        <button className={`btn-primary nav-button${isActive(path) ? ' active' : ''}`}
+                aria-current={isActive(path) ? 'page' : undefined}
+                onClick={()=>navigate(path)}>{label}<Icon className="icon"/></button>
+    );
     const [isBottomStyles, setIsBottomStyles] = useState(false);
     const [placeholderHeight, setPlaceholderHeight] = useState(0);
 
@@ -47,10 +55,10 @@ const Header = (props)=>{
                 <div className="main-section"><Link to='/' className="basicInfo"><img className="title-img" src='/title.png'/></Link></div>
                 <div className="button-container" >
                     {(userInfo!==null && userInfo.user_type === 'customer') && <button className="btn-primary nav-button" onClick={()=>setShowTrips(true)}>My Trips<FaTripadvisor className="icon"/></button>}
-                    <button className="btn-primary nav-button" onClick={()=>{navigate('/destinations')}}>Destinations<IoGlobeSharp className="icon"/></button> 
-                    <button className="btn-primary nav-button" onClick={()=>{navigate('/accommodations');}}>Accommodations<IoBedSharp className="icon"/></button>
-                    <button className="btn-primary nav-button" onClick={()=>{navigate('/restaurants');}}>Restaurants<IoRestaurant className="icon"/></button>
-                    <button className="btn-primary nav-button" onClick={()=>{navigate('/flights');}}> Flights<IoAirplaneSharp className="icon"/></button>
+                    {sectionButton('/destinations', 'Destinations', IoGlobeSharp)}
+                    {sectionButton('/accommodations', 'Accommodations', IoBedSharp)}
+                    {sectionButton('/restaurants', 'Restaurants', IoRestaurant)}
+                    {sectionButton('/flights', 'Flights', IoAirplaneSharp)}
                     {(userInfo!==null && userInfo.user_type !== 'admin') && <button className="btn-primary nav-button">People<BsPeopleFill className="icon"/></button>}
                 </div>
                 {userInfo!==null ? 
