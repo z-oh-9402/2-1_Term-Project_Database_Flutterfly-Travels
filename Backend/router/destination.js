@@ -1,6 +1,7 @@
 const router = require("express-promise-router")();
 const database = require('../database');
 const { requireAuth, requireRole } = require('../auth');
+const { placeJoins, listParam, browseConditions, sendPage } = require('../browse');
 
 router.get("/search",async(req,res)=>{
     const keyword = req.query.keyword.toLowerCase();
@@ -93,114 +94,28 @@ router.get("/fetch/destination-name",async(req,res)=>{
     res.status(200).json(ans[0]);
 });
 
-router.get("/fetch/location",async(req,res)=>{
-    const location = req.query.name;
-
-    const query = `SELECT D.*,L.LOCATION_NAME,DIS.DISTRICT_NAME,DIV.DIVISION_NAME
-                        FROM DESTINATION D LEFT JOIN Location L ON D.LOCATION_ID=L.LOCATION_ID 
-                        LEFT JOIN District DIS ON DIS.DISTRICT_ID=L.DISTRICT_ID
-                        LEFT JOIN Division DIV ON DIV.DIVISION_ID=DIS.DIVISION_ID
-                   WHERE L.LOCATION_NAME=$1
-                   ORDER BY D.RATING DESC`;
-    const params = [location];
-    const ans = await database.query(query,params);
-
-    for(let des of ans)
-    {
-        const query2 = `SELECT P.TYPE_NAME
-                FROM DESTINATION_TYPE D LEFT JOIN PLACE_TYPE P ON D.PLACE_TYPE_ID = P.PLACE_TYPE_ID
-                WHERE D.DESTINATION_ID = $1`;
-        const result2 = await database.query(query2,[des.destination_id]);
-        des.type = result2;
-    }
-
-    res.status(200).json(ans);
-});
-
-router.get("/fetch/district",async(req,res)=>{
-    const district = req.query.name;
-
-    const query = `SELECT D.*,L.LOCATION_NAME,DIS.DISTRICT_NAME,DIV.DIVISION_NAME
-                        FROM DESTINATION D LEFT JOIN Location L ON D.LOCATION_ID=L.LOCATION_ID 
-                        LEFT JOIN District DIS ON DIS.DISTRICT_ID=L.DISTRICT_ID
-                        LEFT JOIN Division DIV ON DIV.DIVISION_ID=DIS.DIVISION_ID
-                   WHERE DIS.DISTRICT_NAME=$1
-                   ORDER BY D.RATING DESC`;
-    const params = [district];
-    const ans = await database.query(query,params);
-
-    for(let des of ans)
-    {
-        const query2 = `SELECT P.TYPE_NAME
-                FROM DESTINATION_TYPE D LEFT JOIN PLACE_TYPE P ON D.PLACE_TYPE_ID = P.PLACE_TYPE_ID
-                WHERE D.DESTINATION_ID = $1`;
-        const result2 = await database.query(query2,[des.destination_id]);
-        des.type = result2;
-    }
-
-    res.status(200).json(ans);
-});
-
-router.get("/fetch/division",async(req,res)=>{
-    const division = req.query.name;
-
-    const query = `SELECT D.*,L.LOCATION_NAME,DIS.DISTRICT_NAME,DIV.DIVISION_NAME
-                        FROM DESTINATION D LEFT JOIN Location L ON D.LOCATION_ID=L.LOCATION_ID 
-                        LEFT JOIN District DIS ON DIS.DISTRICT_ID=L.DISTRICT_ID
-                        LEFT JOIN Division DIV ON DIV.DIVISION_ID=DIS.DIVISION_ID
-                   WHERE DIV.DIVISION_NAME=$1
-                   ORDER BY D.RATING DESC`;
-    const params = [division];
-    const ans = await database.query(query,params);
-
-    for(let des of ans)
-    {
-        const query2 = `SELECT P.TYPE_NAME
-                FROM DESTINATION_TYPE D LEFT JOIN PLACE_TYPE P ON D.PLACE_TYPE_ID = P.PLACE_TYPE_ID
-                WHERE D.DESTINATION_ID = $1`;
-        const result2 = await database.query(query2,[des.destination_id]);
-        des.type = result2;
-    }
-
-    res.status(200).json(ans);
-});
-
+// One page of the Destinations section, each destination with its place types.
+// Takes the parameters in browse.js, plus ?types=Mountains,Lakes (at least one of these types)
 router.get("/fetch",async(req,res)=>{
-    const keyword = req.query.keyword.toLowerCase();
-
-    const query = `SELECT D.*,L.LOCATION_NAME,DIS.DISTRICT_NAME,DIV.DIVISION_NAME
-                        FROM DESTINATION D LEFT JOIN Location L ON D.LOCATION_ID=L.LOCATION_ID 
-                        LEFT JOIN District DIS ON DIS.DISTRICT_ID=L.DISTRICT_ID
-                        LEFT JOIN Division DIV ON DIV.DIVISION_ID=DIS.DIVISION_ID
-                   WHERE LOWER(D.NAME) LIKE $1
-                   OR LOWER(L.LOCATION_NAME) LIKE $1
-                   OR LOWER(DIS.DISTRICT_NAME) LIKE $1
-                   OR LOWER(DIV.DIVISION_NAME) LIKE $1
-                   ORDER BY D.RATING DESC`;
-    const params = [`%${keyword}%`];
-    const ans = await database.query(query,params);
-
-    const result = {
-        status: false,
-        data: undefined
-    }
-
-    if(ans.length!==0)
+    const where = browseConditions(req.query, 'D');
+    const types = listParam(req.query.types);
+    if(types.length!==0)
     {
-        for(let des of ans)
-        {
-            const query2 = `SELECT P.TYPE_NAME
-                    FROM DESTINATION_TYPE D LEFT JOIN PLACE_TYPE P ON D.PLACE_TYPE_ID = P.PLACE_TYPE_ID
-                    WHERE D.DESTINATION_ID = $1`;
-            const result2 = await database.query(query2,[des.destination_id]);
-            des.type = result2;
-        }
-
-        result.status = true;
-        result.data = ans;
+        where.add(`EXISTS (SELECT 1 FROM DESTINATION_TYPE DT2 JOIN PLACE_TYPE P2 ON P2.PLACE_TYPE_ID=DT2.PLACE_TYPE_ID
+                           WHERE DT2.DESTINATION_ID=D.DESTINATION_ID AND P2.TYPE_NAME=ANY(?))`, types);
     }
 
-    res.status(200).json(result);
+    // the type joins give one row per destination and type; GROUP BY folds them back into one row per destination
+    await sendPage(req, res, {
+        select: `D.*,L.LOCATION_NAME,DIS.DISTRICT_NAME,DIV.DIVISION_NAME,
+                 COALESCE(JSON_AGG(JSON_BUILD_OBJECT('type_name',P.TYPE_NAME)) FILTER (WHERE P.TYPE_NAME IS NOT NULL), '[]') AS TYPE`,
+        from: `FROM DESTINATION D ${placeJoins('D')}
+                        LEFT JOIN DESTINATION_TYPE DT ON DT.DESTINATION_ID=D.DESTINATION_ID
+                        LEFT JOIN PLACE_TYPE P ON P.PLACE_TYPE_ID=DT.PLACE_TYPE_ID`,
+        where,
+        groupBy: 'GROUP BY D.DESTINATION_ID,L.LOCATION_NAME,DIS.DISTRICT_NAME,DIV.DIVISION_NAME',
+        orderBy: 'D.RATING DESC,D.NAME,D.DESTINATION_ID',
+    });
 });
 
 router.get("/review-rating/:destinationId/:customerId",async(req,res)=>{

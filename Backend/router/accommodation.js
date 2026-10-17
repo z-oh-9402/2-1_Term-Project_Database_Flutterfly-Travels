@@ -1,6 +1,7 @@
 const router = require("express-promise-router")();
 const database = require('../database');
 const { requireAuth, requireRole } = require('../auth');
+const { placeJoins, numberParam, browseConditions, sendPage } = require('../browse');
 
 router.get("/search",async(req,res)=>{
     const keyword = req.query.keyword.toLowerCase();
@@ -67,50 +68,6 @@ router.get("/search",async(req,res)=>{
     res.status(200).json(result);
 });
 
-router.get("/fetch/location",async(req,res)=>{
-    const location = req.query.name;
-
-    const query = `SELECT A.*,L.LOCATION_NAME,DIS.DISTRICT_NAME,DIV.DIVISION_NAME
-                        FROM ACCOMMODATION A LEFT JOIN Location L ON A.LOCATION_ID=L.LOCATION_ID 
-                        LEFT JOIN District DIS ON DIS.DISTRICT_ID=L.DISTRICT_ID
-                        LEFT JOIN Division DIV ON DIV.DIVISION_ID=DIS.DIVISION_ID
-                   WHERE L.LOCATION_NAME=$1
-                   ORDER BY A.RATING DESC`;
-    const params = [location];
-    const ans = await database.query(query,params);
-
-    res.status(200).json(ans);
-});
-
-router.get("/fetch/district",async(req,res)=>{
-    const district = req.query.name;
-
-    const query = `SELECT A.*,L.LOCATION_NAME,DIS.DISTRICT_NAME,DIV.DIVISION_NAME
-                        FROM ACCOMMODATION A LEFT JOIN Location L ON A.LOCATION_ID=L.LOCATION_ID 
-                        LEFT JOIN District DIS ON DIS.DISTRICT_ID=L.DISTRICT_ID
-                        LEFT JOIN Division DIV ON DIV.DIVISION_ID=DIS.DIVISION_ID
-                   WHERE DIS.DISTRICT_NAME=$1
-                   ORDER BY A.RATING DESC`;
-    const params = [district];
-    const ans = await database.query(query,params);
-
-    res.status(200).json(ans);
-});
-
-router.get("/fetch/division",async(req,res)=>{
-    const division = req.query.name;
-
-    const query = `SELECT A.*,L.LOCATION_NAME,DIS.DISTRICT_NAME,DIV.DIVISION_NAME
-                        FROM ACCOMMODATION A LEFT JOIN Location L ON A.LOCATION_ID=L.LOCATION_ID 
-                        LEFT JOIN District DIS ON DIS.DISTRICT_ID=L.DISTRICT_ID
-                        LEFT JOIN Division DIV ON DIV.DIVISION_ID=DIS.DIVISION_ID
-                   WHERE DIV.DIVISION_NAME=$1
-                   ORDER BY A.RATING DESC`;
-    const params = [division];
-    const ans = await database.query(query,params);
-    res.status(200).json(ans);
-});
-
 router.get("/fetch/accommodation-name",async(req,res)=>{
     const name = req.query.name;
 
@@ -131,33 +88,22 @@ router.get("/fetch/accommodation-name",async(req,res)=>{
     res.status(200).json(ans[0]);
 });
 
+// One page of the Accommodations section. Takes the parameters in browse.js, plus ?minCapacity=, ?minClass=,
+// ?minPrice= / ?maxPrice= (room price) and ?facilities=free_wifi,pool (all of these)
 router.get("/fetch",async(req,res)=>{
-    const keyword = req.query.keyword.toLowerCase();
+    const where = browseConditions(req.query, 'A');
+    where.add('A.ROOM_CAPACITY>=?', numberParam(req.query.minCapacity));
+    where.add('A.ACCOMMODATION_CLASS>=?', numberParam(req.query.minClass));
+    where.add('A.ROOM_PRICE>=?', numberParam(req.query.minPrice));
+    where.add('A.ROOM_PRICE<=?', numberParam(req.query.maxPrice));
+    where.addFacilities(req.query.facilities, ['free_wifi','parking','breakfast','pool','accessible']);
 
-    const query = `SELECT A.*,L.LOCATION_NAME,DIS.DISTRICT_NAME,DIV.DIVISION_NAME
-                        FROM ACCOMMODATION A LEFT JOIN Location L ON A.LOCATION_ID=L.LOCATION_ID 
-                        LEFT JOIN District DIS ON DIS.DISTRICT_ID=L.DISTRICT_ID
-                        LEFT JOIN Division DIV ON DIV.DIVISION_ID=DIS.DIVISION_ID
-                   WHERE LOWER(A.NAME) LIKE $1
-                   OR LOWER(L.LOCATION_NAME) LIKE $1
-                   OR LOWER(DIS.DISTRICT_NAME) LIKE $1
-                   OR LOWER(DIV.DIVISION_NAME) LIKE $1
-                   ORDER BY A.RATING DESC`;
-    const params = [`%${keyword}%`];
-    const ans = await database.query(query,params);
-
-    const result = {
-        status: false,
-        data: undefined
-    }
-
-    if(ans.length!==0)
-    {
-        result.status = true;
-        result.data = ans;
-    }
-
-    res.status(200).json(result);
+    await sendPage(req, res, {
+        select: 'A.*,L.LOCATION_NAME,DIS.DISTRICT_NAME,DIV.DIVISION_NAME',
+        from: `FROM ACCOMMODATION A ${placeJoins('A')}`,
+        where,
+        orderBy: 'A.RATING DESC,A.NAME,A.ACCOMMODATION_ID',
+    });
 });
 
 router.get("/review-rating/:accommodationId/:customerId",async(req,res)=>{

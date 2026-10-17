@@ -1,22 +1,31 @@
-import {useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import SearchAndSuggestions from "../Components/SearchAndSuggestions";
-import ItemBar from "../Components/ItemBar";
+import PaginatedItemBars from "../Components/PaginatedItemBars";
 import { apiFetch } from '../api';
+
+const placeTypes = ["Mountains","Lakes","Beaches","Forests","Hill Tracks","Tea Gardens","Historical Places"];
+const placeKinds = {1: 'location', 2: 'district', 3: 'division'}; // SearchAndSuggestions' place categories
 
 const Destinations = ()=>{
     const [search,setSearch] = useState("");
     const [suggestions,setSuggestions] = useState(undefined);
-    const [destinations,setDestinations] = useState([]);
+    const [narrowedTo,setNarrowedTo] = useState({}); // {keyword} or {location | district | division: name}; {} = everything
+    const [shownFor,setShownFor] = useState(null); // the same in words, e.g. 'in Sylhet'
     const [ratingValue, setRatingValue] = useState(0);
     const [isFilterApplied, setIsFilterApplied] = useState(false);
-    const [prefArray, setPrefArray] = useState([false,false,false,false,false,false,false]);
+    const [prefArray, setPrefArray] = useState(placeTypes.map(() => false));
     const navigate = useNavigate();
+
+    const showAll = () => {
+        setNarrowedTo({});
+        setShownFor(null);
+    }
 
     const resetFilter = () => {
         setRatingValue(0);
-        setPrefArray([false,false,false,false,false,false,false]);
-        isFilterApplied(false);
+        setPrefArray(placeTypes.map(() => false));
+        setIsFilterApplied(false);
     }
 
     const updateValue = (e) => {
@@ -56,58 +65,15 @@ const Destinations = ()=>{
         }
     }
 
-    const handleSubmit = async () =>{
-        if(search.length===0)
-        {
-            setDestinations([]);
-        }
-        else
-        {
-            const response = await apiFetch(`http://localhost:3000/destination/fetch?keyword=${search}`,{
-                method: "GET",
-            });
-
-            const result = await response.json();
-            if(result.status)
-            {
-                setDestinations(result.data);
-            }
-            else
-            {
-                setDestinations([]);
-            }
-        }
+    const handleSubmit = () =>{
+        setNarrowedTo(search.length===0 ? {} : {keyword: search});
+        setShownFor(search.length===0 ? null : `matching "${search}"`);
         setSearch("");
     }
 
-    const placeSelected = async (category,text) =>{
-        if(category===1)
-        {
-            const response = await apiFetch(`http://localhost:3000/destination/fetch/location?name=${text}`,{
-                method: "GET",
-            });
-
-            const result = await response.json();
-            setDestinations(result);
-        }
-        else if(category===2)
-        {
-            const response = await apiFetch(`http://localhost:3000/destination/fetch/district?name=${text}`,{
-                method: "GET",
-            });
-
-            const result = await response.json();
-            setDestinations(result);
-        }
-        else
-        {
-            const response = await apiFetch(`http://localhost:3000/destination/fetch/division?name=${text}`,{
-                method: "GET",
-            });
-
-            const result = await response.json();
-            setDestinations(result);
-        }
+    const placeSelected = (category,text) =>{
+        setNarrowedTo({[placeKinds[category]]: text});
+        setShownFor(`in ${text}`);
         setSuggestions(undefined);
         setSearch("");
     }
@@ -116,44 +82,13 @@ const Destinations = ()=>{
         navigate(`${name}`);
     }
 
-    const filterCheck = (destination) => {
-        let  isChecked = true;
-        
-        if(destination.rating < ratingValue)
-        {
-            isChecked = false;
-        }
-
-        if(isChecked)
-        {
-            let flag = false;
-            let anySelected = false;
-            for(let i=0;i<7;i++)
-            {
-                if(prefArray[i])
-                {
-                    const item = document.getElementById('preference'+(i+1));
-                    anySelected = true;
-                    for(let i=0;i<destination.type.length;i++)
-                    {
-                        if(destination.type[i].type_name === item.value)
-                        {
-                            flag = true;
-                            break;
-                        }
-                    }
-                }
-
-                if(flag)
-                {
-                    break;
-                }
-            }
-
-            isChecked = anySelected ? flag : !anySelected;
-        }
-
-        return isChecked;
+    // the search and filters, as GET /destination/fetch parameters
+    const query = {
+        ...narrowedTo,
+        ...(isFilterApplied && {
+            minRating: ratingValue,
+            types: placeTypes.filter((type, index) => prefArray[index]).join(','),
+        }),
     }
 
     const data = {
@@ -173,35 +108,30 @@ const Destinations = ()=>{
         <div className="homepage">
             <SearchAndSuggestions data={data} functions={functions}/>
             
-            {destinations.length!==0 &&
-                <div className='destination-search'>
-                    <div className="filter">
-                        <button className="btn-primary" style={{marginBottom:'10px'}} onClick={resetFilter}>Reset Filter</button>
-                        <h3>Minimum Rating:</h3>
-                        <div className="slider"><span className="filter-value">{ratingValue}</span> <input type="range" className="normal-slider" min="0" max="5" value={ratingValue} step="0.5" onInput={updateValue}/></div>
+            <div className='destination-search'>
+                <div className="filter">
+                    <button className="btn-primary" style={{marginBottom:'10px'}} onClick={resetFilter}>Reset Filter</button>
+                    <h3>Minimum Rating:</h3>
+                    <div className="slider"><span className="filter-value">{ratingValue}</span> <input type="range" className="normal-slider" min="0" max="5" value={ratingValue} step="0.5" onInput={updateValue}/></div>
 
-                        <div style={{marginTop: '40px'}}>
-                            <h3>Choose Your Destination Preferences:</h3>
-                            <label><input type="checkbox" id="preference1" value="Mountains" checked={prefArray[0]} onChange={()=>checkPref(0)}/>Mountains</label><br/>
-                            <label><input type="checkbox" id="preference2" value="Lakes" checked={prefArray[1]} onChange={()=>checkPref(1)}/>Lakes</label><br/>
-                            <label><input type="checkbox" id="preference3" value="Beaches" checked={prefArray[2]} onChange={()=>checkPref(2)}/>Beaches</label><br/>
-                            <label><input type="checkbox" id="preference4" value="Forests" checked={prefArray[3]} onChange={()=>checkPref(3)}/>Forests</label><br/>
-                            <label><input type="checkbox" id="preference5" value="Hill Tracks" checked={prefArray[4]} onChange={()=>checkPref(4)}/>Hill Tracks</label><br/>
-                            <label><input type="checkbox" id="preference6" value="Tea Gardens" checked={prefArray[5]} onChange={()=>checkPref(5)}/>Tea Gardens</label><br/>
-                            <label><input type="checkbox" id="preference7" value="Historical Places" checked={prefArray[6]} onChange={()=>checkPref(6)}/>Historical Places</label><br/>
-                        </div>
-                    </div>
-                    <div className='recommendation-container'>
-                        <h1>Searched Destinations -</h1>
-                        <div className='bar-container'>
-                            {destinations.map((destination,index)=>
-                                (isFilterApplied ? filterCheck(destination) : true) && 
-                                    <ItemBar key={index} itemType='destination' item={destination} index={`${index}`}/>
-                            )}
-                        </div>
+                    <div style={{marginTop: '40px'}}>
+                        <h3>Choose Your Destination Preferences:</h3>
+                        {placeTypes.map((type, index) =>
+                            <span key={type}><label><input type="checkbox" checked={prefArray[index]} onChange={()=>checkPref(index)}/>{type}</label><br/></span>
+                        )}
                     </div>
                 </div>
-            }
+                <div className='recommendation-container browse-results'>
+                    <div className='browse-results-header'>
+                        <h1>{shownFor ? `Destinations ${shownFor}` : 'All Destinations'}</h1>
+                        {shownFor &&
+                            <div className="see-all-link" role="button" tabIndex={0} onClick={showAll}
+                                 onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && showAll()}>show all</div>}
+                    </div>
+                    <PaginatedItemBars itemType='destination' query={query}
+                        emptyMessage={isFilterApplied ? 'No destinations match these filters.' : `No destinations ${shownFor ?? 'yet'}.`}/>
+                </div>
+            </div>
         </div>)
 }
 

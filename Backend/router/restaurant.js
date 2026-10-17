@@ -1,6 +1,7 @@
 const router = require("express-promise-router")();
 const database = require('../database');
 const { requireAuth, requireRole } = require('../auth');
+const { placeJoins, listParam, numberParam, browseConditions, sendPage } = require('../browse');
 
 router.get("/search",async(req,res)=>{
     const keyword = req.query.keyword.toLowerCase();
@@ -67,50 +68,6 @@ router.get("/search",async(req,res)=>{
     res.status(200).json(result);
 });
 
-router.get("/fetch/location",async(req,res)=>{
-    const location = req.query.name;
-
-    const query = `SELECT A.*,L.LOCATION_NAME,DIS.DISTRICT_NAME,DIV.DIVISION_NAME
-                        FROM RESTAURANT A LEFT JOIN Location L ON A.LOCATION_ID=L.LOCATION_ID 
-                        LEFT JOIN District DIS ON DIS.DISTRICT_ID=L.DISTRICT_ID
-                        LEFT JOIN Division DIV ON DIV.DIVISION_ID=DIS.DIVISION_ID
-                   WHERE L.LOCATION_NAME=$1
-                   ORDER BY A.RATING DESC`;
-    const params = [location];
-    const ans = await database.query(query,params);
-
-    res.status(200).json(ans);
-});
-
-router.get("/fetch/district",async(req,res)=>{
-    const district = req.query.name;
-
-    const query = `SELECT A.*,L.LOCATION_NAME,DIS.DISTRICT_NAME,DIV.DIVISION_NAME
-                        FROM RESTAURANT A LEFT JOIN Location L ON A.LOCATION_ID=L.LOCATION_ID 
-                        LEFT JOIN District DIS ON DIS.DISTRICT_ID=L.DISTRICT_ID
-                        LEFT JOIN Division DIV ON DIV.DIVISION_ID=DIS.DIVISION_ID
-                   WHERE DIS.DISTRICT_NAME=$1
-                   ORDER BY A.RATING DESC`;
-    const params = [district];
-    const ans = await database.query(query,params);
-
-    res.status(200).json(ans);
-});
-
-router.get("/fetch/division",async(req,res)=>{
-    const division = req.query.name;
-
-    const query = `SELECT A.*,L.LOCATION_NAME,DIS.DISTRICT_NAME,DIV.DIVISION_NAME
-                        FROM RESTAURANT A LEFT JOIN Location L ON A.LOCATION_ID=L.LOCATION_ID 
-                        LEFT JOIN District DIS ON DIS.DISTRICT_ID=L.DISTRICT_ID
-                        LEFT JOIN Division DIV ON DIV.DIVISION_ID=DIS.DIVISION_ID
-                   WHERE DIV.DIVISION_NAME=$1
-                   ORDER BY A.RATING DESC`;
-    const params = [division];
-    const ans = await database.query(query,params);
-    res.status(200).json(ans);
-});
-
 router.get("/fetch/restaurant-name",async(req,res)=>{
     const name = req.query.name;
 
@@ -131,33 +88,32 @@ router.get("/fetch/restaurant-name",async(req,res)=>{
     res.status(200).json(ans[0]);
 });
 
+const PRICE_RANGES = ['$','$$','$$$','$$$$'];
+
+// One page of the Restaurants section. Takes the parameters in browse.js, plus ?minClass=,
+// ?maxPriceRange=$$ (that price range or cheaper), ?cuisines=Thai,Cafe (any of these)
+// and ?facilities=free_wifi,delivery (all of these)
 router.get("/fetch",async(req,res)=>{
-    const keyword = req.query.keyword.toLowerCase();
-
-    const query = `SELECT A.*,L.LOCATION_NAME,DIS.DISTRICT_NAME,DIV.DIVISION_NAME
-                        FROM RESTAURANT A LEFT JOIN Location L ON A.LOCATION_ID=L.LOCATION_ID 
-                        LEFT JOIN District DIS ON DIS.DISTRICT_ID=L.DISTRICT_ID
-                        LEFT JOIN Division DIV ON DIV.DIVISION_ID=DIS.DIVISION_ID
-                   WHERE LOWER(A.NAME) LIKE $1
-                   OR LOWER(L.LOCATION_NAME) LIKE $1
-                   OR LOWER(DIS.DISTRICT_NAME) LIKE $1
-                   OR LOWER(DIV.DIVISION_NAME) LIKE $1
-                   ORDER BY A.RATING DESC`;
-    const params = [`%${keyword}%`];
-    const ans = await database.query(query,params);
-
-    const result = {
-        status: false,
-        data: undefined
-    }
-
-    if(ans.length!==0)
+    const where = browseConditions(req.query, 'R');
+    where.add('R.RESTAURANT_CLASS>=?', numberParam(req.query.minClass));
+    const maxPriceRange = PRICE_RANGES.indexOf(req.query.maxPriceRange);
+    if(maxPriceRange!==-1)
     {
-        result.status = true;
-        result.data = ans;
+        where.add('R.PRICE_RANGE=ANY(?)', PRICE_RANGES.slice(0, maxPriceRange+1));
     }
+    const cuisines = listParam(req.query.cuisines);
+    if(cuisines.length!==0)
+    {
+        where.add('R.CUISINE_TYPE=ANY(?)', cuisines);
+    }
+    where.addFacilities(req.query.facilities, ['free_wifi','parking','delivery','takeaway','dine_in','accessible']);
 
-    res.status(200).json(result);
+    await sendPage(req, res, {
+        select: 'R.*,L.LOCATION_NAME,DIS.DISTRICT_NAME,DIV.DIVISION_NAME',
+        from: `FROM RESTAURANT R ${placeJoins('R')}`,
+        where,
+        orderBy: 'R.RATING DESC,R.NAME,R.RESTAURANT_ID',
+    });
 });
 
 router.get("/review-rating/:restaurantId/:customerId",async(req,res)=>{

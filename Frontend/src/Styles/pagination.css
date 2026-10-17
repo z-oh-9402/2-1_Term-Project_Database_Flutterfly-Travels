@@ -1,0 +1,64 @@
+/* Destinations / Accommodations / Restaurants result lists */
+.browse-results .bar-container{
+    max-width: 1000px;
+}
+
+.browse-results-header{
+    display: flex;
+    align-items: baseline;
+    gap: 20px;
+    padding-right: 20px;
+}
+
+.empty-results{
+    padding: 0 20px;
+    color: #d2c4c4;
+    font-size: 18px;
+}
+
+.pagination{
+    box-sizing: border-box;
+    max-width: 1000px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 0 20px 30px;
+}
+
+.pagination .page-summary{
+    color: #d2c4c4;
+}
+
+.pagination .page-buttons{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.pagination .btn-primary{
+    min-width: 40px;
+    font-size: 14px;
+}
+
+.pagination .btn-primary.active,
+.pagination .btn-primary.active:hover{
+    color: white;
+    background-color: rgba(37, 175, 230, 0.28);
+    border-color: #45deec;
+}
+
+.pagination .btn-primary:disabled{
+    opacity: 0.4;
+    cursor: default;
+}
+
+.pagination .btn-primary:disabled:hover{
+    color: white;
+    border-color: #25afe6;
+}
+
+.pagination .page-gap{
+    color: gray;
+}
