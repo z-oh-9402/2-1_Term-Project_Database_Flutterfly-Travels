@@ -2,15 +2,17 @@ import { useRef} from 'react';
 import PropTypes from 'prop-types';
 import { TbCameraPlus } from "react-icons/tb";
 
-const PhotoUploader = ({height, selectedFile, setSelectedFile}) => {
-    const divHeight = height.toString() + 'px';
-    const picHeight = (height-3).toString() + 'px';
+// height: the circle's size in px; or fill: the circle grows to its parent's height (the camera icon keeps its size)
+const PhotoUploader = ({height, fill, selectedFile, setSelectedFile}) => {
+    const divHeight = fill ? '100%' : height.toString() + 'px';
+    const picHeight = fill ? '100%' : (height-3).toString() + 'px';
     const fileInputRef = useRef(null);
 
     const divStyle = {
         position: 'relative',
         height: divHeight,
-        width: divHeight,
+        width: fill ? 'auto' : divHeight,
+        aspectRatio: '1 / 1',
         borderRadius: '100%',
         backgroundColor: 'white',
         borderStyle: 'solid',
@@ -34,6 +36,7 @@ const PhotoUploader = ({height, selectedFile, setSelectedFile}) => {
     }
     const photoStyle = {
         height: picHeight,
+        width: fill ? '100%' : undefined,
         borderRadius: '100%',
         objectFit: 'cover',
     }
@@ -66,7 +69,7 @@ const PhotoUploader = ({height, selectedFile, setSelectedFile}) => {
     }
 
     return (
-        <div style={{marginBottom: '15px', display: 'flex', justifyContent: 'center'}}>
+        <div style={{marginBottom: fill ? '0px' : '15px', height: fill ? '100%' : undefined, display: 'flex', justifyContent: 'center'}}>
             <div style={divStyle} onMouseEnter={()=>handleImageHover(true)} onMouseLeave={()=>handleImageHover(false)}>
                 <div style={photoContainerStyle}>
                     <img 
@@ -89,6 +92,7 @@ const PhotoUploader = ({height, selectedFile, setSelectedFile}) => {
 
 PhotoUploader.propTypes = {
     height: PropTypes.number,
+    fill: PropTypes.bool,
     selectedFile: PropTypes.object,
     setSelectedFile: PropTypes.func.isRequired,
 };

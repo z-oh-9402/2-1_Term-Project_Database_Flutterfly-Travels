@@ -3,7 +3,7 @@ import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import PropTypes from 'prop-types'
 
 const PasswordInput = (props) => {
-  const {Label, password, setPassword} = props;
+  const {Label, name, invalid, password, setPassword} = props;
   const [showPassword, setShowPassword] = useState(false);
 
   const handleTogglePassword = () => {
@@ -21,6 +21,8 @@ const PasswordInput = (props) => {
             {/* The eye icon is positioned on the input itself, wherever the label puts it */}
             <span className='password-field' style={{ position: 'relative', display: 'inline-block' }}>
                 <input style={{position: 'relative'}}
+                    name={name}
+                    aria-invalid={invalid}
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => {setPassword(e.target.value)}}
@@ -48,7 +50,9 @@ const PasswordInput = (props) => {
 PasswordInput.propTypes = {
     password: PropTypes.string,
     setPassword: PropTypes.func,
-    Label: PropTypes.string
+    Label: PropTypes.node,
+    name: PropTypes.string,
+    invalid: PropTypes.bool
 }
 
 export default PasswordInput;

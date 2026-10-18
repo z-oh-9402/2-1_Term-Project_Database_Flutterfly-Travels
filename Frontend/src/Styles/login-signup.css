@@ -74,3 +74,77 @@
     height: 450px;
     animation: none;
 }
+/* Every sign-up page has page 1's size (its content plus a few px); each page fills the space
+   between the title and the login link, and page 2's photo takes what its fields leave */
+.signup-container{
+    box-sizing: border-box;
+    width: 460px;
+    height: 600px;
+    display: flex;
+    flex-direction: column;
+}
+
+.signup-page{
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.signup-container .radio-group{
+    margin-bottom: 4px;
+}
+
+/* each field's name sits above its input (login and sign-up); form-fields.css styles the inputs */
+.popup-fields{
+    display: flex;
+    flex-direction: column;
+}
+
+.popup-fields label{
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.field-label{
+    color: #44535d;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+/* the agent's experience and fee, side by side */
+.signup-pair{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+/* the photo circle takes whatever height page 2 has left */
+.signup-photo{
+    flex: 1;
+    min-height: 0;
+    box-sizing: border-box;
+    padding-bottom: 10px;
+}
+
+.signup-preferences{
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.popup-actions{
+    margin-top: auto;
+    padding: 12px 0 20px;
+}
+
+/* Login: same width as sign-up; like sign-up, the warning slots space its fields */
+.login-container{
+    box-sizing: border-box;
+    width: 460px;
+}
+

@@ -13,6 +13,7 @@ import { RxCross2 } from "react-icons/rx";
 import PhotoUploader from "../Components/PhotoUploader";
 import DeleteConfirmation from "./DeleteConfirmation";
 import Rating from "../Components/Rating";
+import useFieldRules, { emailPattern } from "../Components/useFieldRules";
 import { apiFetch, photoUrl } from '../api';
 
 const list = ["Mountains", "Lakes", "Beaches", "Forests", "Hill Tracks", "Tea Gardens", "Historical Places"];
@@ -52,11 +53,8 @@ const ProfileHomePage = ({setLogOut}) => {
     const [lastName, setLastName] = useState(user.last_name);
     const [email, setEmail] = useState(user.email);
     const [passportNumber, setPassportNumber] = useState(user.user_type === 'customer' ? user.passport_number : null);
-    const [isValidPassword, setIsValidPassword] = useState(false);
     const [isValidUsername, setIsValidUsername] = useState(true);
-    const [isValidPassport, setIsValidPassport] = useState(true);
-    const [isPasswordStarting, setIsPasswordStarting] = useState(true);
-    const [isPassportStarting, setIsPassportStarting] = useState(true);
+    const [formNote, setFormNote] = useState(null); // a message about the whole form, e.g. nothing to save
 
     const [currentCategory, setCurrentCategory] = useState(0);
     const [ showDeleteConfirmation, setShowDeleteConfirmation ] = useState(false);
@@ -111,7 +109,8 @@ const ProfileHomePage = ({setLogOut}) => {
     const handleUsernameChange = async (e) => {
         setUsername(e.target.value);
 
-        if (e.target.value !== "") {
+        // the user's own username is of course taken (by them)
+        if (e.target.value !== "" && e.target.value !== user.username) {
             const response = await apiFetch(`http://localhost:3000/user/${e.target.value}`, {
                 method: "GET"
             });
@@ -131,8 +130,6 @@ const ProfileHomePage = ({setLogOut}) => {
 
     const handlePasswordChange = (text) => {
         setPassword(text);
-        setIsPasswordStarting(false);
-        text.length >= 8 ? setIsValidPassword(true) : setIsValidPassword(false);
     }
 
     const handleRePasswordChange = (text) => {
@@ -153,11 +150,55 @@ const ProfileHomePage = ({setLogOut}) => {
 
     const handlePassportNumberChange = (e) => {
         setPassportNumber(e.target.value);
-        setIsPassportStarting(false);
-        e.target.value.length === 12 ? setIsValidPassport(true) : setIsValidPassport(false);
+    }
+
+    // Fields marked with a red * in the edit form
+    const isEmpty = (value) => String(value ?? '').trim() === '';
+
+    // What is wrong with an edit-form field, or null when it meets its rule (the same rules as sign-up)
+    const fieldError = (name) => {
+        switch(name)
+        {
+            case 'username': return isEmpty(username) ? "username is required" : (!isValidUsername ? "username already exists" : null);
+            case 'firstName': return isEmpty(firstName) ? "first name is required" : null;
+            case 'lastName': return isEmpty(lastName) ? "last name is required" : null;
+            case 'email': return isEmpty(email) ? "email is required" : (!emailPattern.test(email) ? "enter a valid email address" : null);
+            case 'passportNumber': return String(passportNumber ?? '').length !== 12 ? "passport number must contain 12 characters" : null;
+            // optional: left empty, the current password stays
+            case 'password': return password.length !== 0 && password.length < 8 ? "password must be at least 8 characters long" : null;
+            // only checked once the new password itself is fine
+            case 'rePassword': return fieldError('password') === null && rePassword !== password ? "passwords don't match" : null;
+            default: return null;
+        }
+    }
+
+    const { containerProps, warning, invalid, showProblem, resetRules } = useFieldRules(fieldError);
+
+    // Before saving: goes to the first field that breaks its rule, or says when there is nothing to save
+    const readyToSave = (nothingChanged) => {
+        const fields = ['username', 'firstName', 'lastName', 'email', ...(user.user_type === 'customer' ? ['passportNumber'] : []), 'password', 'rePassword'];
+        const wrong = fields.find(name => fieldError(name) !== null);
+        if (wrong) {
+            showProblem(wrong);
+            return false;
+        }
+        if (nothingChanged) {
+            setFormNote("Nothing has changed yet.");
+            return false;
+        }
+        return true;
+    }
+
+    // The server found the username taken (someone took it after it was checked)
+    const showUsernameTaken = () => {
+        setIsValidUsername(false);
+        showProblem('username');
     }
 
     const goToUpdate = () => {
+        resetRules();
+        setFormNote(null);
+        setIsValidUsername(true);
         setIsBeingUpdated(true);
         setIsFileChanged(false);
         setUsername(user.username);
@@ -181,25 +222,8 @@ const ProfileHomePage = ({setLogOut}) => {
         setRePassword("");
     }
 
-    // Fields marked with a red * in the edit form
-    const isEmpty = (value) => String(value ?? '').trim() === '';
-    const hasEmptyRequiredField = (includePassport) =>
-        [username, firstName, lastName, email, ...(includePassport ? [passportNumber] : [])].some(isEmpty);
-
     const updateInfo2 = async () => {
-        if (hasEmptyRequiredField(false)) {
-            alert("Please fill in all the required fields (marked with *).");
-        }
-        else if (!isFileChanged && username === user.username && firstName === user.first_name && lastName === user.last_name && email === user.email && password.length === 0) {
-            alert("No data change was detected.");
-        }
-        else if (password.length < 8 && password.length !== 0) {
-            alert("Invalid password");
-        }
-        else if (password !== rePassword) {
-            alert("Password and Confirmed Password don't match.");
-        }
-        else {
+        if (readyToSave(!isFileChanged && username === user.username && firstName === user.first_name && lastName === user.last_name && email === user.email && password.length === 0)) {
             let formData = new FormData();
             if (isFileChanged && selectedFile) formData.append('file', selectedFile); // no file = keep the current photo
             formData.append('username', username);
@@ -215,8 +239,7 @@ const ProfileHomePage = ({setLogOut}) => {
             const result = await response.json();
 
             if (!result.status) {
-                setUsername("");
-                alert("This username is already taken. Use another one.");
+                showUsernameTaken();
             }
             else {
                 // The response has the updated profile fields; keep the rest (trips, acc_status, ...) from the current user
@@ -242,19 +265,7 @@ const ProfileHomePage = ({setLogOut}) => {
             isPrefSame = false;
         }
 
-        if (hasEmptyRequiredField(true)) {
-            alert("Please fill in all the required fields (marked with *).");
-        }
-        else if (!isFileChanged && username === user.username && firstName === user.first_name && lastName === user.last_name && email === user.email && passportNumber === user.passport_number && isPrefSame && password.length === 0) {
-            alert("No data change was detected.");
-        }
-        else if (password.length < 8 && password.length !== 0) {
-            alert("Invalid password");
-        }
-        else if (password !== rePassword) {
-            alert("Password and Confirmed Password don't match.");
-        }
-        else {
+        if (readyToSave(!isFileChanged && username === user.username && firstName === user.first_name && lastName === user.last_name && email === user.email && passportNumber === user.passport_number && isPrefSame && password.length === 0)) {
             let formData = new FormData();
             if (isFileChanged && selectedFile) formData.append('file', selectedFile); // no file = keep the current photo
             formData.append('username', username);
@@ -271,8 +282,12 @@ const ProfileHomePage = ({setLogOut}) => {
             });
             const result = await response.json();
 
+            if (response.status === 409) {
+                showUsernameTaken();
+                return;
+            }
             if (!response.ok) {
-                alert(result.message || "Could not update your profile.");
+                setFormNote(result.message || "Could not update your profile.");
                 return;
             }
 
@@ -457,45 +472,46 @@ const ProfileHomePage = ({setLogOut}) => {
                     </div>
                 </div> :
 
-                <div className="profile-form">
+                // same fields and warning rules as the sign-up form; editing anything clears the form-wide note
+                <div className="profile-form styled-form" {...containerProps}
+                     onInput={(e) => { containerProps.onInput(e); setFormNote(null); }}>
                     <h2 className="profile-form-title">Edit Profile</h2>
-                    <PhotoUploader height={120}  selectedFile={selectedFile} setSelectedFile={setSelectedFile} />
+                    <div data-field="photo">
+                        <PhotoUploader height={120}  selectedFile={selectedFile} setSelectedFile={setSelectedFile} />
+                    </div>
 
                     <div className="profile-form-field">
                         <label><span>Username <span className="required">*</span></span>
-                            <input value={username} placeholder='Enter username' onChange={handleUsernameChange} />
+                            <input name="username" aria-invalid={invalid('username')} value={username} placeholder='Enter username' onChange={handleUsernameChange} />
                         </label>
-                        {isEmpty(username) && <p className="field-error">Username is required</p>}
-                        {!isValidUsername && <p className="field-error">This username is already taken</p>}
+                        {warning('username')}
                     </div>
                     <div className="profile-form-field">
                         <label><span>First Name <span className="required">*</span></span>
-                            <input value={firstName} placeholder='Enter first name' onChange={handleFirstNameChange} />
+                            <input name="firstName" aria-invalid={invalid('firstName')} value={firstName} placeholder='Enter first name' onChange={handleFirstNameChange} />
                         </label>
-                        {isEmpty(firstName) && <p className="field-error">First name is required</p>}
+                        {warning('firstName')}
                     </div>
                     <div className="profile-form-field">
                         <label><span>Last Name <span className="required">*</span></span>
-                            <input value={lastName} placeholder='Enter last name' onChange={handleLastNameChange} />
+                            <input name="lastName" aria-invalid={invalid('lastName')} value={lastName} placeholder='Enter last name' onChange={handleLastNameChange} />
                         </label>
-                        {isEmpty(lastName) && <p className="field-error">Last name is required</p>}
+                        {warning('lastName')}
                     </div>
                     <div className="profile-form-field">
                         <label><span>Email <span className="required">*</span></span>
-                            <input type="email" value={email} placeholder='Enter email' onChange={handleEmailChange} />
+                            <input name="email" aria-invalid={invalid('email')} value={email} placeholder='Enter email' onChange={handleEmailChange} />
                         </label>
-                        {isEmpty(email) && <p className="field-error">Email is required</p>}
+                        {warning('email')}
                     </div>
 
                     {user.user_type === 'customer' &&
                     <>
                         <div className="profile-form-field">
                             <label><span>Passport Number <span className="required">*</span></span>
-                                <input value={passportNumber} placeholder='Enter passport number' onChange={handlePassportNumberChange} />
+                                <input name="passportNumber" aria-invalid={invalid('passportNumber')} value={passportNumber} placeholder='Enter passport number' onChange={handlePassportNumberChange} />
                             </label>
-                            {isEmpty(passportNumber) ?
-                                <p className="field-error">Passport number is required</p>
-                                : (!isValidPassport && !isPassportStarting && <p className="field-error">Passport number must be 12 characters</p>)}
+                            {warning('passportNumber')}
                         </div>
 
                         <div className="profile-form-section">
@@ -519,16 +535,16 @@ const ProfileHomePage = ({setLogOut}) => {
                         <h4 className="profile-form-heading">Change Password <span className="optional">(optional)</span></h4>
                         <p className="profile-form-hint">Leave both fields empty to keep your current password.</p>
                         <div className="profile-form-field">
-                            <PasswordInput Label="New Password" password={password} setPassword={handlePasswordChange} />
-                            {/* Empty is allowed here (keeps the current password), so only warn about a non-empty short one */}
-                            {password.length !== 0 && !isValidPassword && !isPasswordStarting && <p className="field-error">Password must be at least 8 characters</p>}
+                            <PasswordInput Label="New Password" name="password" invalid={invalid('password')} password={password} setPassword={handlePasswordChange} />
+                            {warning('password')}
                         </div>
                         <div className="profile-form-field">
-                            <PasswordInput Label="Confirm New Password" password={rePassword} setPassword={handleRePasswordChange} />
-                            {rePassword.length !== 0 && rePassword !== password && <p className="field-error">Passwords don&apos;t match</p>}
+                            <PasswordInput Label="Confirm New Password" name="rePassword" invalid={invalid('rePassword')} password={rePassword} setPassword={handleRePasswordChange} />
+                            {warning('rePassword')}
                         </div>
                     </div>
 
+                    {formNote && <p className="profile-form-note">{formNote}</p>}
                     <div className="profile-form-actions">
                         <button className="btn-primary" onClick={user.user_type === 'customer' ? updateInfo : updateInfo2}>Save Changes</button>
                         <button className="btn-primary" onClick={() => { setIsBeingUpdated(false) }}>Cancel</button>

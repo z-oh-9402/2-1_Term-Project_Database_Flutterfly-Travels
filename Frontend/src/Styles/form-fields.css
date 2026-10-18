@@ -1,0 +1,75 @@
+/* Text inputs and warnings shared by the login, sign-up and edit-profile forms (put .styled-form on the form) */
+
+.styled-form .required{
+    color: #e53935;
+}
+
+/* soft border, cyan focus ring, red while the field's warning shows */
+.styled-form input:not([type="radio"]):not([type="checkbox"]){
+    box-sizing: border-box;
+    width: 100%;
+    height: 38px;
+    padding: 0 12px;
+    border: 1px solid #b7c3cb;
+    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.92);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
+    color: #1d2a33;
+    font-size: 15px;
+    letter-spacing: normal;
+    text-transform: none;
+    cursor: text;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.styled-form input:not([type="radio"]):not([type="checkbox"])::placeholder{
+    color: #8b98a1;
+}
+
+.styled-form input:not([type="radio"]):not([type="checkbox"]):hover{
+    border-color: #8fa3b0;
+}
+
+.styled-form input:not([type="radio"]):not([type="checkbox"]):focus{
+    outline: none;
+    border-color: #25afe6;
+    box-shadow: 0 0 0 3px rgba(37, 175, 230, 0.25);
+}
+
+.styled-form input[aria-invalid="true"]:not([type="radio"]):not([type="checkbox"]){
+    border-color: #e53935;
+    box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.15);
+}
+
+/* PasswordInput sets these inline as inline-blocks; in these forms they take the full width */
+.styled-form .password-input,
+.styled-form .password-field{
+    display: block !important;
+}
+
+/* room for the show-password eye */
+.styled-form .password-field input:not([type="radio"]):not([type="checkbox"]){
+    padding-right: 40px;
+}
+
+/* a warning's space under its field is kept whether or not it shows */
+.field-warning-slot{
+    height: 20px;
+}
+
+/* a new key replays the shake when the user tries to leave a wrong field */
+.field-warning{
+    color: red;
+    animation: nudge 0.3s ease;
+}
+
+.field-warning-slot .field-warning{
+    margin: 2px 0 0;
+    font-size: 12px;
+}
+
+@keyframes nudge {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}

@@ -7,7 +7,11 @@ import PasswordInput from "../Components/PasswordInput";
 import { ImCross } from "react-icons/im";
 import UserInfoContext from "../Context/UserInfoContext";
 import PhotoUploader from "../Components/PhotoUploader";
+import useFieldRules, { emailPattern, wholeNumber } from "../Components/useFieldRules";
 import { setToken, apiFetch } from "../api";
+
+// Destination preferences on the last page; place type i+1 in the database
+const placeTypes = ["Mountains", "Lakes", "Beaches", "Forests", "Hill Tracks", "Tea Gardens", "Historical Places"];
 
 const SignUp = (props) => {
     const { setInfo } = useContext(UserInfoContext);
@@ -22,12 +26,33 @@ const SignUp = (props) => {
     const [passportNumber, setPassportNumber] = useState("");
     const [experience, setExperience] = useState("");
     const [fee, setFee] = useState("");
-    const [isValidPassword, setIsValidPassword] = useState(false);
+    const [preferences, setPreferences] = useState(placeTypes.map(() => false));
     const [isValidUsername, setIsValidUsername] = useState(true);
-    const [isValidPassport, setIsValidPassport] = useState(true);
-    const [isPasswordStarting, setIsPasswordStarting] = useState(true);
-    const [isPassportStarting, setIsPassportStarting] = useState(true);
     const [page, setPage] = useState(1);
+
+    // What is wrong with a field, or null when it meets its criteria
+    const fieldError = (name) => {
+        switch(name)
+        {
+            case 'userType': return userType === "" ? "choose customer or travel agent" : null;
+            case 'username': return username === "" ? "username is required" : (!isValidUsername ? "username already exists" : null);
+            case 'password': return password.length < 8 ? "password must be at least 8 characters long" : null;
+            // only checked once the password itself is fine
+            case 'rePassword': return fieldError('password') === null && rePassword !== password ? "passwords don't match" : null;
+            case 'firstName': return firstName === "" ? "first name is required" : null;
+            case 'lastName': return lastName === "" ? "last name is required" : null;
+            case 'email': return email === "" ? "email is required" : (!emailPattern.test(email) ? "enter a valid email address" : null);
+            case 'passportNumber': return passportNumber.length !== 12 ? "passport number must contain 12 characters" : null;
+            case 'experience': return !wholeNumber.test(experience) ? "years of experience must be a whole number" : null;
+            case 'fee': return !wholeNumber.test(fee) ? "fee must be a whole number" : null;
+            default: return null;
+        }
+    }
+
+    const { containerProps, warning, invalid, showProblem, releaseField } = useFieldRules(fieldError);
+
+    // A field's name above its input, with the required mark
+    const fieldLabel = (text) => <span className='field-label'>{text} <span className='required'>*</span></span>;
 
     const handleUserTypeChange = (e) => {
         setUserType(e.target.value);
@@ -58,8 +83,6 @@ const SignUp = (props) => {
 
     const handlePasswordChange = (text) => {
         setPassword(text);
-        setIsPasswordStarting(false);
-        text.length >= 8 ? setIsValidPassword(true) : setIsValidPassword(false);
     }
 
     const handleFirstNameChange = (e) => {
@@ -76,8 +99,6 @@ const SignUp = (props) => {
 
     const handlePassportNumberChange = (e) => {
         setPassportNumber(e.target.value);
-        setIsPassportStarting(false);
-        e.target.value.length === 12 ? setIsValidPassport(true) : setIsValidPassport(false);
     }
 
     const handleExperienceChange = (e) => {
@@ -92,37 +113,27 @@ const SignUp = (props) => {
         props.goToLogin();
     }
 
+    // Everything typed is kept when moving between pages
     const togglePage = (page) => {
-        if (page === 1) {
-            setPassword("");
-            setRePassword("");
-            setIsValidPassword(false);
-            setIsPasswordStarting(true);
-        }
+        // the fields of the page being left are gone, so none of them holds the user any more
+        releaseField();
         setPage(page);
     }
 
+    // The fields that must be right before going on to each page
+    const fieldsBefore = {
+        2: ['userType', 'username', 'password', 'rePassword'],
+        3: ['firstName', 'lastName', 'email', ...(userType === 'customer' ? ['passportNumber'] : ['experience', 'fee'])]
+    };
+
     const handleForm = (page) => {
-        if (page === 2 && (username === "" || userType === "" || password ==="" || rePassword === "")) {
-            alert("Important field(s) empty!");
+        const wrong = fieldsBefore[page].find(name => fieldError(name) !== null);
+        if (wrong) {
+            showProblem(wrong);
         }
-        else if (page === 2 && !isValidPassword) {
-            alert("Invalid Password");
-        }
-        else if (page === 2 && !isValidUsername) {
-            alert("Username already exists.");
-        }
-        else if (page === 2 && password !== rePassword) {
-            alert("Password and Confirmed Password don't match.");
-        }
-        else if (page === 3 && (username === "" || firstName === "" || lastName === "" || email === "" || (userType === "customer" && passportNumber === "") || (userType === "agent" && (experience === "" || fee === "")))) {
-            alert("Important field(s) empty!");
-        }
-        else if (page === 3 & !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-            alert("Invalid Email ID.");
-        }
-        else if (page === 3 & !isValidPassport) {
-            alert("Invalid passport number.");
+        else if (page === 3 && userType === 'agent') {
+            // agents have no preferences page
+            handleDataSubmit();
         }
         else {
             togglePage(page);
@@ -142,13 +153,7 @@ const SignUp = (props) => {
 
         if (userType === 'customer') {
             
-            let pref = []
-            for (let i = 1; i <= 7; i++) {
-                let item = document.getElementById("preference" + i);
-                if (item.checked) {
-                    pref.push({id: i, name: item.value});
-                }
-            }
+            const pref = placeTypes.map((name, index) => ({id: index + 1, name})).filter((type, index) => preferences[index]);
             
             formData.append('passportNumber', passportNumber);
             formData.append('userType', 'customer');
@@ -197,73 +202,84 @@ const SignUp = (props) => {
 
     return (
         <div className='login-signup-popup'>
-            <div className='login-signup-container'>
+            <div className='login-signup-container styled-form signup-container' {...containerProps}>
                 <ImCross className='close' onClick={handleGoToHomePage} />
                 <h1>Sign up</h1>
 
                 {page === 1 ?
-                    <>
+                    <div className='signup-page'>
                         <div className="radio-group">
                             <h3>Are you -</h3>
                             <label className="radio-option">
-                                <input type="radio" name="userType" value="customer" onClick={handleUserTypeChange} />A Customer
+                                <input type="radio" name="userType" value="customer" checked={userType === 'customer'} onChange={handleUserTypeChange} />A Customer
                             </label>
 
                             <label className="radio-option">
-                                <input type="radio" name="userType" value="agent" onClick={handleUserTypeChange} />A Travel Agent
+                                <input type="radio" name="userType" value="agent" checked={userType === 'agent'} onChange={handleUserTypeChange} />A Travel Agent
                             </label>
+                            {warning('userType')}
                         </div>
-                        <div style={{ display: 'flex', flexDirection: "column", alignItems: 'flex-end', marginBottom: '40px' }}>
-                            <label>Username: <input value={username} placeholder='Enter username' onChange={handleUsernameChange} /><span style={{ color: "red" }}> *</span></label>
-                            {!isValidUsername ? <h5 style={{ color: "red" }}>username already exists</h5> : <br/>}
+                        <div className='popup-fields'>
+                            <label>{fieldLabel('Username')}<input name="username" aria-invalid={invalid('username')} value={username} placeholder='Enter username' onChange={handleUsernameChange} /></label>
+                            {warning('username')}
 
-                            <div><PasswordInput Label="Enter Password: " password={password} setPassword={handlePasswordChange} /><span style={{ color: "red" }}> *</span></div>
-                            {!isValidPassword && !isPasswordStarting ? <h5 style={{ color: "red" }}>password must be at least 8 characters long</h5>
-                                : <br/>}
-                            <div><PasswordInput Label="Confirm Password: " password={rePassword} setPassword={setRePassword} /><span style={{ color: "red" }}> *</span></div>
+                            <PasswordInput Label={fieldLabel('Password')} name="password" invalid={invalid('password')} password={password} setPassword={handlePasswordChange} />
+                            {warning('password')}
+
+                            <PasswordInput Label={fieldLabel('Confirm Password')} name="rePassword" invalid={invalid('rePassword')} password={rePassword} setPassword={setRePassword} />
+                            {warning('rePassword')}
                         </div>
-                        <button className="custom-btn" style={{color: "black"}} onClick={() => { handleForm(2) }}>Next</button>
-                        <br /><br />
-                    </> :
+                        <div className='popup-actions'>
+                            <button className="custom-btn" style={{color: "black"}} onClick={() => { handleForm(2) }}>Next</button>
+                        </div>
+                    </div> :
                     (page === 2 ?
-                        <>
-                            <PhotoUploader height={60} selectedFile={selectedFile} setSelectedFile={setSelectedFile}/>
-                            <label>First Name: <input value={firstName} placeholder='Enter first name' onChange={handleFirstNameChange} /><span style={{ color: "red" }}> *</span></label><br /><br />
-
-                            <label>Last Name: <input value={lastName} placeholder='Enter last name' onChange={handleLastNameChange} /><span style={{ color: "red" }}> *</span></label><br /><br />
-
-                            <label>Email: <input value={email} placeholder='Enter email' style={{width: '200px'}} onChange={handleEmailChange} /><span style={{ color: "red" }}> *</span></label><br /><br />
-
-                            {userType === 'customer' ? <label>Passport Number: <input value={passportNumber} placeholder='Enter passport number' onChange={handlePassportNumberChange} /><span style={{ color: "red" }}> *</span></label>
-                                : <><label>Years of Experience: <input value={experience} placeholder='Enter years of experience' onChange={handleExperienceChange} /><span style={{ color: "red" }}> *</span></label><br /><br />
-                                    <label>Fee: <input value={fee} placeholder='Enter expected fee' onChange={handleFee} /><span style={{ color: "red" }}> *</span></label></>}
-
-                            {userType === "customer" && !isValidPassport && !isPassportStarting ? <h5 style={{ color: "red" }}>passport number must contain 12 characters</h5>
-                                : <><br /><br /></>}
-
-                            <div>
-                                <button className="custom-btn" style={{color: "black"}} onClick={() => { togglePage(1) }}>Prev</button>
-
-                                {userType === "customer" ? <button className="custom-btn" style={{color: "black"}} onClick={() => { handleForm(3) }}>Next</button> :
-                                    <><button className="custom-btn" style={{color: "black"}} onClick={handleDataSubmit}>Sign Up</button><br /><br /></>}
+                        <div className='signup-page'>
+                            <div data-field="photo" className='signup-photo'>
+                                <PhotoUploader fill selectedFile={selectedFile} setSelectedFile={setSelectedFile}/>
                             </div>
-                            <br /><br />
-                        </> 
+                            <div className='popup-fields'>
+                                <label>{fieldLabel('First Name')}<input name="firstName" aria-invalid={invalid('firstName')} value={firstName} placeholder='Enter first name' onChange={handleFirstNameChange} /></label>
+                                {warning('firstName')}
+
+                                <label>{fieldLabel('Last Name')}<input name="lastName" aria-invalid={invalid('lastName')} value={lastName} placeholder='Enter last name' onChange={handleLastNameChange} /></label>
+                                {warning('lastName')}
+
+                                <label>{fieldLabel('Email')}<input name="email" aria-invalid={invalid('email')} value={email} placeholder='Enter email' onChange={handleEmailChange} /></label>
+                                {warning('email')}
+
+                                {userType === 'customer' ?
+                                    <><label>{fieldLabel('Passport Number')}<input name="passportNumber" aria-invalid={invalid('passportNumber')} value={passportNumber} placeholder='Enter passport number' onChange={handlePassportNumberChange} /></label>
+                                        {warning('passportNumber')}</>
+                                    // experience and fee share a row, so the agent's page has as many rows as the customer's
+                                    : <><div className='signup-pair'>
+                                            <label>{fieldLabel('Experience (years)')}<input name="experience" aria-invalid={invalid('experience')} value={experience} placeholder='e.g. 3' onChange={handleExperienceChange} /></label>
+                                            <label>{fieldLabel('Fee (৳)')}<input name="fee" aria-invalid={invalid('fee')} value={fee} placeholder='e.g. 5000' onChange={handleFee} /></label>
+                                        </div>
+                                        {warning('experience', 'fee')}</>}
+                            </div>
+
+                            <div className='popup-actions'>
+                                <button className="custom-btn" style={{color: "black"}} onClick={() => { togglePage(1) }}>Prev</button>
+                                <button className="custom-btn" style={{color: "black"}} onClick={() => { handleForm(3) }}>{userType === "customer" ? 'Next' : 'Sign Up'}</button>
+                            </div>
+                        </div>
                         :
                         userType === "customer" &&
-                        <>
+                        <div className='signup-page'>
                             <h3>Choose Your Destination Preferences: (Optional)</h3>
-                            <label><input type="checkbox" id="preference1" value="Mountains" />Mountains</label><br />
-                            <label><input type="checkbox" id="preference2" value="Lakes" />Lakes</label><br />
-                            <label><input type="checkbox" id="preference3" value="Beaches" />Beaches</label><br />
-                            <label><input type="checkbox" id="preference4" value="Forests" />Forests</label><br />
-                            <label><input type="checkbox" id="preference5" value="Hill Tracks" />Hill Tracks</label><br />
-                            <label><input type="checkbox" id="preference6" value="Tea Gardens" />Tea Gardens</label><br />
-                            <label><input type="checkbox" id="preference7" value="Historical Places" />Historical Places</label><br /><br />
+                            <div className='signup-preferences'>
+                                {placeTypes.map((type, index) =>
+                                    <label key={type}><input type="checkbox" checked={preferences[index]}
+                                        onChange={() => setPreferences(prefs => prefs.map((isChecked, i) => i === index ? !isChecked : isChecked))} />{type}</label>
+                                )}
+                            </div>
 
-                            <div><button className="custom-btn" style={{color: "black"}} onClick={() => { togglePage(2) }}>Prev</button>
-                                <button className="custom-btn" style={{color: "black"}} onClick={handleDataSubmit}>Sign Up</button></div><br /><br />
-                        </>)
+                            <div className='popup-actions'>
+                                <button className="custom-btn" style={{color: "black"}} onClick={() => { togglePage(2) }}>Prev</button>
+                                <button className="custom-btn" style={{color: "black"}} onClick={handleDataSubmit}>Sign Up</button>
+                            </div>
+                        </div>)
                 }
 
                 <p style={{ textAlign: "center" }}>Already have an account? <span className='go-to' onClick={handleChangeToLogin} style={{ color: "red" }}>Login now!</span></p>

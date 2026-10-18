@@ -1,5 +1,6 @@
 import "../Styles/button.css"
 import "../Styles/login-signup.css"
+import "../Styles/form-fields.css"
 
 import PropTypes from 'prop-types'
 import { useContext, useState } from 'react'
@@ -8,30 +9,60 @@ import { ImCross } from "react-icons/im";
 import UserInfoContext from '../Context/UserInfoContext';
 import { setToken, apiFetch } from '../api';
 
+// A field's name above its input, with the required mark (as in the sign-up form)
+const fieldLabel = (text) => <span className='field-label'>{text} <span className='required'>*</span></span>;
+
 const Login = (props) => {
     const { setInfo } = useContext(UserInfoContext);
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const [errors, setErrors] = useState({}); // what is wrong with each field, shown under it
+    const [attempts, setAttempts] = useState(0); // failed logins, to shake the warnings again
 
+    const showErrors = (found) => {
+        setErrors(found);
+        setAttempts(n => n + 1);
+    }
+
+    // editing a field clears its warning
     const handleUsernameChange = (e) => {
         setUsername(e.target.value);
+        setErrors(errs => ({...errs, username: undefined}));
     }
+
+    const handlePasswordChange = (text) => {
+        setPassword(text);
+        setErrors(errs => ({...errs, password: undefined}));
+    }
+
+    // The warning slot under a field; it keeps its height when empty
+    const warning = (name) => (
+        <div className='field-warning-slot'>
+            {errors[name] && <h5 key={`${name}-${attempts}`} className='field-warning'>{errors[name]}</h5>}
+        </div>
+    );
 
     const handleChangeToSignUp = () => {
         props.goToSignUp();
     }
 
     const handleDataSubmit = async () => {
-        if (username !== "" && password !== "") {
+        const empty = {};
+        if (username === "") empty.username = "username is required";
+        if (password === "") empty.password = "password is required";
+
+        if (Object.keys(empty).length !== 0) {
+            showErrors(empty);
+        }
+        else {
             let response = await apiFetch(`http://localhost:3000/user/${username}`, {
                 method: "GET"
             });
 
             let result = await response.json();
             if (result.status === -1) {
-                setUsername("");
-                setPassword("");
-                alert("Username does not exist");
+                // the username stays, so a typo can be fixed
+                showErrors({username: "no account has this username"});
             }
             else {
                 let response = await apiFetch(`http://localhost:3000/user/login`, {
@@ -97,12 +128,11 @@ const Login = (props) => {
                     setPassword("");
                 }
                 else {
-                    alert("Wrong password");
                     setPassword("");
+                    showErrors({password: "wrong password"});
                 }
             }
         }
-        else alert("Important field(s) empty!");
     }
 
     const handleGoToHomePage = () => {
@@ -117,16 +147,19 @@ const Login = (props) => {
 
     return (
         <div className='login-signup-popup'>
-            <div className='login-signup-container'>
+            <div className='login-signup-container styled-form login-container'>
                 <ImCross className='close' onClick={handleGoToHomePage} />
                 <h1>Login</h1>
-                <br />
-                <div style={{ display: 'flex', flexDirection: "column", alignItems: 'flex-end' }}>
-                    <label>Username: <input value={username} placeholder='Enter username' onChange={handleUsernameChange} /></label><br />
-                    <PasswordInput Label="Password: " password={password} setPassword={setPassword} /><br />
+                <br/>
+                <div className='popup-fields'>
+                    <label>{fieldLabel('Username')}<input name="username" aria-invalid={Boolean(errors.username)} value={username} placeholder='Enter username' onChange={handleUsernameChange} /></label>
+                    {warning('username')}
+                    <PasswordInput Label={fieldLabel('Password')} name="password" invalid={Boolean(errors.password)} password={password} setPassword={handlePasswordChange} />
+                    {warning('password')}
                 </div>
-                <br />
-                <button className="custom-btn" style={{color: "black"}} onClick={handleDataSubmit}>Login</button><br /><br />
+                <div className='popup-actions'>
+                    <button className="custom-btn" style={{color: "black"}} onClick={handleDataSubmit}>Login</button>
+                </div>
                 <p style={{ textAlign: "center" }}>Don{"'"}t have an account? <span className='go-to' onClick={handleChangeToSignUp} style={{ color: "red" }}>Sign up now!</span></p>
             </div>
         </div>
