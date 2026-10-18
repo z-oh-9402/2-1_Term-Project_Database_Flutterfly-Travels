@@ -71,7 +71,32 @@ const canAccessTrip = async (user, tripId) => {
     return rows.length !== 0 && (rows[0].customer_id === user.id || rows[0].agent_id === user.id);
 }
 
+// Who may add or remove a trip's bookings, and when: the trip's customer while it is being put together
+// (REQUESTING, before an agent accepts it, or UPDATING), the trip's agent once they have accepted it (UPDATING),
+// and an admin at any time. Returns null when allowed, otherwise [HTTP status, message].
+const bookingEditProblem = async (user, tripId) => {
+    const database = require('./database');
+    const rows = await database.query(`SELECT CUSTOMER_ID, AGENT_ID, TRIP_STATUS FROM TRIP WHERE TRIP_ID=$1`, [tripId]);
+    if (rows.length === 0) {
+        return [404, "Trip not found"];
+    }
+    if (user.role === 'admin') {
+        return null;
+    }
+    const trip = rows[0];
+    if (trip.customer_id === user.id) {
+        return ['REQUESTING', 'UPDATING'].includes(trip.trip_status) ? null
+            : [409, "Bookings can only be changed until the trip is sent for approval"];
+    }
+    if (trip.agent_id === user.id) {
+        return trip.trip_status === 'UPDATING' ? null
+            : [409, "Bookings can only be changed after you accept the trip, until it is sent for approval"];
+    }
+    return [403, "Not allowed"];
+}
+
 exports.signToken = signToken;
+exports.bookingEditProblem = bookingEditProblem;
 exports.verifyToken = verifyToken;
 exports.canAccessTrip = canAccessTrip;
 exports.requireAuth = requireAuth;

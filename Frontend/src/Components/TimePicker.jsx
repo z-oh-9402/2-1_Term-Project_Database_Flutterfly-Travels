@@ -20,11 +20,12 @@ const TimePicker = (props) => {
 
   function handleClick() {
     const object = showTime.getTime();
+    // object.hour is 0-23: 0-11 is AM (0 shown as 12), 12-23 is PM (12 stays 12)
     const newObj = {
       ...time,
-      hour: object.hour>12 ? object.hour-12 : (object.hour===0 ? 12 : object.hour),
+      hour: object.hour % 12 || 12,
       minute: object.minute,
-      am: (object.hour!==0 && object.hour<=12)
+      am: object.hour < 12
     }
     setTime(newObj);
     document.getElementById(`${type}-time-picker`).style.display = 'none';

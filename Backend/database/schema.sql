@@ -73,23 +73,17 @@ $$;
 
 
 --
--- Name: check_trip_name(character varying); Type: FUNCTION; Schema: public; Owner: -
+-- Name: check_trip_name(character varying, integer); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE FUNCTION public.check_trip_name(tname character varying) RETURNS integer
+CREATE FUNCTION public.check_trip_name(tname character varying, cid integer) RETURNS integer
     LANGUAGE plpgsql
     AS $$
-DECLARE
-    does_exist INTEGER;
-    trip_name VARCHAR(100);
 BEGIN
-    BEGIN
-        SELECT name INTO trip_name FROM trip WHERE name = tname;
-				
-        IF trip_name IS NOT NULL THEN RETURN 1;
-				ELSE RETURN -1;
-				END IF;
-    END;
+    IF EXISTS (SELECT 1 FROM trip WHERE name = tname AND customer_id = cid) THEN
+        RETURN 1;
+    END IF;
+    RETURN -1;
 END;
 $$;
 
@@ -212,15 +206,15 @@ DECLARE
     cid INTEGER;
     tname VARCHAR(100);
 BEGIN
-    SELECT customer_id INTO cid FROM trip WHERE trip_id = NEW.trip_id;
-    SELECT agent_id INTO aid FROM trip WHERE trip_id = NEW.trip_id;
-    SELECT name INTO tname FROM trip WHERE trip_id = NEW.trip_id;
+    SELECT customer_id, agent_id, name INTO cid, aid, tname FROM trip WHERE trip_id = NEW.trip_id;
 
     INSERT INTO notification (user_id, content, notification_status)
     VALUES (cid, 'Booking into trip ''' || tname || ''' has been added successfully.', 'NOT SHOWED');
 
-    INSERT INTO notification (user_id, content, notification_status)
-    VALUES (aid, 'Booking into trip ''' || tname || ''' has been added successfully.', 'NOT SHOWED');
+    IF aid IS NOT NULL THEN
+        INSERT INTO notification (user_id, content, notification_status)
+        VALUES (aid, 'Booking into trip ''' || tname || ''' has been added successfully.', 'NOT SHOWED');
+    END IF;
 
     RETURN NULL;
 END;
@@ -236,8 +230,11 @@ CREATE FUNCTION public.notification_add_for_trip_func() RETURNS trigger
     AS $$
 BEGIN
     IF TG_OP = 'INSERT' THEN
-        INSERT INTO notification (user_id, content, notification_status)
-        VALUES (NEW.agent_id, 'You received a new request.', 'NOT SHOWED');
+        -- a trip can be created before an agent is chosen
+        IF NEW.agent_id IS NOT NULL THEN
+            INSERT INTO notification (user_id, content, notification_status)
+            VALUES (NEW.agent_id, 'You received a new request.', 'NOT SHOWED');
+        END IF;
 
         INSERT INTO notification (user_id, content, notification_status)
         VALUES (NEW.customer_id, 'Your request has been sent.', 'NOT SHOWED');

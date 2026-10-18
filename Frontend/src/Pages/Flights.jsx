@@ -275,7 +275,7 @@ const Flights = () => {
 
     return (
         <>
-            {showBooking && <FlightBooking header={'Book Flight -'} flight={flight} setShowConfirmationMessage={setShowBooking} bookingDetails={bookingDetails}/>}
+            {showBooking && <FlightBooking flight={flight} setShowConfirmationMessage={setShowBooking} bookingDetails={bookingDetails}/>}
             <FlightFliter airportSet={airportSet} seatClass={seatClass} setSeatClass={setSeatClass} dateSet={dateSet} flightStyleSet={flightStyleSet} seatNumberSet={seatNumberSet} airportOptions={airportOptions} arrivalOptions={arrivalOptions} seatClassOptions={seatClassOptions}/>
 
             <div className='destination-search' style={{marginTop: "20px"}}>

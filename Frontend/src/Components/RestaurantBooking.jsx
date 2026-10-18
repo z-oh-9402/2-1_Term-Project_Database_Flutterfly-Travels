@@ -1,365 +1,142 @@
-import { ImCross } from 'react-icons/im';
-import '../Styles/confirmation-message.css';
-import '../Styles/login-signup.css';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import PropTypes from 'prop-types';
-import { useContext, useEffect, useState } from 'react';
-import UserInfoContext from '../Context/UserInfoContext';
-import { FaMinus, FaPlus, FaRegCalendarAlt } from 'react-icons/fa';
-import CreateTrip from './CreateTrip';
+import { useState } from 'react';
+import { FaRegCalendarAlt } from 'react-icons/fa';
 import TimePicker from './TimePicker';
 import { apiFetch } from '../api';
+import AddToTrip from './AddToTrip';
+import { BookingPopup, CountStepper } from './BookingPopup';
+import { startOfDay, toApiDateTime } from './tripHelpers';
 
-const types = ['arrival', 'departure'];
+// {hour: 1-12, minute, am} -> minutes after midnight (12 AM is 0, 12 PM is 720)
+const toMinutes = ({ hour, minute, am }) => ((hour % 12) + (am ? 0 : 12)) * 60 + minute;
 
-const RestaurantBooking = ({header, restaurant, setShowConfirmationMessage}) => {
-    const {userInfo, setInfo} = useContext(UserInfoContext);
-    const [trips, setTrips] = useState([]);
+// {hour, minute, am} -> "09:30 AM", the format the backend reads
+const formatTime = ({ hour, minute, am }) =>
+    `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')} ${am ? 'AM' : 'PM'}`;
 
-    const filterTrips = (trip) => {
-        let found = false;
-
-        if(trip.trip_status==='UPDATING')
-        {
-            for(let a of trip.restaurants)
-            {
-                if(a.restaurant_id === restaurant.restaurant_id)
-                {
-                    found = true;
-                    break;
-                }
-            }
-        }
-        else
-        {
-            found = true;
-        }
-
-        return found;
-    }
-
-    useEffect(() => {
-        const t = userInfo.trips.filter(trip => !filterTrips(trip));
-        setTrips(t);
-    }, [userInfo.trips]);
-
-    const [page, setPage] = useState(1);
-    const message = ["Would you like to book this restaurant?",
-                     "How would you like to add this restaurant to your package?",
-                     "No already created trip package exists. Would you like to create a new one?"];
-
-    const bookingCost = restaurant.booking_cost;
+// Booking a restaurant table: seats, date and times, then the trip it goes into
+const RestaurantBooking = ({restaurant, setShowConfirmationMessage}) => {
+    const today = startOfDay(new Date());
+    const [step, setStep] = useState('details'); // 'details', then 'trip'
     const [numberOfSeats, setNumberOfSeats] = useState(1);
-    const [bookingDate, setBookingDate] = useState(new Date());
-    const [totalCost, setTotalCost] = useState(restaurant.booking_cost);
+    const [bookingDate, setBookingDate] = useState(today);
     const [arrivalTime, setArrivalTime] = useState({hour: 9, minute: 0, am: true});
     const [departureTime, setDepartureTime] = useState({hour: 10, minute: 0, am: true});
+    const [error, setError] = useState(null);
 
-    useEffect(() => {
-        const resizeComponent = () => {
-            if(page===2 || page===5 || page===6)
-            {
-                const loginSignupContainer = document.querySelector('.confirmation-message-container');
-                loginSignupContainer.style.height = '400px';
-            }
-            else
-            {
-                const loginSignupContainer = document.querySelector('.confirmation-message-container');
-                loginSignupContainer.style.height = '150px';
-            }
+    const totalCost = restaurant.booking_cost * (Number(numberOfSeats) || 1);
+
+    const close = () => setShowConfirmationMessage(false);
+
+    const handleBookingDateChange = (date) => {
+        if(startOfDay(date) < today)
+        {
+            setError("The booking date can't be in the past");
+            return;
         }
-        resizeComponent();
-    }, [page]);
-
-    const handleGoToCurrentPage = () => {
-        setShowConfirmationMessage(false);
+        setError(null);
+        setBookingDate(startOfDay(date));
     }
 
-    const goToNextPage = () => {
-        setPage(page+1);
+    const showTimePicker = (type) => {
+        document.getElementById(`${type}-time-picker`).style.display = 'flex';
     }
-
-    const changeSeatNumber = (increase) => {
-        
-        if(increase)
-        {
-            setNumberOfSeats(parseInt(numberOfSeats)+1);
-            setTotalCost(bookingCost*(parseInt(numberOfSeats)+1));
-        }
-        else
-        {
-            if(numberOfSeats > 1)
-            {
-                setNumberOfSeats(parseInt(numberOfSeats)-1);
-                setTotalCost(bookingCost*(parseInt(numberOfSeats)-1));
-            }
-        }
-    }
-
-    const handleSeatNumberChange = (e) => {
-        const isValid = /^[1-9]\d*$/.test(e.target.value);
-
-        if(e.target.value.length === 0)
-        {
-            setNumberOfSeats(e.target.value);
-            setTotalCost(bookingCost);
-        }
-        if(isValid)
-        {
-            setNumberOfSeats(parseInt(e.target.value));
-            setTotalCost(bookingCost*e.target.value);
-        }
-    }
-
-    const fixValue = () => {
-        if(numberOfSeats.length === 0)
-        {
-            setNumberOfSeats(1);
-        }
-    }
-
-    const handleBookingDateChange = (date) =>
-    {
-        const sysdate = new Date();
-
-        if(date<sysdate)
-        {
-            alert("Check-in Date cannot be in the past");
-        }
-        else
-        {
-            setBookingDate(new Date(date));
-        }
-    }
-    
 
     const goToNext = () => {
-        const at = (arrivalTime.hour + (arrivalTime.am ? 0 : 12)) * 60 + arrivalTime.minute;
-        const dt = (departureTime.hour + (departureTime.am ? 0 : 12)) * 60 + departureTime.minute;
+        const arrival = toMinutes(arrivalTime);
+        const departure = toMinutes(departureTime);
 
-        if(at>dt-60)
+        if(arrival < 9 * 60)
         {
-            alert("Arrival time must be at least 1 hour before departure time");
+            setError("Arrival must be 9:00 AM or later");
         }
-        else if(at>(20*60))
+        else if(arrival > 20 * 60)
         {
-            alert("Arrival time must be before 8:00 PM");
+            setError("Arrival must be 8:00 PM or earlier");
         }
-        else if(at<(9*60))
+        else if(departure < arrival + 60)
         {
-            alert("Arrival time must be after 9:00 AM");
+            setError("Departure must be at least 1 hour after arrival");
         }
         else
         {
-            setPage(trips.length!==0 ? (userInfo.user_type==='customer' ? 3 : 5) : 4)
+            setError(null);
+            setStep('trip');
         }
     }
 
-    const formatTimestamp = ({ hour, minute, am }) => {
-        const ampm = am ? 'AM' : 'PM';
-        const timestampString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')} ${ampm}`;
-        return timestampString;
-    }
-
-    const addBooking = async (tripId) => {
-        const options = {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: false
-        };
-
-        let inDate = new Intl.DateTimeFormat('en-US', options).format(bookingDate);
-        if(inDate.includes(', 24:')) {
-            inDate = inDate.replace(', 24:', ', 00:');
-        }
-
-        let inTime = formatTimestamp(arrivalTime);
-        let outTime = formatTimestamp(departureTime);
-
-        const response = await apiFetch(`http://localhost:3000/booking/add-restaurant-booking`, {
-            method: "POST",
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                itemId: restaurant.restaurant_id,
-                tripId: tripId,
-                bookingDate: inDate,
-                arrivalTime: inTime,
-                departureTime: outTime,
-                numberOfSeats: numberOfSeats,
-                totalCost: totalCost,
-                bookingType: 'RESTAURANT'
-            }),
-        });
-
-        const data = await response.json();
-        if(data.status === "ok")
-        {
-            if(userInfo.user_type === 'customer')
-            {
-                const response = await apiFetch(`http://localhost:3000/trip/for-customer?customerId=${userInfo.user_id}`, {
-                    method: "GET"
-                });
-
-                const result = await response.json();
-                userInfo.trips = result;
-            }
-            if(userInfo.user_type === 'agent')
-            {
-                const response = await apiFetch(`http://localhost:3000/trip/for-agent?agentId=${userInfo.user_id}`, {
-                    method: "GET"
-                });
-
-                const result = await response.json();
-                userInfo.trips = result;
-            }
-            setInfo(userInfo);
-            setShowConfirmationMessage(false);
-        }
-    }
-
-    const setCreateTrip = (param) => {
-        if(!param)
-        {
-            setPage(5);
-        }
-    }
-
-    const setTime = (type) => {
-        const element = document.getElementById(`${type}-time-picker`);
-        element.style.display = 'flex';
-    }
+    const addToTrip = (tripId) => apiFetch(`http://localhost:3000/booking/add-restaurant-booking`, {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            itemId: restaurant.restaurant_id,
+            tripId: tripId,
+            bookingDate: toApiDateTime(bookingDate),
+            arrivalTime: formatTime(arrivalTime),
+            departureTime: formatTime(departureTime),
+            numberOfSeats: Number(numberOfSeats) || 1,
+            totalCost: totalCost
+        }),
+    });
 
     return (
-        <div className='login-signup-popup blurry-background'>
-            <div className="close-container" style={{position: 'relative'}}>
-                <div className='login-signup-container confirmation-message-container'>
-                    <ImCross className='close2' onClick={handleGoToCurrentPage}/>
-                    {page===1 && 
-                    <>
-                        <div className='message-title'>{header}</div>
-                        <p className='message-content'>{message[page-1]}</p>
-                        <div>
-                            <button className='custom-btn' onClick={goToNextPage}>Yes</button>
-                            <button className='custom-btn' onClick={handleGoToCurrentPage}>Cancel</button>
-                        </div>
-                    </>}
+        <BookingPopup onClose={close}>
+            {step === 'details' ?
+            <>
+                <div className='message-title'>Book {restaurant.name}</div>
+                <div className='booking-fields'>
+                    <label>Number of seats:
+                        <CountStepper value={numberOfSeats} setValue={setNumberOfSeats}/>
+                    </label>
 
-                    {page===2 &&
-                    <>
-                        <div className='message-title'>{header}</div>
-                        <div style={{display: 'flex', width: '100%', height: '50%', flexDirection: 'column', justifyContent: "space-between"}}>
-                            <label>Number of seats: 
-                                <div style={{position: "relative", display: 'inline-block', marginLeft: "5px"}}>
-                                    <input className='seat-number' type="text" value={numberOfSeats} onChange={handleSeatNumberChange} onBlur={fixValue}/>
-                                    {numberOfSeats.length!==0 &&
-                                    <FaMinus className='seat-number-buttons minus' onClick={()=>changeSeatNumber(false)} />}
-                                    {numberOfSeats.length!==0 &&
-                                    <FaPlus className='seat-number-buttons plus' onClick={()=>changeSeatNumber(true)} />}
-                                </div>
-                            </label>
-
-                            <label> Booking Date:
-                                <div style={{display: 'inline-block', marginLeft: '5px'}}>
-                                    <div className='datepicker-container'>
-                                        <DatePicker
-                                            selected={bookingDate}
-                                            onChange={(e)=>handleBookingDateChange(e)}
-                                            dateFormat="dd/MM/yyyy"
-                                            placeholderText="Departure Date"
-                                        />
-                                        <FaRegCalendarAlt className='calendar-img'/>
-                                    </div>
-                                </div>
-                            </label>
-
-                            <label>Arrival Time: <span style={{cursor: 'pointer'}} onClick={()=>setTime(types[0])}>{arrivalTime.hour.toLocaleString('en-US', { minimumIntegerDigits: 2 })}:{arrivalTime.minute.toLocaleString('en-US', { minimumIntegerDigits: 2 })} {arrivalTime.am ? 'AM' : 'PM'}</span>
-                                <TimePicker time={arrivalTime} setTime={setArrivalTime} type={types[0]}/>
-                            </label>
-
-                            <label>Departure Time: <span style={{cursor: 'pointer'}} onClick={()=>setTime(types[1])}>{departureTime.hour.toLocaleString('en-US', { minimumIntegerDigits: 2 })}:{departureTime.minute.toLocaleString('en-US', { minimumIntegerDigits: 2 })} {departureTime.am ? 'AM' : 'PM'}</span>
-                                <TimePicker time={departureTime} setTime={setDepartureTime} type={types[1]}/>
-                            </label>
-                        </div>
-                        
-                        <div style={{width: '100%', display: 'flex', justifyContent: 'flex-end'}}>
-                            <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
-                                <div>Total Booking Price: ৳ {totalCost.toLocaleString('en-US')}</div>
+                    <label> Booking Date:
+                        <div style={{display: 'inline-block', marginLeft: '5px'}}>
+                            <div className='datepicker-container'>
+                                <DatePicker selected={bookingDate} onChange={handleBookingDateChange} dateFormat="dd/MM/yyyy"/>
+                                <FaRegCalendarAlt className='calendar-img'/>
                             </div>
                         </div>
-                        
-                        <button className='custom-btn' onClick={goToNext}>Next</button>
-                    </>}
+                    </label>
 
-                    {page===3 &&
-                    <>
-                        <div className='message-title'>{header}</div>
-                        <p className='message-content'>{message[1]}</p>
-                        <div>
-                            <button className='custom-btn' onClick={() => setPage(5)}>Add to an existing package</button>
-                            <button className='custom-btn' onClick={() => setPage(6)}>Create a new package</button>
-                        </div>
-                    </>}
+                    <label>Arrival Time: <span className='time-choice' onClick={() => showTimePicker('arrival')}>{formatTime(arrivalTime)}</span>
+                        <TimePicker time={arrivalTime} setTime={setArrivalTime} type='arrival'/>
+                    </label>
 
-                    {page===4 &&
-                    <>
-                        <div className='message-title'>{header}</div>
-                        <p className='message-content'>{message[2]}</p>
-                        <div>
-                            <button className='custom-btn' onClick={() => setPage(6)}>Create a new package</button>
-                        </div>
-                    </>}
-
-                    {page===5 &&
-                    <>
-                        <div className='message-title'>{header}</div>
-                        <div className='trips-container'>
-                            {trips.map((trip, index) => 
-                            <div key={index} className='trip-item'>
-                                <div>
-                                    <div className='trip-name'>{trip.name}</div>
-                                    <div>Departure Date:&nbsp;
-                                        {new Date(trip.departure_date).toLocaleDateString('en-US', {
-                                            year: 'numeric',
-                                            month: 'long',
-                                            day: 'numeric'
-                                        })}
-                                    </div>
-                                    <div>Return Date:&nbsp;
-                                        {new Date(trip.return_date).toLocaleDateString('en-US', {
-                                            year: 'numeric',
-                                            month: 'long',
-                                            day: 'numeric'
-                                        })}
-                                    </div>
-                                    <div>Total Cost: ৳ {(trip.total_cost).toLocaleString('en-US')}</div>
-                                    <div>Agent: {trip.username ? trip.username : 'Not Set'}</div>
-                                </div>
-                                <button className='custom-btn plus-button' onClick={()=>addBooking(trip.trip_id)}>+</button>
-                            </div>)}
-                        </div>
-                    </>}
-
-                    {page===6 &&
-                    <>
-                        <CreateTrip setCreateTrip={setCreateTrip}/>
-                    </>}
+                    <label>Departure Time: <span className='time-choice' onClick={() => showTimePicker('departure')}>{formatTime(departureTime)}</span>
+                        <TimePicker time={departureTime} setTime={setDepartureTime} type='departure'/>
+                    </label>
                 </div>
-            </div>
-        </div>
+
+                <div className='booking-summary'>
+                    <div>{Number(numberOfSeats) || 1} × ৳ {Number(restaurant.booking_cost).toLocaleString('en-US')} per seat</div>
+                    <div className='booking-total'>Total: ৳ {totalCost.toLocaleString('en-US')}</div>
+                </div>
+
+                {error && <p className='trip-form-error'>{error}</p>}
+                <div className='popup-buttons'>
+                    <button className='custom-btn' onClick={goToNext}>Next</button>
+                </div>
+            </>
+            :
+            <AddToTrip
+                itemName={restaurant.name}
+                from={bookingDate}
+                to={bookingDate}
+                isAlreadyIn={(trip) => trip.restaurants.some(r => r.restaurant_id === restaurant.restaurant_id)}
+                addToTrip={addToTrip}
+                onBack={() => setStep('details')}
+                onClose={close}/>}
+        </BookingPopup>
     );
 }
 
 RestaurantBooking.propTypes = {
-    header: PropTypes.string,
     restaurant: PropTypes.object,
     setShowConfirmationMessage: PropTypes.func
-}
+};
 
 export default RestaurantBooking;

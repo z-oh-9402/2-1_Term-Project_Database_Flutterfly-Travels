@@ -82,3 +82,113 @@
     margin-right: 0px;
     color:black;
 }
+/* Booking popups (BookingPopup.jsx): the card grows with its step instead of having its height set by script */
+.booking-popup{
+    height: auto;
+    max-height: 88vh;
+    overflow-y: auto;
+    justify-content: flex-start;
+    align-items: stretch;
+    gap: 14px;
+    /* the item pages that open these set white text and a script font for themselves */
+    color: #1d2a33;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.booking-fields{
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.booking-facts span{
+    display: inline-block;
+    width: 90px;
+    color: #44535d;
+}
+
+.booking-summary{
+    text-align: right;
+}
+
+.booking-total{
+    font-weight: bold;
+    font-size: 17px;
+}
+
+.booking-hint{
+    margin: 0;
+    font-size: 13px;
+    color: #44535d;
+}
+
+.popup-buttons{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 6px;
+}
+
+.popup-buttons .custom-btn{
+    margin-right: 0;
+}
+
+.popup-buttons .custom-btn:disabled{
+    opacity: 0.5;
+    cursor: default;
+}
+
+.trip-form-error{
+    margin: 6px 0 0;
+    color: #d32f2f;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.trip-form-note{
+    margin: 6px 0 0;
+    font-size: 14px;
+}
+
+.time-choice{
+    margin-left: 4px;
+    cursor: pointer;
+    text-decoration: underline dotted;
+}
+
+/* the trip list in "Add to a trip" */
+.booking-popup .trips-container{
+    height: auto;
+    max-height: 320px;
+}
+
+.trip-item.unavailable{
+    opacity: 0.6;
+}
+
+.trip-item-reason{
+    margin-top: 4px;
+    color: #b23c17;
+    font-size: 12px;
+}
+
+.trip-item .plus-button{
+    width: auto;
+    height: auto;
+    padding: 4px 14px;
+    font-size: 14px;
+}
+
+.booking-done{
+    text-align: center;
+}
+
+.booking-done-icon{
+    font-size: 52px;
+    color: #2e9d55;
+}
+
+.booking-done p{
+    margin: 6px 0;
+}

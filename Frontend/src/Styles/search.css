@@ -166,3 +166,28 @@ input:focus {
 .agent-profile-info p{
     font-size: 14px;
 }
+/* Agent search (choosing a trip's agent): the suggestions open under the input */
+.agent-search{
+    position: relative;
+    width: 100%;
+}
+
+.agent-suggestions{
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    max-height: 193px;
+    overflow: auto;
+    border-radius: 8px;
+    color: black;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+}
+
+.agent-suggestions .agent-profile-info p{
+    margin: 2px 0 0;
+    font-size: 13px;
+}

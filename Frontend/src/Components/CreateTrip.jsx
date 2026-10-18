@@ -1,178 +1,155 @@
-import { useContext, useState } from "react";
-import UserInfoContext from "../Context/UserInfoContext";
+import { useState } from "react";
 import AgentSearch from './AgentSearch';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import {FaRegCalendarAlt} from 'react-icons/fa';
 import PropTypes from 'prop-types';
 import { apiFetch } from '../api';
+import { addDays, errorMessage, formatDate, startOfDay, toApiDate } from './tripHelpers';
 
-const CreateTrip = ({setCreateTrip, initDepartureDate, initReturnDate}) => {
-    const {userInfo, setInfo} = useContext(UserInfoContext);
-
+// A customer creates a trip. When it is made for a booking (fromDate/toDate), the trip's dates must include the booking's.
+// The agent is optional: they can also be chosen later from My Trips.
+const CreateTrip = ({onCreated, onCancel, fromDate, toDate}) => {
     const [tripName, setTripName] = useState('');
-    const [departureDate, setDepartureDate] = useState(new Date(initDepartureDate));
-    const [returnDate, setReturnDate] = useState(new Date(initReturnDate));
+    const [departureDate, setDepartureDate] = useState(startOfDay(fromDate ?? new Date()));
+    const [returnDate, setReturnDate] = useState(startOfDay(toDate ?? addDays(fromDate ?? new Date(), 1)));
     const [agent, setAgent] = useState(undefined);
     const [isTripNameUnique, setIsTripNameUnique] = useState(true);
     const [selectAnAgent, setSelectAnAgent] = useState(false);
+    const [error, setError] = useState(null);
+    const [isSaving, setIsSaving] = useState(false);
 
     const handleDepartureDateChange = (date) =>
     {
-        const sysdate = new Date();
-
-        if(date<sysdate)
+        if(startOfDay(date) < startOfDay(new Date()))
         {
-            alert("Departure Date cannot be in the past");
+            setError("The trip can't start in the past");
         }
-        else if(date>initDepartureDate)
+        else if(fromDate && startOfDay(date) > startOfDay(fromDate))
         {
-            alert("Departure Date cannot be after one of the check in dates");
+            setError(`The trip must start by ${formatDate(fromDate)}, the first day of this booking`);
         }
         else
         {
-            setDepartureDate(date);
-            
-            if(returnDate<date)
+            setError(null);
+            setDepartureDate(startOfDay(date));
+            if(returnDate < startOfDay(date))
             {
-                setReturnDate(date);
+                setReturnDate(startOfDay(date));
             }
         }
     }
 
     const handleReturnDateChange = (date) =>
     {
-        if(date<departureDate)
+        if(startOfDay(date) < departureDate)
         {
-            setReturnDate(departureDate);
+            setError("The trip can't end before it starts");
         }
-        else if(date<initReturnDate)
+        else if(toDate && startOfDay(date) < startOfDay(toDate))
         {
-            alert("Return Date cannot be before one of the check out dates");
+            setError(`The trip must last until ${formatDate(toDate)}, the last day of this booking`);
         }
         else
         {
-            setReturnDate(date);
+            setError(null);
+            setReturnDate(startOfDay(date));
         }
     }
 
     const handleTripNameChange = async (e) =>
     {
-        setTripName(e.target.value);
-        if(e.target.value !== "")
-        {
-            const response = await apiFetch(`http://localhost:3000/trip/check-tripname?tripName=${e.target.value}`, {
-                method: "GET"
-            });
-
-            const result = await response.json();
-            if(result === 1)
-            {
-                setIsTripNameUnique(false);
-            }
-            else
-            {
-                setIsTripNameUnique(true);
-            }
-        }
-        else
+        const name = e.target.value;
+        setTripName(name);
+        setError(null);
+        if(name.trim() === "")
         {
             setIsTripNameUnique(true);
+            return;
         }
-    
+
+        const response = await apiFetch(`http://localhost:3000/trip/check-tripname?tripName=${encodeURIComponent(name)}`, {
+            method: "GET"
+        });
+        if(response.ok)
+        {
+            setIsTripNameUnique(await response.json() !== 1);
+        }
     }
 
     const createTripPackage = async () => {
-        if(tripName === "" || !isTripNameUnique)
+        if(tripName.trim() === "")
         {
-            alert("Please enter a valid trip name");
-        } 
-        else if(agent===undefined)
-        {
-            alert("Please select an agent");
+            setError("Give the trip a name");
+            return;
         }
-        else
+        if(!isTripNameUnique)
         {
-            const options = {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit'
-            };
-    
-            const inDate = new Intl.DateTimeFormat('en-US', options).format(departureDate);
-            const outDate = new Intl.DateTimeFormat('en-US', options).format(returnDate);
-    
-            const response = await apiFetch(`http://localhost:3000/trip/`, {
-                method: "POST",
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    customerId: userInfo.user_id,
-                    agentId: agent.user_id,
-                    name: tripName,
-                    departureDate: inDate,
-                    returnDate: outDate,
-                    totalCost: 0,
-                    discount: 0,
-                    tripStatus: 'REQUESTING',
-                    rating: 0
-                }),
-            });
-    
-            await response.json();
-    
-            if(userInfo.user_type === 'customer')
-            {
-                const response = await apiFetch(`http://localhost:3000/trip/for-customer?customerId=${userInfo.user_id}`, {
-                    method: "GET"
-                });
-    
-                const result = await response.json();
-                userInfo.trips = result;
-            }
-            if(userInfo.user_type === 'agent')
-            {
-                const response = await apiFetch(`http://localhost:3000/trip/for-agent?agentId=${userInfo.user_id}`, {
-                    method: "GET"
-                });
-    
-                const result = await response.json();
-                userInfo.trips = result;
-            }
+            setError("You already have a trip with this name");
+            return;
+        }
+        if(selectAnAgent && agent === undefined)
+        {
+            setError("Pick an agent from the search, or choose No");
+            return;
+        }
 
-            setInfo(userInfo);
-            setCreateTrip(false);
+        setIsSaving(true);
+        const response = await apiFetch(`http://localhost:3000/trip/`, {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                agentId: selectAnAgent ? agent.user_id : null,
+                name: tripName.trim(),
+                departureDate: toApiDate(departureDate),
+                returnDate: toApiDate(returnDate)
+            }),
+        });
+        setIsSaving(false);
+
+        if(!response.ok)
+        {
+            setError(await errorMessage(response, "Could not create the trip"));
+            return;
         }
-    } 
+        const { tripId } = await response.json();
+        onCreated(tripId, tripName.trim());
+    }
 
     return(
     <>
-        <div className='message-title'>Create a new trip -</div>
-    
+        <div className='message-title'>Create a new trip</div>
+
         <div className='trip-creation-container'>
             <label>Trip Name: <input type='text' value={tripName} placeholder='Enter a name' onChange={handleTripNameChange}/></label>
-            {!isTripNameUnique ? <h5 style={{ color: "red" }}>Trip name already exists</h5> : <br/>}
+            {!isTripNameUnique && <h5 className='trip-form-error'>You already have a trip with this name</h5>}
 
             <div className="radio-group">
-                <h3>Do you want to select an agent?</h3>
+                <h3>Choose an agent now?</h3>
                 <label className="radio-option">
-                    <input type="radio" name="userType" value={true} onClick={()=>setSelectAnAgent(true)} />Yes
+                    <input type="radio" name="selectAnAgent" checked={selectAnAgent} onChange={()=>setSelectAnAgent(true)} />Yes
                 </label>
 
                 <label className="radio-option">
-                    <input type="radio" name="userType" checked={!selectAnAgent} value={false} onClick={()=>setSelectAnAgent(false)} />No
+                    <input type="radio" name="selectAnAgent" checked={!selectAnAgent} onChange={()=>setSelectAnAgent(false)} />No, later
                 </label>
             </div>
 
-            {selectAnAgent && <label id='select-agent'>Search for an agent: <AgentSearch setProfile={setAgent}/></label>}
+            {selectAnAgent &&
+            <div id='select-agent'>
+                <span>Search for an agent:</span>
+                <AgentSearch setProfile={setAgent}/>
+                {agent && <p className='trip-form-note'>Agent: <strong>{agent.username}</strong></p>}
+            </div>}
 
             <label> Departure Date:
                 <div style={{display: 'inline-block', marginLeft: '5px'}}>
                     <div className='datepicker-container'>
                         <DatePicker
                             selected={departureDate}
-                            onChange={(e)=>handleDepartureDateChange(e)}
+                            onChange={handleDepartureDateChange}
                             dateFormat="dd/MM/yyyy"
                             placeholderText="Departure Date"
                         />
@@ -186,7 +163,7 @@ const CreateTrip = ({setCreateTrip, initDepartureDate, initReturnDate}) => {
                     <div className='datepicker-container'>
                         <DatePicker
                             selected={returnDate}
-                            onChange={(e)=>handleReturnDateChange(e)}
+                            onChange={handleReturnDateChange}
                             dateFormat="dd/MM/yyyy"
                             placeholderText="Return Date"
                         />
@@ -194,16 +171,22 @@ const CreateTrip = ({setCreateTrip, initDepartureDate, initReturnDate}) => {
                     </div>
                 </div>
             </label>
+
+            {error && <p className='trip-form-error'>{error}</p>}
         </div>
 
-        <button className='custom-btn' style={{color:"black"}} onClick={createTripPackage}>Create Trip</button>
+        <div className='popup-buttons'>
+            <button className='custom-btn' style={{color:"black"}} disabled={isSaving} onClick={createTripPackage}>Create Trip</button>
+            <button className='custom-btn' style={{color:"black"}} onClick={onCancel}>Back</button>
+        </div>
     </>);
 }
 
 CreateTrip.propTypes = {
-    setCreateTrip: PropTypes.func.isRequired,
-    initDepartureDate: PropTypes.instanceOf(Date).isRequired,
-    initReturnDate: PropTypes.instanceOf(Date).isRequired,
+    onCreated: PropTypes.func.isRequired,
+    onCancel: PropTypes.func.isRequired,
+    fromDate: PropTypes.instanceOf(Date),
+    toDate: PropTypes.instanceOf(Date),
 }
 
 export default CreateTrip;

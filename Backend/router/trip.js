@@ -1,6 +1,6 @@
 const router = require("express-promise-router")();
 const database = require('../database');
-const { requireAuth, requireRole, requireSelfOrAdmin, canAccessTrip } = require('../auth');
+const { requireAuth, requireRole, requireSelfOrAdmin, canAccessTrip, bookingEditProblem } = require('../auth');
 
 router.use(requireAuth);
 
@@ -61,9 +61,10 @@ const isApprovedAgent = async (agentId) => {
     return rows.length !== 0;
 }
 
+// Whether the logged-in customer already has a trip with this name (1) or not (-1)
 router.get("/check-tripname",async(req,res)=>{
-    const params = [req.query.tripName];
-    const query = `SELECT CHECK_TRIP_NAME($1)`;
+    const params = [req.query.tripName, req.user.id];
+    const query = `SELECT CHECK_TRIP_NAME($1, $2)`;
     const ans = await database.query(query,params);
 
     const result = ans[0].check_trip_name;
@@ -319,14 +320,27 @@ router.post('/', requireRole('customer'), async (req, res) => {
         res.status(400).json({message: "Invalid agent"});
         return;
     }
+    if(typeof name !== 'string' || name.trim() === '')
+    {
+        res.status(400).json({message: "The trip needs a name"});
+        return;
+    }
+    const taken = await database.query(`SELECT CHECK_TRIP_NAME($1, $2)`, [name, req.user.id]);
+    if(taken[0].check_trip_name === 1)
+    {
+        res.status(409).json({message: "You already have a trip with this name"});
+        return;
+    }
 
     // A new trip always starts as a request with no cost, discount or rating, whatever the request body says
     const query = `INSERT INTO Trip (CUSTOMER_ID, AGENT_ID, NAME, DEPARTURE_DATE, RETURN_DATE, TOTAL_COST, DISCOUNT, RATING, TRIP_STATUS)
-                   VALUES ($1, $2, $3, TO_DATE($4, 'MM/DD/YYYY'), TO_DATE($5, 'MM/DD/YYYY'), 0, 0, 0, 'REQUESTING')`;
+                   VALUES ($1, $2, $3, TO_DATE($4, 'MM/DD/YYYY'), TO_DATE($5, 'MM/DD/YYYY'), 0, 0, 0, 'REQUESTING')
+                   RETURNING TRIP_ID`;
     const params = [req.user.id, agentId ?? null, name, departureDate, returnDate];
-    await database.query(query,params);
+    const rows = await database.query(query,params);
 
-    res.status(200).json("Trip added successfully");
+    // the id lets a booking popup add its booking to the trip it just created
+    res.status(200).json({tripId: rows[0].trip_id});
 })
 
 router.delete('/admin-decision', requireRole('admin'), async (req, res) => {
@@ -344,7 +358,7 @@ router.delete('/admin-decision', requireRole('admin'), async (req, res) => {
     res.status(200).json("Trip status updated successfully");
 })
 
-// The trip's customer or agent removes a destination while the trip is being updated (Trips.jsx / AgentTrip.jsx deleteBooking)
+// The trip's customer or agent removes a destination, under the same rules as other bookings (bookingEditProblem in auth.js)
 router.delete('/delete-destination', async (req, res) => {
     const {tripDestinationId} = req.query;
     if(!isId(tripDestinationId))
@@ -353,29 +367,23 @@ router.delete('/delete-destination', async (req, res) => {
         return;
     }
 
-    const rows = await database.query(`SELECT TD.TRIP_ID, T.TRIP_STATUS
-                                       FROM Trip_Destination TD JOIN Trip T ON T.TRIP_ID=TD.TRIP_ID
-                                       WHERE TD.TRIP_DESTINATION_ID = $1`, [tripDestinationId]);
+    const rows = await database.query(`SELECT TRIP_ID FROM Trip_Destination WHERE TRIP_DESTINATION_ID = $1`, [tripDestinationId]);
     if(rows.length === 0)
     {
         res.status(404).json({message: "Destination not found"});
         return;
     }
-    if(!(await canAccessTrip(req.user, rows[0].trip_id)))
+    const problem = await bookingEditProblem(req.user, rows[0].trip_id);
+    if(problem)
     {
-        res.status(403).json({message: "Not allowed"});
-        return;
-    }
-    if(req.user.role !== 'admin' && rows[0].trip_status !== 'UPDATING')
-    {
-        res.status(409).json({message: "Bookings can only be changed while the trip is being updated"});
+        res.status(problem[0]).json({message: problem[1]});
         return;
     }
 
     const query = `DELETE FROM Trip_Destination
                    WHERE TRIP_DESTINATION_ID = $1`;
     await database.query(query,[tripDestinationId]);
-    res.status(200).json("Trip deleted successfully");
+    res.status(200).json("Destination removed from the trip");
 })
 
 // The trip's customer deletes their trip (Trips.jsx deleteTrip)

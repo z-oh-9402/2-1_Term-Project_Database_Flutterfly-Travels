@@ -1,8 +1,9 @@
 .trip-container{
     animation: none;
     overflow: auto;
-    width: 480px;
-    height: 500px;
+    width: 560px;
+    height: 560px;
+    box-sizing: border-box;
 }
 
 .category-bar {
@@ -144,4 +145,46 @@
     padding-right: 80px;
     min-width: 100%;
     box-sizing: border-box;
+}
+.trips-header{
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+/* six tabs on the customer's side */
+.category-bar .category{
+    padding: 7px 4px;
+    font-size: 13px;
+}
+
+/* what happens next with the trip */
+.trip-status-hint{
+    margin: 4px 0 8px;
+    padding: 8px 12px;
+    border-left: 3px solid #25afe6;
+    border-radius: 4px;
+    background-color: rgba(37, 175, 230, 0.12);
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.reservation p{
+    margin: 4px 0;
+    padding-right: 36px;
+}
+
+.reservation-name{
+    font-weight: bold;
+}
+
+.no-bookings{
+    margin-top: 14px;
+    opacity: 0.8;
+}
+
+.trip-agent-picker{
+    margin: 10px 0;
 }

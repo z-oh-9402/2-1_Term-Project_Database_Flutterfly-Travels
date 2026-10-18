@@ -1,36 +1,24 @@
 const router = require("express-promise-router")();
 const database = require('../database');
-const { requireAuth, canAccessTrip } = require('../auth');
+const { requireAuth, bookingEditProblem } = require('../auth');
 
 router.use(requireAuth);
 
 // True if value is a plain positive integer id (rejects things like "1 OR 1=1" before they reach a query)
 const isId = (value) => /^\d+$/.test(String(value));
 
-// Sends an error response and returns false unless the logged-in user may change this trip's bookings:
-// they must be the trip's customer or agent (or an admin), and the trip must be UPDATING (being built by the agent),
-// which is the only state in which the frontend offers to add or remove bookings.
+// Sends an error response and returns false unless the logged-in user may change this trip's bookings now
+// (see bookingEditProblem in auth.js)
 const checkCanEditTrip = async (req, res, tripId) => {
     if(!isId(tripId))
     {
         res.status(400).json({message: "Invalid trip id"});
         return false;
     }
-    if(!(await canAccessTrip(req.user, tripId)))
+    const problem = await bookingEditProblem(req.user, tripId);
+    if(problem)
     {
-        res.status(403).json({message: "Not allowed"});
-        return false;
-    }
-
-    const rows = await database.query(`SELECT TRIP_STATUS FROM TRIP WHERE TRIP_ID = $1`, [tripId]);
-    if(rows.length === 0)
-    {
-        res.status(404).json({message: "Trip not found"});
-        return false;
-    }
-    if(req.user.role !== 'admin' && rows[0].trip_status !== 'UPDATING')
-    {
-        res.status(409).json({message: "Bookings can only be changed while the trip is being updated"});
+        res.status(problem[0]).json({message: problem[1]});
         return false;
     }
     return true;
@@ -38,16 +26,48 @@ const checkCanEditTrip = async (req, res, tripId) => {
 
 const isValidCost = (cost) => Number.isFinite(Number(cost)) && Number(cost) >= 0;
 
+// Sends an error response and returns false unless the item, the count (rooms or seats) and the cost make sense
+const checkBookingValues = (res, itemId, count, cost) => {
+    if(!isId(itemId))
+    {
+        res.status(400).json({message: "Invalid item"});
+        return false;
+    }
+    if(count !== undefined && !(isId(count) && Number(count) >= 1))
+    {
+        res.status(400).json({message: "Invalid number"});
+        return false;
+    }
+    if(cost !== undefined && !isValidCost(cost))
+    {
+        res.status(400).json({message: "Invalid cost"});
+        return false;
+    }
+    return true;
+}
+
+// Sends an error response and returns false unless the booked days (frontend's 'MM/DD/YYYY, HH24:MI:SS' strings)
+// fall within the trip's departure and return dates
+const checkWithinTrip = async (res, tripId, from, to) => {
+    const rows = await database.query(
+        `SELECT TO_TIMESTAMP($2, 'MM/DD/YYYY, HH24:MI:SS')::date >= DEPARTURE_DATE
+                AND TO_TIMESTAMP($3, 'MM/DD/YYYY, HH24:MI:SS')::date <= RETURN_DATE AS FITS
+         FROM TRIP WHERE TRIP_ID = $1`, [tripId, from, to]);
+    if(rows.length === 0 || !rows[0].fits)
+    {
+        res.status(400).json({message: "The booking's dates are outside the trip's dates"});
+        return false;
+    }
+    return true;
+}
+
 router.post("/add-accommodation-booking", async (req, res) => {
     const { itemId, tripId, checkInDate, checkOutDate, numberOfRooms, totalCost } = req.body;
 
-    if(!(await checkCanEditTrip(req, res, tripId)))
+    if(!checkBookingValues(res, itemId, numberOfRooms, totalCost)
+       || !(await checkCanEditTrip(req, res, tripId))
+       || !(await checkWithinTrip(res, tripId, checkInDate, checkOutDate)))
     {
-        return;
-    }
-    if(!isValidCost(totalCost))
-    {
-        res.status(400).json({message: "Invalid cost"});
         return;
     }
 
@@ -66,7 +86,9 @@ router.post("/add-accommodation-booking", async (req, res) => {
 router.post("/add-destination-booking", async (req, res) => {
     const { itemId, tripId, checkInDate, checkOutDate } = req.body;
 
-    if(!(await checkCanEditTrip(req, res, tripId)))
+    if(!checkBookingValues(res, itemId)
+       || !(await checkCanEditTrip(req, res, tripId))
+       || !(await checkWithinTrip(res, tripId, checkInDate, checkOutDate)))
     {
         return;
     }
@@ -81,13 +103,10 @@ router.post("/add-destination-booking", async (req, res) => {
 router.post("/add-restaurant-booking", async (req, res) => {
     const {itemId, tripId, bookingDate, arrivalTime, departureTime, numberOfSeats, totalCost} = req.body;
 
-    if(!(await checkCanEditTrip(req, res, tripId)))
+    if(!checkBookingValues(res, itemId, numberOfSeats, totalCost)
+       || !(await checkCanEditTrip(req, res, tripId))
+       || !(await checkWithinTrip(res, tripId, bookingDate, bookingDate)))
     {
-        return;
-    }
-    if(!isValidCost(totalCost))
-    {
-        res.status(400).json({message: "Invalid cost"});
         return;
     }
 
@@ -106,13 +125,10 @@ router.post("/add-restaurant-booking", async (req, res) => {
 router.post("/add-flight-booking", async (req, res) => {
     const { itemId, tripId, departureDate, returnDate, numberOfSeats, seatClass, flightStyle, totalCost } = req.body;
 
-    if(!(await checkCanEditTrip(req, res, tripId)))
+    if(!checkBookingValues(res, itemId, numberOfSeats, totalCost)
+       || !(await checkCanEditTrip(req, res, tripId))
+       || !(await checkWithinTrip(res, tripId, departureDate, returnDate ?? departureDate)))
     {
-        return;
-    }
-    if(!isValidCost(totalCost))
-    {
-        res.status(400).json({message: "Invalid cost"});
         return;
     }
 

@@ -5,11 +5,13 @@ import UserInfoContext from "../Context/UserInfoContext";
 import ReviewsAndRatings from "../Components/ReviewsAndRatings";
 import { apiFetch } from '../api';
 import { ItemHeader, ItemLayout, InfoRow, InfoText } from "../Components/ItemProfile";
+import DestinationBooking from "../Components/DestinationBooking";
 
 const DestinationProfile = () => {
     const {userInfo} = useContext(UserInfoContext);
     const params = useParams();
     const [result, setResult] = useState(null);
+    const [showBooking, setShowBooking] = useState(false);
     const [images,setImages] = useState([]);
     const [review, setReview] = useState("");
     const personalReview = {review, setReview};
@@ -76,7 +78,13 @@ const DestinationProfile = () => {
         <>
             {result &&
             <div className="item-profile">
-                <ItemHeader itemType='destination' item={result} subtitle={(result.type || []).map(type => type.type_name).join(', ')}/>
+                {showBooking && <DestinationBooking destination={result} setShowConfirmationMessage={setShowBooking}/>}
+                <ItemHeader
+                    itemType='destination'
+                    item={result}
+                    subtitle={(result.type || []).map(type => type.type_name).join(', ')}
+                    action={userInfo && userInfo.user_type !== 'admin' && <button className="btn-primary booking-btn" onClick={()=>setShowBooking(true)}>Add to Trip</button>}
+                />
 
                 <ItemLayout
                     images={images}

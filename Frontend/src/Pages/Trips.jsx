@@ -9,438 +9,238 @@ import { RiDeleteBin5Line } from "react-icons/ri";
 import CreateTrip from '../Components/CreateTrip';
 import AgentSearch from '../Components/AgentSearch';
 import AgentProfile from '../Components/AgentProfile';
+import TripBookings from '../Components/TripBookings';
+import { canEditBookings, errorMessage, formatDate } from '../Components/tripHelpers';
 import { apiFetch } from '../api';
 
+// The tabs of My Trips; "Suggested" holds other customers' completed trips, as ideas
+const categories = [
+    { name: 'Requesting', status: 'REQUESTING' },
+    { name: 'Updating', status: 'UPDATING' },
+    { name: 'Pending', status: 'PENDING' },
+    { name: 'Confirmed', status: 'CONFIRMED' },
+    { name: 'Completed', status: 'COMPLETED' },
+    { name: 'Suggested' },
+];
+
+// What happens next with a trip in each status
+const statusHint = (trip) => ({
+    REQUESTING: trip.agent_id ? `Waiting for ${trip.username} to accept the trip. You can already add bookings.`
+                              : 'Choose an agent to send them this trip. You can already add bookings.',
+    UPDATING: 'Your agent accepted the trip and is putting it together with you. When it looks right, send it to an admin for approval.',
+    PENDING: 'Waiting for an admin to approve the trip. Its bookings can no longer be changed.',
+    CONFIRMED: 'Approved by an admin. Have a great trip!',
+    COMPLETED: 'This trip is over.',
+}[trip.trip_status]);
+
+// A customer's trips (opened from My Trips in the navbar)
 const Trips = (props) => {
-    const {userInfo, setInfo} = useContext(UserInfoContext);
-    const [trips, setTrips] = useState([]);
     const {setShowTrips} = props;
+    const {userInfo, reloadTrips} = useContext(UserInfoContext);
     const [currentCategory, setCurrentCategory] = useState(0);
-    const [page, setPage] = useState(1);
-    const [visitingTrip, setVisitingTrip] = useState(undefined);
-    const [isThereContent, setIsThereContent] = useState(false);
-    const [refreshPage, setRefreshPage] = useState(false);
+    const [visitingTripId, setVisitingTripId] = useState(null);
+    const [suggestedTrips, setSuggestedTrips] = useState([]);
     const [createTrip, setCreateTrip] = useState(false);
     const [showAgentSearch, setShowAgentSearch] = useState(false);
-    const [agentProfile, setAgentProfile] = useState(undefined);
-    const [showAgentProfile, setShowAgentProfile] = useState(false);
+    const [pickedAgent, setPickedAgent] = useState(undefined);
     const [visitingAgent, setVisitingAgent] = useState(undefined);
-
-    const sortTrips = async (tripList) => {
-        let newTrips = [];
-        const requestingTrips = [];
-        const updatingTrips = [];
-        const pendingTrips = [];
-        const confirmedTrips = [];
-
-        for(let trip of tripList)
-        {
-            if(trip.trip_status === "REQUESTING")
-            {
-                requestingTrips.push(trip);
-            }
-            if(trip.trip_status === "UPDATING")
-            {
-                updatingTrips.push(trip);
-            }
-            if(trip.trip_status === "PENDING")
-            {
-                pendingTrips.push(trip);
-            }
-            if(trip.trip_status === "CONFIRMED")
-            {
-                confirmedTrips.push(trip);
-            }
-        }
-
-        newTrips.push(requestingTrips);
-        newTrips.push(updatingTrips);
-        newTrips.push(pendingTrips);
-        newTrips.push(confirmedTrips);
-
-        if(userInfo.user_type==='customer')
-        {
-            const response = await apiFetch(`http://localhost:3000/trip/fetch-complete-trips`, {
-                method: 'GET'  
-            });
-            
-            const suggestedTrips = await response.json();
-            console.log(suggestedTrips)
-            newTrips.push(suggestedTrips);
-        }
-
-        setTrips(newTrips);
-    }
+    const [error, setError] = useState(null);
 
     useEffect(() => {
-        const resizeComponent = () => {
-            if(createTrip)
-            {
-                const loginSignupContainer = document.querySelector('.confirmation-message-container');
-                loginSignupContainer.style.height = '400px';
-            }
-            else
-            {
-                const loginSignupContainer = document.querySelector('.trip-container');
-                loginSignupContainer.style.height = '500px';
-            }
-        }
-        resizeComponent();
-    }, [createTrip]);
+        let ignore = false;
+        apiFetch(`http://localhost:3000/trip/fetch-complete-trips`, { method: 'GET' })
+            .then(response => response.ok ? response.json() : [])
+            .then(trips => { if(!ignore) setSuggestedTrips(trips); });
+        return () => { ignore = true; };
+    }, []);
 
-    
-    useEffect(() => {
-        sortTrips(userInfo.trips);
-    }, [refreshPage, userInfo.trips,page]);
+    const isSuggested = categories[currentCategory].status === undefined;
+    const ownTrips = userInfo.trips ?? [];
+    const shownTrips = isSuggested ? suggestedTrips : ownTrips.filter(trip => trip.trip_status === categories[currentCategory].status);
+    // looked up again on every render, so it always shows the trip as last loaded
+    const visitingTrip = visitingTripId === null ? null : shownTrips.find(trip => trip.trip_id === visitingTripId) ?? null;
 
-    useEffect(() => {
-        if(page===2)
-        {
-            if(visitingTrip.destinations.length!==0 || visitingTrip.accommodations.length!==0 || visitingTrip.restaurants.length!==0 || visitingTrip.flights.length!==0)
-            {
-                setIsThereContent(true);
-            }
-            else
-            {
-                setIsThereContent(false);
-            }
-        }
-    }, [page]);
-
-    const setAgent = () => {
-        setShowAgentSearch(true);
-    }
-
-    const handleGoToCurrentPage = () => {
-        setShowTrips(false);
-    }
-
-    const visitTripProfile = (trip) => {
-        if(userInfo.user_type==='customer' || currentCategory!==0)
-        {
-            setVisitingTrip(trip);
-            setPage(2);
-        }
-    }
-
-    const func = async () => {
-        let result;
-        if(userInfo.user_type === 'customer')
-        {
-            const response = await apiFetch(`http://localhost:3000/trip/for-customer?customerId=${userInfo.user_id}`, {
-                method: "GET"
-            });
-
-            result = await response.json();
-        }
-        if(userInfo.user_type === 'agent')
-        {
-            const response = await apiFetch(`http://localhost:3000/trip/for-agent?agentId=${userInfo.user_id}`, {
-                method: "GET"
-            });
-
-            result = await response.json();
-        }
-
-        userInfo.trips = result;
-        setInfo(userInfo);
-    }
-
-    const deleteBooking = async (type, index) => {
-        const trip = visitingTrip;
-        const booking = type==='destination' ? trip.destinations[index] : 
-                       type==='accommodation' ? trip.accommodations[index] : 
-                       type==='restaurant' ? trip.restaurants[index] : 
-                       trip.flights[index];
-                       
-        let response;
-        if(type==='destination')
-        {
-            response = await apiFetch(`http://localhost:3000/trip/delete-destination?tripDestinationId=${booking.trip_destination_id}`, {
-                method: 'DELETE'
-            });
-        }
-        else
-        {
-            response = await apiFetch(`http://localhost:3000/booking/delete-booking?bookingId=${booking.booking_id}`, {
-                method: 'DELETE'
-            });
-        }
-        await response.json();
-
-        func();
-        setRefreshPage(!refreshPage);
-    }
-
-    const deleteTrip = async (index) => {
-        const trip = trips[currentCategory][index];
-        const response = await apiFetch(`http://localhost:3000/trip/delete-trip?tripId=${trip.trip_id}`, {
-            method: 'DELETE'
-        });
-
-        await response.json();
-
-        func();
-        setRefreshPage(!refreshPage);
-    }
-
-    const customerConfirm = async () => {
-        const response = await apiFetch(`http://localhost:3000/trip/update-trip-status`, {
-            method: 'PUT',
-            headers: {
-            'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(
-            {
-                tripStatus: "PENDING",
-                tripId: visitingTrip.trip_id
-            })
-        });
-
-        await response.json();
-        
-        func();
-        setShowTrips(false);
-    }
-
-    const updateAgent = async () => {
-        const response = await apiFetch(`http://localhost:3000/trip/update-agent`, {
-            method: 'PUT',
-            headers: {
-            'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(
-            {
-                tripId: visitingTrip.trip_id,
-                agentId: agentProfile.user_id
-            })
-        });
-
-        await response.json();
+    const openTrip = (trip) => {
+        setError(null);
         setShowAgentSearch(false);
-        func();
-        setRefreshPage(!refreshPage);
+        setPickedAgent(undefined);
+        setVisitingTripId(trip.trip_id);
+    }
+
+    // Sends a change, reloads the trips, and shows the server's message if it failed
+    const run = async (request, fallback) => {
+        setError(null);
+        const response = await request();
+        if(!response.ok)
+        {
+            setError(await errorMessage(response, fallback));
+        }
+        await reloadTrips();
+        return response.ok;
+    }
+
+    const removeBooking = (type, booking) => run(() => type === 'destination' ?
+        apiFetch(`http://localhost:3000/trip/delete-destination?tripDestinationId=${booking.trip_destination_id}`, { method: 'DELETE' }) :
+        apiFetch(`http://localhost:3000/booking/delete-booking?bookingId=${booking.booking_id}`, { method: 'DELETE' }),
+        'Could not remove the booking');
+
+    const deleteTrip = async (trip) => {
+        if(!window.confirm(`Delete the trip "${trip.name}" and all its bookings?`))
+        {
+            return;
+        }
+        if(await run(() => apiFetch(`http://localhost:3000/trip/delete-trip?tripId=${trip.trip_id}`, { method: 'DELETE' }), 'Could not delete the trip'))
+        {
+            setVisitingTripId(null);
+        }
+    }
+
+    const sendForApproval = async (trip) => {
+        const sent = await run(() => apiFetch(`http://localhost:3000/trip/update-trip-status`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tripStatus: "PENDING", tripId: trip.trip_id })
+        }), 'Could not send the trip for approval');
+        if(sent)
+        {
+            // follow the trip to its new tab
+            setCurrentCategory(categories.findIndex(category => category.status === 'PENDING'));
+        }
+    }
+
+    const setAgent = async (trip) => {
+        const saved = await run(() => apiFetch(`http://localhost:3000/trip/update-agent`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tripId: trip.trip_id, agentId: pickedAgent.user_id })
+        }), 'Could not set the agent');
+        if(saved)
+        {
+            setShowAgentSearch(false);
+            setPickedAgent(undefined);
+        }
     }
 
     const visitAgentProfile = async (agentId) => {
-            const response = await apiFetch(`http://localhost:3000/agent/fetch/${agentId}`, {
-                method: 'GET'
-            });
-
-            const result = await response.json();
-        setVisitingAgent(result);
-        setShowAgentProfile(true);
+        const response = await apiFetch(`http://localhost:3000/agent/fetch/${agentId}`, { method: 'GET' });
+        if(response.ok)
+        {
+            setVisitingAgent(await response.json());
+        }
     }
 
-    return(
-        <> 
-            {showAgentProfile ? <AgentProfile agent={visitingAgent} setShowAgentProfile={setShowAgentProfile}/>
-            :
-            <div className='login-signup-popup'>
-                <div className="close-container" style={{position: 'relative'}}>
-                    <ImCross className='close' onClick={handleGoToCurrentPage} />
+    if(visitingAgent)
+    {
+        return <AgentProfile agent={visitingAgent} setShowAgentProfile={() => setVisitingAgent(undefined)}/>;
+    }
 
-                    {createTrip ? 
-                    <div className='login-signup-container confirmation-message-container'>
-                        <CreateTrip setCreateTrip={setCreateTrip}/>
-                    </div>
+    const tripSummary = (trip) => (
+        <div className="trip-details">
+            <p>{formatDate(trip.departure_date)} – {formatDate(trip.return_date)}</p>
+            <p>Total Cost: ৳ {Number(trip.total_cost).toLocaleString('en-US')}</p>
+            <p>Agent: {trip.agent_id ? trip.username : 'not chosen yet'}</p>
+        </div>
+    );
+
+    return(
+        <div className='login-signup-popup'>
+            <div className="close-container" style={{position: 'relative'}}>
+                <ImCross className='close' onClick={() => setShowTrips(false)} />
+
+                <div className='login-signup-container trip-container'>
+                    {createTrip ?
+                    <CreateTrip
+                        onCreated={async () => { await reloadTrips(); setCreateTrip(false); setCurrentCategory(0); }}
+                        onCancel={() => setCreateTrip(false)}/>
+
+                    : visitingTrip === null ?
+                    <>
+                        <div className='trips-header'>
+                            <h2>My Trips</h2>
+                            <button className="customer-confirm-button custom-btn" onClick={()=>setCreateTrip(true)}>Create a new trip</button>
+                        </div>
+                        <div className="category-bar">
+                            {categories.map((category, index) =>
+                                <div key={category.name} className={"category" + (currentCategory===index ? " selected-category" : "")}
+                                     onClick={() => { setCurrentCategory(index); setVisitingTripId(null); }}>
+                                    {category.name}
+                                </div>
+                            )}
+                        </div>
+
+                        {error && <p className='trip-form-error'>{error}</p>}
+                        <div className="category-data">
+                            {shownTrips.length===0 ?
+                                <div className="no-trips">
+                                    <h3>{isSuggested ? 'No completed trips to suggest yet' : 'No trips in this category'}</h3>
+                                </div>
+                            :
+                            shownTrips.map((trip) =>
+                                <div key={trip.trip_id} className="trip">
+                                    {trip.trip_status === 'REQUESTING' && !isSuggested &&
+                                        <RiDeleteBin5Line className='delete-button' title='Delete trip' onClick={() => deleteTrip(trip)}/>}
+                                    <div className='trip-child-div' onClick={() => openTrip(trip)}>
+                                        <h3 style={{marginTop: '0px', marginBottom: '8px'}}>{trip.name}</h3>
+                                        {tripSummary(trip)}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </>
 
                     :
+                    <>
+                        <div className='trips-header'>
+                            <h2>{visitingTrip.name}</h2>
+                            <button className='custom-btn customer-confirm-button' onClick={() => { setVisitingTripId(null); setError(null); }}>All Trips</button>
+                        </div>
 
-                    <div className='login-signup-container trip-container'>
-                        {page===1 ?
-                        <>
-                            <div style={{width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                                <h2>My Trips</h2>
-                                {userInfo.user_type==='customer' && <button className="customer-confirm-button custom-btn" onClick={()=>setCreateTrip(true)}>Create a new trip</button>}
-                            </div>
-                            <div className="category-bar" id="categoryBar">
-                                <div className={"category" + (currentCategory===0 ? " selected-category" : "")} id="category0" onClick={()=>setCurrentCategory(0)}>Requesting</div>
-                                <div className={"category" + (currentCategory===1 ? " selected-category" : "")} id="category1" onClick={()=>setCurrentCategory(1)}>Updating</div>
-                                <div className={"category" + (currentCategory===2 ? " selected-category" : "")} id="category2" onClick={()=>setCurrentCategory(2)}>Pending</div>
-                                <div className={"category" + (currentCategory===3 ? " selected-category" : "")} id="category3" onClick={()=>setCurrentCategory(3)}>Confirmed</div>
-                                <div className={"category" + (currentCategory===4 ? " selected-category" : "")} id="category4" onClick={()=>setCurrentCategory(4)}>Suggested</div>
-                            </div>
+                        {!isSuggested && <p className='trip-status-hint'>{statusHint(visitingTrip)}</p>}
 
-                            {trips.length!==0 &&
-                            <div className="category-data" id="categoryData">
-                                {trips[currentCategory].length===0 ? 
-                                    <div className="no-trips">
-                                        <h3>No trips in this category</h3>
-                                    </div>
-                                :
-                                trips[currentCategory].map((trip, index) => 
-                                    <div key={index} className="trip">
-                                        {currentCategory===0 && <RiDeleteBin5Line className='delete-button' onClick={()=>deleteTrip(index)}/>}
-                                        <div className='trip-child-div' onClick={()=>{visitTripProfile(trip)}}>
-                                            <h3 style={{marginTop: '0px', marginBottom: '8px'}}>{trip.name}</h3>
-                                            <div className="trip-details">
-                                                <p>Departure Date:&nbsp;
-                                                    {new Date(trip.departure_date).toLocaleDateString('en-US', {
-                                                        year: 'numeric',
-                                                        month: 'long',
-                                                        day: 'numeric'
-                                                    })}
-                                                </p>
-                                                <p>Return Date:&nbsp;
-                                                    {new Date(trip.return_date).toLocaleDateString('en-US', {
-                                                        year: 'numeric',
-                                                        month: 'long',
-                                                        day: 'numeric'
-                                                    })}
-                                                </p>
-                                                <p>Total Cost: ৳ {trip.total_cost.toLocaleString('en-US')}</p>
-                                                <p>Agent: {trip.user_id ? trip.username : 'not set yet'}</p>
-                                                {/* {currentCategory===4 && <p>Rating: {trip.rating!==0 ? <Rating rating={trip.rating} state={0} setRating={null}/> : 'no rating given yet'}</p>} */}
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>}
-                        </>
+                        <div className="trip-details">
+                            <p>{formatDate(visitingTrip.departure_date)} – {formatDate(visitingTrip.return_date)}</p>
+                            <p>Total Cost: ৳ {Number(visitingTrip.total_cost).toLocaleString('en-US')}</p>
+                            {Number(visitingTrip.discount) !== 0 && <p>Discount: {visitingTrip.discount}%</p>}
+                            <p>Agent: {visitingTrip.agent_id ?
+                                <span className='visit-agent-profile' onClick={() => visitAgentProfile(visitingTrip.agent_id)}>{visitingTrip.username}</span> :
+                                'not chosen yet'}
+                            </p>
+                        </div>
 
-                        :
-                        
-                        <>
-                            <div style={{width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                                <h2>{visitingTrip.name}</h2>
-                                {currentCategory===1 && isThereContent && <button className="customer-confirm-button custom-btn" onClick={customerConfirm}>Confirm</button>}
-                                {currentCategory===0 && !visitingTrip.user_id && <button className="customer-confirm-button custom-btn" onClick={showAgentSearch ? updateAgent : setAgent}>{showAgentSearch ? 'Set Agent'  : 'Find Agent'}</button>}
-                            </div>
-                            
-                            <div className="trip-details">
-                                <p>Departure Date:&nbsp;
-                                    {new Date(visitingTrip.departure_date).toLocaleDateString('en-US', {
-                                        year: 'numeric',
-                                        month: 'long',
-                                        day: 'numeric'
-                                    })}
-                                </p>
-                                <p>Return Date:&nbsp;
-                                    {new Date(visitingTrip.return_date).toLocaleDateString('en-US', {
-                                        year: 'numeric',
-                                        month: 'long',
-                                        day: 'numeric'
-                                    })}
-                                </p>
-                                <p>Total Cost: ৳ {visitingTrip.total_cost.toLocaleString('en-US')}</p>
-                                <p>Discount: {Number(visitingTrip.discount)!==0 ?visitingTrip.discount+"%" : 'none'}</p>
-                                {/* {(currentCategory===3 || currentCategory===4) && <p>Rating: {visitingTrip.rating!==0 ? <Rating rating={visitingTrip.rating} state={0} setRating={null}/> : 'no rating given yet'}</p>} */}
-                                <p onClick={()=>visitAgentProfile(visitingTrip.user_id)}>Agent: {visitingTrip.user_id ? visitingTrip.username : <span id="set-agent-link" onClick={setAgent}>not set yet</span>}</p>
+                        {visitingTrip.trip_status === 'REQUESTING' && !visitingTrip.agent_id && !isSuggested &&
+                        <div className='trip-agent-picker'>
+                            {showAgentSearch ?
+                            <>
+                                <AgentSearch setProfile={setPickedAgent}/>
+                                <div className='popup-buttons'>
+                                    <button className='custom-btn' disabled={!pickedAgent} onClick={() => setAgent(visitingTrip)}>
+                                        {pickedAgent ? `Send the request to ${pickedAgent.username}` : 'Pick an agent above'}
+                                    </button>
+                                    <button className='custom-btn' onClick={() => { setShowAgentSearch(false); setPickedAgent(undefined); }}>Cancel</button>
+                                </div>
+                            </>
+                            :
+                            <button className='custom-btn' onClick={() => setShowAgentSearch(true)}>Choose an agent</button>}
+                        </div>}
 
-                                {showAgentSearch && <AgentSearch setProfile={setAgentProfile}/>}
+                        {error && <p className='trip-form-error'>{error}</p>}
 
-                                {isThereContent ?
-                                <div className="trip-reservations">
-                                    {visitingTrip.destinations.length!==0 && 
-                                    <div>
-                                        <h3>Destinations -</h3>
-                                        {visitingTrip.destinations.map((destination, index) => 
-                                            <div key={index} className="reservation">
-                                                {currentCategory===1 && <RiDeleteBin5Line className='delete-button' onClick={()=>deleteBooking('destination',index)}/>}
-                                                <p>Name: {destination.name}</p>
-                                                <p>Location: {destination.location_name}</p>
-                                                <p>District: {destination.district_name}</p>
-                                            </div>
-                                        )}
-                                    </div>}
+                        <TripBookings trip={visitingTrip} canEdit={!isSuggested && canEditBookings(visitingTrip, userInfo)} onRemove={removeBooking}/>
 
-                                    {visitingTrip.accommodations.length!==0 && 
-                                    <div>
-                                        <h3>Accommodations -</h3>
-                                        {visitingTrip.accommodations.map((accommodation, index) => 
-                                            <div key={index} className="reservation">
-                                                {currentCategory===1 && <RiDeleteBin5Line className='delete-button' onClick={()=>deleteBooking('accommodation',index)}/>}
-                                                <p>Name: {accommodation.name}</p>
-                                                <p>Check-In:&nbsp;
-                                                    {new Date(accommodation.check_in).toLocaleDateString('en-US', {
-                                                        year: 'numeric',
-                                                        month: 'long',
-                                                        day: 'numeric'
-                                                    })}
-                                                </p>
-                                                <p>Check-Out:&nbsp; 
-                                                    {new Date(accommodation.check_out).toLocaleDateString('en-US', {
-                                                        year: 'numeric',
-                                                        month: 'long',
-                                                        day: 'numeric'
-                                                    })}
-                                                </p>
-                                                <p>Number of rooms: {accommodation.number_of_rooms}</p>
-                                            </div>
-                                        )}
-                                    </div>}
-
-                                    {visitingTrip.restaurants.length!==0 && 
-                                    <div>
-                                        <h3>Restaurants -</h3>
-                                        {visitingTrip.restaurants.map((restaurant, index) => 
-                                            <div key={index} className="reservation">
-                                                {currentCategory===1 && <RiDeleteBin5Line className='delete-button' onClick={()=>deleteBooking('restaurant',index)}/>}
-                                                <p>Name: {restaurant.name}</p>
-                                                <p>Booking Date: 
-                                                    {new Date(restaurant.booking_date).toLocaleDateString('en-US', {
-                                                        year: 'numeric',
-                                                        month: 'long',
-                                                        day: 'numeric'
-                                                    })}
-                                                </p>
-                                                <p>Number of seats: {restaurant.number_of_seats}</p>
-                                                <p>Arrival Time: {new Date(restaurant.arrival_time).toLocaleTimeString('en-US',
-                                                    {
-                                                        hour: 'numeric',
-                                                        minute: 'numeric',
-                                                        hour12: true,
-                                                    })}
-                                                </p>
-                                                <p>Departure Time: {new Date(restaurant.departure_time).toLocaleTimeString('en-US',
-                                                    {
-                                                        hour: 'numeric',
-                                                        minute: 'numeric',
-                                                        hour12: true,
-                                                    })}
-                                                </p>
-                                            </div>
-                                        )}
-                                    </div>}
-
-                                    {visitingTrip.flights.length!==0 && 
-                                    <div>
-                                        <h3>Flights -</h3>
-                                        {visitingTrip.flights.map((flight, index) => 
-                                            <div key={index} className="reservation">
-                                                {currentCategory===1 && <RiDeleteBin5Line className='delete-button' onClick={()=>deleteBooking('flight',index)}/>}
-                                                <p>Airline Name: {flight.airline_name}</p>
-                                                <p>Flight Style: {flight.flight_style}</p>
-                                                <p>Seat Class: {flight.seat_class}</p>
-                                                <p>Number of Seats: {flight.number_of_seats}</p>
-                                                <p>Departure Date: 
-                                                    {new Date(flight.departure_at).toLocaleDateString('en-US', {
-                                                        year: 'numeric',
-                                                        month: 'long',
-                                                        day: 'numeric'
-                                                    })}
-                                                </p>
-                                                {flight.arrival_at &&
-                                                <p>Return Date:
-                                                    {new Date(flight.arrival_at).toLocaleDateString('en-US', {
-                                                        year: 'numeric',
-                                                        month: 'long',
-                                                        day: 'numeric'
-                                                    })}
-                                                </p>}
-                                            </div>
-                                        )}
-                                    </div>}
-                                </div> 
-                                : 
-                                <h3>No reservations made yet</h3>}
-                            </div>
-                        </>}
-                    </div>}
+                        {!isSuggested &&
+                        <div className='popup-buttons'>
+                            {visitingTrip.trip_status === 'UPDATING' &&
+                                <button className='custom-btn' onClick={() => sendForApproval(visitingTrip)}
+                                        disabled={[visitingTrip.destinations, visitingTrip.accommodations, visitingTrip.restaurants, visitingTrip.flights].every(list => list.length === 0)}>
+                                    Send for approval
+                                </button>}
+                            {visitingTrip.trip_status === 'REQUESTING' &&
+                                <button className='custom-btn btn-no' onClick={() => deleteTrip(visitingTrip)}>Delete trip</button>}
+                        </div>}
+                    </>}
                 </div>
-            </div>}
-        </>
+            </div>
+        </div>
     )
 }
 

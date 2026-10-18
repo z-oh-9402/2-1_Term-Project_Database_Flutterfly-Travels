@@ -76,7 +76,7 @@ const RestaurantProfile = () => {
         <>
             {result &&
                 <div className="item-profile">
-                    {showConfirmationMessage && <RestaurantBooking header='Book destination -' restaurant={result} setShowConfirmationMessage={setShowConfirmationMessage}/>}
+                    {showConfirmationMessage && <RestaurantBooking restaurant={result} setShowConfirmationMessage={setShowConfirmationMessage}/>}
                     <ItemHeader
                         itemType='restaurant'
                         item={result}
