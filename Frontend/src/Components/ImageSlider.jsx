@@ -6,6 +6,9 @@ const ImageSlider = ({ images }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
 
     useEffect(() => {
+        // Nothing to slide to with a single photo
+        if (images.length < 2) return;
+
         const intervalId = setInterval(() => {
             const offset = '-100%';
             const slides = document.querySelector('.slides');

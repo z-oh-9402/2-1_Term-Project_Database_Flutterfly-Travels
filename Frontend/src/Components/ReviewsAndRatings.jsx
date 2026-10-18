@@ -42,7 +42,7 @@ const ReviewsAndRatings = (props) => {
 
     return (
         <>
-            <div style={{ display: 'flex', marginBottom: "20px", justifyContent: (userInfo && userInfo.user_type === 'customer') ? "space-between" : 'center', alignItems: 'flex-start', width: "600px" }}>
+            <div style={{ display: 'flex', marginBottom: "20px", justifyContent: (userInfo && userInfo.user_type === 'customer') ? "space-between" : 'center', alignItems: 'flex-start', width: "100%" }}>
                 {userInfo && userInfo.user_type === 'customer' &&
                     <div className="review-section" style={{ display: 'inline-block', margin: "20px auto 0px auto", padding: "20px", border: "1px solid #ccc", borderRadius: "5px", fontFamily: "Arial, sans-serif" }}>
                         <h2 style={{ marginBottom: "20px", fontFamily: "Arial, sans-serif" }}>Leave your feedback - </h2>
@@ -62,7 +62,7 @@ const ReviewsAndRatings = (props) => {
                 }
             </div>
 
-            <div className="all-review" style={{ width: "300px" }}>
+            <div className="all-review">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '10px' }}>
                     <h2 style={{ marginBottom: '0' }}>{reviews.length ? `All Reviews (${reviews.length})` : <><>No reviews yet...</><br/><br/><>Be the first one to leave a review...</></>}</h2>
                     {reviews.length > 3 && (
