@@ -5,9 +5,31 @@ import { WiSunrise } from "react-icons/wi";
 import { WiDaySunny } from "react-icons/wi";
 import { WiSunset } from "react-icons/wi";
 import { WiMoonrise } from "react-icons/wi";
-import ItemBar from '../Components/ItemBar';
+import PaginatedItemBars from '../Components/PaginatedItemBars';
 import FlightBooking from '../Components/FlightBooking';
 import { apiFetch } from '../api';
+
+const seatClassOptions = [
+    { value: '', label: 'All classes' },
+    { value: 'Economy', label: 'Economy' },
+    { value: 'Business', label: 'Business' },
+    { value: 'First', label: 'First' }
+];
+
+// What the page lists before the user searches: one way flights from Dhaka to anywhere, in every seat class
+const defaultSearch = {departureAirport: 'DAC', arrivalAirport: '', seatClass: '', flightStyle: 'One Way'};
+
+// Runs FETCH_FILTERED_FLIGHTS; an empty airport or seat class means any
+const fetchFlights = async (search) => {
+    const response = await apiFetch(`http://localhost:3000/flight/filtered-flights`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(search),
+    });
+    return response.ok ? await response.json() : [];
+}
 
 const marks = {
     4000: '৳4,000',
@@ -19,40 +41,45 @@ const marks = {
 
 const airlines = ["Air Astra","Novo Air","US-Bangla","Biman Bangladesh"];
 
+// Six-hour parts of the day, picked in the time filters
 const times =  [{
-                    start: new Date('1970-01-01T00:00:00Z'), 
-                    end: new Date('1970-01-01T05:59:59Z'), 
+                    startHour: 0,
                     icon: <WiSunrise className='time-img'/>,
                     label: "0 - 6"
-                },  
+                },
                 {
-                    start: new Date('1970-01-01T06:00:00Z'), 
-                    end: new Date('1970-01-01T11:59:59Z'), 
+                    startHour: 6,
                     icon: <WiDaySunny className='time-img'/>,
                     label: "6 - 12"
-                }, 
+                },
                 {
-                    start: new Date('1970-01-01T12:00:00Z'), 
-                    end: new Date('1970-01-01T17:59:59Z'), 
+                    startHour: 12,
                     icon: <WiSunset className='time-img'/>,
                     label: "12 - 18"
-                }, 
+                },
                 {
-                    start: new Date('1970-01-01T18:00:00Z'), 
-                    end: new Date('1970-01-01T23:59:59Z'), 
+                    startHour: 18,
                     icon: <WiMoonrise className='time-img'/>,
                     label: "18 - 0"
                 }];
 
+// Whether a flight time falls in times[slot]; only the time of day counts
+const inTimeSlot = (time, slot) => time.getHours() >= times[slot].startHour && time.getHours() < times[slot].startHour + 6;
+
+const noTimeSlots = times.map(() => false);
+
+// Whether a flight time falls in one of the picked parts of the day (none picked means any time)
+const inPickedSlots = (time, picked) => !picked.includes(true) || picked.some((isPicked, slot) => isPicked && inTimeSlot(time, slot));
+
 const Flights = () => {
     const [showBooking, setShowBooking] = useState(false);
-    const [departureAirport, setDepartureAirport] = useState("");
-    const [arrivalAirport, setArrivalAirport] = useState("");
-    const airportSet = {setDepartureAirport, setArrivalAirport};
+    const [departureAirport, setDepartureAirport] = useState(defaultSearch.departureAirport);
+    const [arrivalAirport, setArrivalAirport] = useState(defaultSearch.arrivalAirport);
+    const airportSet = {departureAirport, arrivalAirport, setDepartureAirport, setArrivalAirport};
 
-    const [seatClass, setSeatClass] = useState("");
+    const [seatClass, setSeatClass] = useState(defaultSearch.seatClass);
 
-    const [flightStyle, setFlightStyle] = useState("One Way");
+    const [flightStyle, setFlightStyle] = useState(defaultSearch.flightStyle);
     const flightStyleSet = {flightStyle, setFlightStyle};
 
     const [departureDate, setDepartureDate] = useState(new Date());
@@ -62,14 +89,16 @@ const Flights = () => {
     const [numberOfSeats, setNumberOfSeats] = useState(1);
     const seatNumberSet = {numberOfSeats, setNumberOfSeats};
 
-    const [filteredFlights, setFilteredFlights] = useState([]);
+    const [filteredFlights, setFilteredFlights] = useState(null); // null while the first search is running
+    const [searched, setSearched] = useState(defaultSearch); // the search the list shows
     const [isFilterApplied, setIsFilterApplied] = useState(false);
     const [prices, setPrices] = useState([4000,20000]);
     const [airlinesChecked, setAirlinesChecked] = useState([false,false,false,false]);
-    const [departureTime, setDepartureTime] = useState(-1);
-    const [arrivalTime, setArrivalTime] = useState(-1);
-    const [returnDepartureTime, setReturnDepartureTime] = useState(-1);
-    const [returnArrivalTime, setReturnArrivalTime] = useState(-1);
+    // the parts of the day picked in each time filter; several can be picked at once
+    const [departureTimes, setDepartureTimes] = useState(noTimeSlots);
+    const [arrivalTimes, setArrivalTimes] = useState(noTimeSlots);
+    const [returnDepartureTimes, setReturnDepartureTimes] = useState(noTimeSlots);
+    const [returnArrivalTimes, setReturnArrivalTimes] = useState(noTimeSlots);
 
     const [flight, setFlight] = useState(undefined);
 
@@ -90,18 +119,31 @@ const Flights = () => {
         fetchAirports();
     }, []);
 
-    const seatClassOptions = [
-        { value: 'Economy', label: `Economy` },
-        { value: 'Business', label: `Business` },
-        { value: 'First', label: `First` }
-    ];
+    // Searches again whenever the route, seat class or trip type changes
+    // (the date and number of seats only change which flights can be booked, worked out below)
+    useEffect(() => {
+        let ignore = false;
+        const search = {departureAirport, arrivalAirport, seatClass, flightStyle};
+        fetchFlights(search).then(flights => {
+            if(!ignore)
+            {
+                setFilteredFlights(flights);
+                setSearched(search);
+            }
+        });
+        return () => { ignore = true; };
+    }, [departureAirport, arrivalAirport, seatClass, flightStyle]);
+
+    const arrivalOptions = [{ value: '', label: 'All airports' }, ...airportOptions];
 
     const resetFilter = () => {
         setIsFilterApplied(false);
 
         setPrices([4000,20000]);
-        setDepartureTime(-1);
-        setArrivalTime(-1);
+        setDepartureTimes(noTimeSlots);
+        setArrivalTimes(noTimeSlots);
+        setReturnDepartureTimes(noTimeSlots);
+        setReturnArrivalTimes(noTimeSlots);
         setAirlinesChecked([false,false,false,false]);
     }
 
@@ -112,25 +154,25 @@ const Flights = () => {
         setIsFilterApplied(true);
     }
 
-    const selectDepartureTime = (index) => {
-        setDepartureTime(index);
+    const toggleTimeSlot = (setPicked, index) => {
+        setPicked(picked => picked.map((isPicked, slot) => slot===index ? !isPicked : isPicked));
         setIsFilterApplied(true);
     }
 
-    const selectArrivalTime = (index) => {
-        setArrivalTime(index);
-        setIsFilterApplied(true);
-    }
-
-    const selectReturnDepartureTime = (index) => {
-        setReturnDepartureTime(index);
-        setIsFilterApplied(true);
-    }
-
-    const selectReturnArrivalTime = (index) => {
-        setReturnArrivalTime(index);
-        setIsFilterApplied(true);
-    }
+    // A row of part-of-day buttons for one time filter
+    const timeSlotPicker = (picked, setPicked) =>
+        <div className='all-times-container'>
+            {times.map((time,index)=>
+                <div key={index} style={{display: "flex", flexDirection: "column", justifyContent: "space-between"}}>
+                    <button type="button" className={'time-container' + (picked[index] ? ' selected' : '')}
+                            aria-pressed={picked[index]} aria-label={`${time.label} hours`}
+                            onClick={()=>toggleTimeSlot(setPicked, index)}>
+                        {time.icon}
+                    </button>
+                    <label className='time-label'>{time.label}</label>
+                </div>
+            )}
+        </div>;
 
     const compareWithSystemTime = (time, targetTime) => {
         const currtime = new Date();
@@ -164,38 +206,28 @@ const Flights = () => {
         {
             let time = new Date(flight.departure_time);
             const currTime = new Date();
-            isChecked = compareWithSystemTime(time, currTime);
-
-            if(departureTime!==-1)
-            {
-                isChecked = isChecked && time>=times[departureTime].start && time<=times[departureTime].end;
-            }
+            isChecked = compareWithSystemTime(time, currTime) && inPickedSlots(time, departureTimes);
         }
 
-        if(isChecked && arrivalTime!==-1)
+        if(isChecked)
         {
             let time = new Date(flight.arrival_time)
-            isChecked = time>=times[arrivalTime].start && time<=times[arrivalTime].end;
+            isChecked = inPickedSlots(time, arrivalTimes);
         }
 
-        if(flightStyle==="Round Trip")
+        if(flight.flight_style==="Round Trip")
         {
             if(isChecked)
             {
                 let time = new Date(flight.return_departure_time);
                 let targetTime = new Date(flight.arrival_time);
-                isChecked = compareWithSystemTime(time, targetTime);
-    
-                if(returnDepartureTime!==-1)
-                {
-                    isChecked = isChecked && time>=times[returnDepartureTime].start && time<=times[returnDepartureTime].end;
-                }
+                isChecked = compareWithSystemTime(time, targetTime) && inPickedSlots(time, returnDepartureTimes);
             }
 
-            if(isChecked && returnArrivalTime!==-1)
+            if(isChecked)
             {
                 let time = new Date(flight.return_arrival_time)
-                isChecked = isChecked && time>=times[returnArrivalTime].start && time<=times[returnArrivalTime].end;
+                isChecked = inPickedSlots(time, returnArrivalTimes);
             }
         }
 
@@ -214,135 +246,76 @@ const Flights = () => {
         return isChecked;
     }
 
-    const handleSubmit = async () => {
-        if(departureAirport==="" || arrivalAirport==="" || seatClass==="" || departureDate===null || (flightStyle==="Round Trip" && returnDate===null) || numberOfSeats==="")
-        {
-            alert("Please fill all the fields");
-        }
-        else
-        {
-            const filter = {
-                departureAirport,
-                arrivalAirport,
-                seatClass,
-                flightStyle
-            };
-
-            let response = await apiFetch(`http://localhost:3000/flight/filtered-flights`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(filter),
-            });
-            
-            let result = await response.json();
-            result = result.map((flight)=>({
-                ...flight,
-                departure_airport: departureAirport,
-                arrival_airport: arrivalAirport,
-                seat_class: seatClass
-            }));
-
-            setFilteredFlights(result);
-        }
-    }
-
     const openBooking = (item) => {
         setShowBooking(true);
         setFlight(item);
     }
 
+    // the class and trip type come from the flight picked, since a list can mix seat classes
     const bookingDetails = {
         departureDate,
-        returnDate: flightStyle==="Round Trip" ? returnDate : undefined,
+        returnDate: flight?.flight_style==="Round Trip" ? returnDate : undefined,
         numberOfSeats,
-        seatClass
+        seatClass: flight?.seat_class
     }
+
+    // e.g. "One Way flights from DAC to CGP, Business class"
+    const listTitle = `${searched.flightStyle} flights from ${searched.departureAirport}`
+        + (searched.arrivalAirport ? ` to ${searched.arrivalAirport}` : '')
+        + (searched.seatClass ? `, ${searched.seatClass} class` : '');
+
+    // flights leaving too soon to book are hidden unless filters are set
+    const shownFlights = (filteredFlights ?? []).filter(flight =>
+        isFilterApplied ? filterCheck(flight) : compareWithSystemTime(new Date(flight.departure_time), new Date()));
+
+    const emptyMessage = filteredFlights===null ? 'Loading flights…'
+        : isFilterApplied ? 'No flights match these filters.'
+        : filteredFlights.length===0 ? 'No flights found for this search.'
+        : 'No more flights today. Pick a later departure date.';
 
     return (
         <>
             {showBooking && <FlightBooking header={'Book Flight -'} flight={flight} setShowConfirmationMessage={setShowBooking} bookingDetails={bookingDetails}/>}
-            <FlightFliter airportSet={airportSet} setSeatClass={setSeatClass} dateSet={dateSet} flightStyleSet={flightStyleSet} seatNumberSet={seatNumberSet} airportOptions={airportOptions} seatClassOptions={seatClassOptions} handleSubmit={handleSubmit}/>
+            <FlightFliter airportSet={airportSet} seatClass={seatClass} setSeatClass={setSeatClass} dateSet={dateSet} flightStyleSet={flightStyleSet} seatNumberSet={seatNumberSet} airportOptions={airportOptions} arrivalOptions={arrivalOptions} seatClassOptions={seatClassOptions}/>
 
-            {filteredFlights.length!==0 &&
-                <div className='destination-search' style={{marginTop: "20px"}}>
-                    <div className="filter">
-                        <button className="btn-primary" style={{marginBottom:'10px'}} onClick={resetFilter}>Reset Filter</button>
+            <div className='destination-search' style={{marginTop: "20px"}}>
+                <div className="filter">
+                    <button className="btn-primary" style={{marginBottom:'10px'}} onClick={resetFilter}>Reset Filter</button>
 
-                        <h3>Price Range</h3>
-                        <RangeSlider marks={marks} minValue={4000} maxValue={20000} values={prices} setValues={setPrices} setIsFilterApplied={setIsFilterApplied}/>
+                    <h3>Price Range</h3>
+                    <RangeSlider marks={marks} minValue={4000} maxValue={20000} values={prices} setValues={setPrices} setIsFilterApplied={setIsFilterApplied}/>
 
-                        <h3>Departure Time:</h3>
-                        <div className='all-times-container'>
-                            {times.map((time,index)=>
-                                <div key={index} style={{display: "flex", flexDirection: "column", justifyContent: "space-between"}}>
-                                    <div className='time-container' onClick={()=>selectDepartureTime(index)} style={{backgroundColor: departureTime===index ? 'gray' : 'black'}}>
-                                        {time.icon}
-                                    </div>
-                                    <label className='time-label'>{time.label}</label>
-                                </div>
-                            )}
-                        </div>
+                    <h3>Departure Time:</h3>
+                    {timeSlotPicker(departureTimes, setDepartureTimes)}
 
-                        <h3>Arrival Time:</h3>
-                        <div className='all-times-container'>
-                            {times.map((time,index)=>
-                                <div key={index} style={{display: "flex", flexDirection: "column", justifyContent: "space-between"}}>
-                                    <div className='time-container' onClick={()=>selectArrivalTime(index)} style={{backgroundColor: arrivalTime===index ? 'gray' : 'black'}}>
-                                        {time.icon}
-                                    </div>
-                                    <label className='time-label'>{time.label}</label>
-                                </div>
-                            )}
-                        </div>
+                    <h3>Arrival Time:</h3>
+                    {timeSlotPicker(arrivalTimes, setArrivalTimes)}
 
-                        {flightStyle==="Round Trip" &&
-                        <>
-                            <h3>Return Departure Time:</h3>
-                            <div className='all-times-container'>
-                                {times.map((time,index)=>
-                                    <div key={index} style={{display: "flex", flexDirection: "column", justifyContent: "space-between"}}>
-                                        <div className='time-container' onClick={()=>selectReturnDepartureTime(index)} style={{backgroundColor: departureTime===index ? 'gray' : 'black'}}>
-                                            {time.icon}
-                                        </div>
-                                        <label className='time-label'>{time.label}</label>
-                                    </div>
-                                )}
-                            </div>
-    
-                            <h3>Return Arrival Time:</h3>
-                            <div className='all-times-container'>
-                                {times.map((time,index)=>
-                                    <div key={index} style={{display: "flex", flexDirection: "column", justifyContent: "space-between"}}>
-                                        <div className='time-container' onClick={()=>selectReturnArrivalTime(index)} style={{backgroundColor: arrivalTime===index ? 'gray' : 'black'}}>
-                                            {time.icon}
-                                        </div>
-                                        <label className='time-label'>{time.label}</label>
-                                    </div>
-                                )}
-                            </div>
-                        </>}
+                    {flightStyle==="Round Trip" &&
+                    <>
+                        <h3>Return Departure Time:</h3>
+                        {timeSlotPicker(returnDepartureTimes, setReturnDepartureTimes)}
 
-                        <div style={{margin: '40px 0px 40px 0px'}}>
-                            <h3>Choose Your Preferred Airline:</h3>
-                            <label><input type="checkbox" checked={airlinesChecked[0]} onChange={()=>checkAirline(0)}/>Air Astra</label><br/>
-                            <label><input type="checkbox" checked={airlinesChecked[1]} onChange={()=>checkAirline(1)}/>Novo Air</label><br/>
-                            <label><input type="checkbox" checked={airlinesChecked[2]} onChange={()=>checkAirline(2)}/>US-Bangla</label><br/>
-                            <label><input type="checkbox" checked={airlinesChecked[3]} onChange={()=>checkAirline(3)}/>Biman Bangladesh</label><br/>
-                        </div>
-                        
+                        <h3>Return Arrival Time:</h3>
+                        {timeSlotPicker(returnArrivalTimes, setReturnArrivalTimes)}
+                    </>}
+
+                    <div style={{margin: '40px 0px 40px 0px'}}>
+                        <h3>Choose Your Preferred Airline:</h3>
+                        <label><input type="checkbox" checked={airlinesChecked[0]} onChange={()=>checkAirline(0)}/>Air Astra</label><br/>
+                        <label><input type="checkbox" checked={airlinesChecked[1]} onChange={()=>checkAirline(1)}/>Novo Air</label><br/>
+                        <label><input type="checkbox" checked={airlinesChecked[2]} onChange={()=>checkAirline(2)}/>US-Bangla</label><br/>
+                        <label><input type="checkbox" checked={airlinesChecked[3]} onChange={()=>checkAirline(3)}/>Biman Bangladesh</label><br/>
                     </div>
-                    <div className='recommendation-container'>
-                        <h1>Searched Flights -</h1>
-                        <div className='card-container'>
-                            {filteredFlights.map((flight,index)=>
-                                (isFilterApplied ? filterCheck(flight) : compareWithSystemTime(new Date(flight.departure_time), new Date())) && <ItemBar key={index} itemType='flight' item={flight} index={`${index}`} showBooking={openBooking}/>
-                            )}
-                        </div>
-                    </div>
+                    
                 </div>
-            }
+                <div className='recommendation-container browse-results'>
+                    <div className='browse-results-header'>
+                        <h1>{listTitle}</h1>
+                    </div>
+                    <PaginatedItemBars itemType='flight' items={shownFlights} showBooking={openBooking} emptyMessage={emptyMessage}/>
+                </div>
+            </div>
         </>
     );
 }

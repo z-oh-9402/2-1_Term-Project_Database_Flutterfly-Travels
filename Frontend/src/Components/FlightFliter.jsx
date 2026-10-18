@@ -10,8 +10,10 @@ import { FaMinus } from "react-icons/fa";
 import PropTypes from 'prop-types';
 
 const FlightFliter = (props) => {
-    const { airportSet, setSeatClass, flightStyleSet, dateSet, seatNumberSet, airportOptions, seatClassOptions, handleSubmit } = props;
-    const { setDepartureAirport, setArrivalAirport } = airportSet;
+    const { airportSet, seatClass, setSeatClass, flightStyleSet, dateSet, seatNumberSet, airportOptions, arrivalOptions, seatClassOptions } = props;
+    const { departureAirport, arrivalAirport, setDepartureAirport, setArrivalAirport } = airportSet;
+    // the option a select shows for a value (null shows the placeholder, e.g. while the airports load)
+    const selected = (options, value) => options.find(option => option.value === value) ?? null;
     const { departureDate, returnDate, setDepartureDate, setReturnDate } = dateSet;
     const { flightStyle, setFlightStyle } = flightStyleSet;
     const { numberOfSeats, setNumberOfSeats } = seatNumberSet;
@@ -113,6 +115,7 @@ const FlightFliter = (props) => {
                         <Select className="select"
                             styles={customStyles}
                             options={airportOptions}
+                            value={selected(airportOptions, departureAirport)}
                             onChange={(e) => setDepartureAirport(e.value)}
                             isSearchable
                             placeholder="Flying From"
@@ -121,7 +124,8 @@ const FlightFliter = (props) => {
 
                     <Select className="select"
                         styles={customStyles}
-                        options={airportOptions}
+                        options={arrivalOptions}
+                        value={selected(arrivalOptions, arrivalAirport)}
                         onChange={(e) => setArrivalAirport(e.value)}
                         isSearchable
                         placeholder="Flying To"
@@ -158,6 +162,7 @@ const FlightFliter = (props) => {
                         menu: base => ({ ...base, marginTop: '10px' }) // Adjust the margin to position the dropdown closer to the select input
                     }}
                     options={seatClassOptions}
+                    value={selected(seatClassOptions, seatClass)}
                     onChange={(e) => setSeatClass(e.value)}
                     isSearchable
                     placeholder="Seat Class"
@@ -171,7 +176,7 @@ const FlightFliter = (props) => {
                     {numberOfSeats.length !== 0 &&
                         <FaPlus className='seat-number-buttons plus' onClick={() => changeSeatNumber(true)} />}
                 </div>
-                <div><button className='btn-primary' style={{backgroundColor:"white", color:"black"}} onClick={handleSubmit}>Search</button></div>
+
             </div>
         </div>
     );
@@ -179,13 +184,14 @@ const FlightFliter = (props) => {
 
 FlightFliter.propTypes = {
     airportSet: PropTypes.object,
+    seatClass: PropTypes.string,
     setSeatClass: PropTypes.func,
     flightStyleSet: PropTypes.object,
     dateSet: PropTypes.object,
     seatNumberSet: PropTypes.object,
     airportOptions: PropTypes.array,
+    arrivalOptions: PropTypes.array,
     seatClassOptions: PropTypes.array,
-    handleSubmit: PropTypes.func,
 };
 
 export default FlightFliter;

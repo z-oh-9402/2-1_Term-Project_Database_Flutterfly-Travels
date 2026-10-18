@@ -195,8 +195,31 @@ input[type="radio"]{
     height: 40px;
     display: flex;
     align-items: center;
+    justify-content: center;
+    padding: 0;
     border: 1px solid gray;
-    border-radius: 3px;
+    border-radius: 6px;
+    background-color: black;
+    color: inherit;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, color 0.15s ease;
+}
+
+.time-container:hover{
+    border-color: #45deec;
+}
+
+/* a picked part of the day glows sky blue */
+.time-container.selected{
+    border-color: #45deec;
+    background-color: rgba(37, 175, 230, 0.28);
+    color: #c9f6ff;
+    box-shadow: 0 0 8px rgba(69, 222, 236, 0.75), inset 0 0 8px rgba(69, 222, 236, 0.35);
+}
+
+.time-container:focus-visible{
+    outline: 2px solid #45deec;
+    outline-offset: 2px;
 }
 
 .time-img{

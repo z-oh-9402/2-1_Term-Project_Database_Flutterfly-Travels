@@ -142,101 +142,32 @@ $$;
 CREATE PROCEDURE public.fetch_filtered_flights(IN dap character varying, IN aap character varying, IN sclass character varying, IN fstyle character varying, OUT p_cursor refcursor)
     LANGUAGE plpgsql
     AS $$
-DECLARE
-    dapid INTEGER;
-    aapid INTEGER;
-		f RECORD;
-
 BEGIN
--- 		DBMS_OUTPUT.PUT_LINE('The employee worked ' || dap || ' ' || aap || ' ' || sclass || ' ' || fstyle);
+    -- A NULL airport (IATA code) or seat class means any; a flight comes once for each seat class that is asked for.
+    -- Times have no time zone: they are the local times printed on the ticket
+    p_cursor := 'filtered_flights_cursor';
 
-    SELECT airport_id INTO dapid FROM airport WHERE iata_code = dap;
-		SELECT airport_id INTO aapid FROM airport WHERE iata_code = aap;
-		
-		RAISE NOTICE 'Airport Codes: dap=%, aap=%', dapid, aapid;
-		
-		p_cursor := 'filtered_flights_cursor';
-
-    IF sclass = 'Economy' THEN
-        IF fstyle = 'Round Trip' THEN
-            OPEN p_cursor FOR
-                SELECT flight_id, flight_style, airline_name, image, 
-                       TO_CHAR(departure_time, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS departure_time, 
-                       TO_CHAR(arrival_time, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS arrival_time, 
-                       economy_seat_price * 2 AS seat_price, 
-                       return_departure_time, 
-                       return_arrival_time
-                FROM flight
-                WHERE departure_airport_id = dapid 
-                  AND arrival_airport_id = aapid 
-                  AND flight_style = fstyle
-                ORDER BY departure_time;
-        ELSE
-            OPEN p_cursor FOR
-                SELECT flight_id, flight_style, airline_name, image, 
-                       TO_CHAR(departure_time, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS departure_time, 
-                       TO_CHAR(arrival_time, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS arrival_time, 
-                       economy_seat_price AS seat_price
-                FROM flight
-                WHERE departure_airport_id = dapid 
-                  AND arrival_airport_id = aapid 
-                  AND flight_style = fstyle
-                ORDER BY departure_time;
-								
-        END IF;
-    ELSIF sclass = 'Business' THEN
-        IF fstyle = 'Round Trip' THEN
-            OPEN p_cursor FOR
-                SELECT flight_id, flight_style, airline_name, image, 
-                       TO_CHAR(departure_time, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS departure_time, 
-                       TO_CHAR(arrival_time, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS arrival_time, 
-                       business_seat_price * 2 AS seat_price, 
-                       return_departure_time, 
-                       return_arrival_time
-                FROM flight
-                WHERE departure_airport_id = dapid 
-                  AND arrival_airport_id = aapid 
-                  AND flight_style = fstyle
-                ORDER BY departure_time;
-        ELSE
-            OPEN p_cursor FOR
-                SELECT flight_id, flight_style, airline_name, image, 
-                       TO_CHAR(departure_time, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS departure_time, 
-                       TO_CHAR(arrival_time, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS arrival_time, 
-                       business_seat_price AS seat_price
-                FROM flight
-                WHERE departure_airport_id = dapid 
-                  AND arrival_airport_id = aapid 
-                  AND flight_style = fstyle
-                ORDER BY departure_time;
-        END IF;
-    ELSE
-        IF fstyle = 'Round Trip' THEN
-            OPEN p_cursor FOR
-                SELECT flight_id, flight_style, airline_name, image, 
-                       TO_CHAR(departure_time, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS departure_time, 
-                       TO_CHAR(arrival_time, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS arrival_time, 
-                       first_seat_price * 2 AS seat_price, 
-                       return_departure_time, 
-                       return_arrival_time
-                FROM flight
-                WHERE departure_airport_id = dapid 
-                  AND arrival_airport_id = aapid 
-                  AND flight_style = fstyle
-                ORDER BY departure_time;
-        ELSE
-            OPEN p_cursor FOR
-                SELECT flight_id, flight_style, airline_name, image, 
-                       TO_CHAR(departure_time, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS departure_time, 
-                       TO_CHAR(arrival_time, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS arrival_time, 
-                       first_seat_price AS seat_price
-                FROM flight
-                WHERE departure_airport_id = dapid 
-                  AND arrival_airport_id = aapid 
-                  AND flight_style = fstyle
-                ORDER BY departure_time;
-        END IF;
-    END IF;
+    OPEN p_cursor FOR
+        SELECT f.flight_id, f.flight_style, f.airline_name, f.image,
+               da.iata_code AS departure_airport, aa.iata_code AS arrival_airport,
+               TO_CHAR(f.departure_time, 'YYYY-MM-DD"T"HH24:MI:SS') AS departure_time,
+               TO_CHAR(f.arrival_time, 'YYYY-MM-DD"T"HH24:MI:SS') AS arrival_time,
+               TO_CHAR(f.return_departure_time, 'YYYY-MM-DD"T"HH24:MI:SS') AS return_departure_time,
+               TO_CHAR(f.return_arrival_time, 'YYYY-MM-DD"T"HH24:MI:SS') AS return_arrival_time,
+               s.seat_class,
+               -- a round trip pays for both legs
+               CASE WHEN f.flight_style = 'Round Trip' THEN s.price * 2 ELSE s.price END AS seat_price
+        FROM flight f
+        JOIN airport da ON da.airport_id = f.departure_airport_id
+        JOIN airport aa ON aa.airport_id = f.arrival_airport_id
+        CROSS JOIN LATERAL (VALUES ('Economy', f.economy_seat_price, 1),
+                                   ('Business', f.business_seat_price, 2),
+                                   ('First', f.first_seat_price, 3)) AS s(seat_class, price, class_order)
+        WHERE (dap IS NULL OR da.iata_code = dap)
+          AND (aap IS NULL OR aa.iata_code = aap)
+          AND (sclass IS NULL OR s.seat_class = sclass)
+          AND f.flight_style = fstyle
+        ORDER BY f.departure_time, f.flight_id, s.class_order;
 END;
 $$;
 

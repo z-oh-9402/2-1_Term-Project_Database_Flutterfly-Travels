@@ -24,24 +24,34 @@ const pageNumbers = (current, count) => {
     return pages;
 }
 
-// Fetches and shows one page at a time of GET /<itemType>/fetch.
-// query holds the search and filter parameters; when they change the list starts again at page 1.
-const PaginatedItemBars = ({itemType, query, emptyMessage}) => {
-    const queryString = new URLSearchParams(query).toString();
-    const [pageState, setPageState] = useState({queryString, page: 1});
-    if(pageState.queryString!==queryString)
+// a flight comes once per seat class, so its id alone isn't unique
+const itemKey = (item) => item.flight_id!==undefined ? `${item.flight_id}-${item.seat_class}` : item.name;
+
+// Shows a list 5 items at a time, from either
+// - items: the whole list, already loaded, which is cut into pages here, or
+// - query: search and filter parameters for GET /<itemType>/fetch, which sends one page per request.
+// When the list or the query changes it starts again at page 1.
+const PaginatedItemBars = ({itemType, query, items, showBooking, emptyMessage}) => {
+    const isLoaded = items!==undefined;
+    const signature = isLoaded ? items.map(itemKey).join('|') : new URLSearchParams(query).toString();
+    const [pageState, setPageState] = useState({signature, page: 1});
+    if(pageState.signature!==signature)
     {
-        setPageState({queryString, page: 1});
+        setPageState({signature, page: 1});
     }
-    const page = pageState.queryString===queryString ? pageState.page : 1;
-    const [result, setResult] = useState(null); // {items, total, offset} of the page on screen
+    const page = pageState.signature===signature ? pageState.page : 1;
+    const [fetched, setFetched] = useState(null); // {items, total, offset} of the fetched page on screen
 
     useEffect(() => {
+        if(isLoaded)
+        {
+            return;
+        }
         let ignore = false;
         const offset = (page-1)*PAGE_SIZE;
         // a short wait, so dragging a filter slider sends one request instead of one per step
         const timer = setTimeout(async () => {
-            const params = new URLSearchParams(queryString);
+            const params = new URLSearchParams(signature);
             params.set('limit', PAGE_SIZE);
             params.set('offset', offset);
             const response = await apiFetch(`http://localhost:3000/${itemType}/fetch?${params}`,{
@@ -56,22 +66,25 @@ const PaginatedItemBars = ({itemType, query, emptyMessage}) => {
             if(data.items.length===0 && page>1)
             {
                 // items were removed since the page buttons were drawn
-                setPageState({queryString, page: 1});
+                setPageState({signature, page: 1});
                 return;
             }
-            setResult({...data, offset});
+            setFetched({...data, offset});
         }, 150);
 
         return () => {
             ignore = true;
             clearTimeout(timer);
         };
-    }, [itemType, queryString, page]);
+    }, [isLoaded, itemType, signature, page]);
 
     const goTo = (p) => {
-        setPageState({queryString, page: p});
+        setPageState({signature, page: p});
         window.scrollTo({top: 0, behavior: 'smooth'});
     }
+
+    const offset = (page-1)*PAGE_SIZE;
+    const result = isLoaded ? {items: items.slice(offset, offset+PAGE_SIZE), total: items.length, offset} : fetched;
 
     if(result===null || result.items.length===0)
     {
@@ -84,7 +97,7 @@ const PaginatedItemBars = ({itemType, query, emptyMessage}) => {
         <>
             <div className='bar-container'>
                 {result.items.map((item, i) =>
-                    <ItemBar key={item.name} itemType={itemType} item={item} index={`${itemType}-${result.offset+i}`}/>
+                    <ItemBar key={itemKey(item)} itemType={itemType} item={item} index={`${itemType}-${result.offset+i}`} showBooking={showBooking}/>
                 )}
             </div>
             <div className='pagination'>
@@ -109,6 +122,8 @@ const PaginatedItemBars = ({itemType, query, emptyMessage}) => {
 PaginatedItemBars.propTypes = {
     itemType: PropTypes.string,
     query: PropTypes.object,
+    items: PropTypes.array,
+    showBooking: PropTypes.func,
     emptyMessage: PropTypes.string
 }
 

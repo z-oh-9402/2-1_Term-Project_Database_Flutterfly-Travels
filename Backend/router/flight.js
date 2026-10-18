@@ -14,7 +14,8 @@ router.get('/airports', async (req, res) => {
 router.post('/filtered-flights', async (req, res) => {
     const { departureAirport, arrivalAirport, seatClass, flightStyle } = req.body;
 
-    let params = [departureAirport, arrivalAirport, seatClass, flightStyle, "filtered_flights_cursor"]
+    // An empty airport or seat class is sent as NULL, which the procedure reads as "any"
+    let params = [departureAirport || null, arrivalAirport || null, seatClass || null, flightStyle, "filtered_flights_cursor"]
 
     // The cursor opened by the procedure only exists on the connection that called it, so all steps share one
     const result = await database.transaction(async (client) => {

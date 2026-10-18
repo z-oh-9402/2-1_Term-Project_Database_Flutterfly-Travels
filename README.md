@@ -90,7 +90,7 @@ The script asks for a username, email, name and password. It stores the password
 ### Database logic
 
 - **Functions:** `check_username` and `check_trip_name` check availability. `get_booking_id` creates a booking and returns its id.
-- **Procedure:** `fetch_filtered_flights` returns a cursor of flights between two airports for a seat class.
+- **Procedure:** `fetch_filtered_flights` returns a cursor of flights between two airports for a seat class. A NULL airport or seat class means any, so the Flights page opens with every one-way flight from Dhaka in all classes.
 - **Triggers:**
   - keep each trip's total cost up to date as bookings are added
   - keep each destination's, accommodation's, restaurant's and agent's rating equal to the average of its customers' ratings (0 = not rated yet)
