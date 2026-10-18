@@ -1,5 +1,5 @@
 import {Routes, Route, Outlet} from 'react-router-dom';
-import {useCallback, useContext, useEffect, useState} from 'react';
+import {useCallback, useContext, useEffect, useRef, useState} from 'react';
 import UserInfoContext from './Context/UserInfoContext.jsx';
 
 import Header from './Components/Header.jsx';
@@ -29,6 +29,60 @@ function App() {
   const [showWishlist, setShowWishlist] = useState(false);
 
   const loggedInUserId = userInfo ? userInfo.user_id : null;
+
+  // The account saved in the browser at login goes stale (an agent approved by an admin, trips whose status changed),
+  // so its details and trips are reloaded when the app opens and whenever a notification arrives
+  const userInfoRef = useRef(userInfo);
+  userInfoRef.current = userInfo;
+  const refreshAccount = async () => {
+    const user = userInfoRef.current;
+    if(!user || user.user_type === 'admin')
+    {
+      return;
+    }
+
+    const fresh = {};
+    if(user.user_type === 'agent')
+    {
+      const response = await apiFetch(`http://localhost:3000/agent/${user.user_id}`, {
+        method: "GET"
+      });
+      if(response.ok)
+      {
+        const agent = await response.json();
+        Object.assign(fresh, {
+          experience_years: agent.experience_years,
+          fee: agent.fee,
+          acc_status: agent.acc_status,
+          rating: agent.rating,
+          rating_count: agent.rating_count
+        });
+      }
+    }
+
+    // agents only have trips once an admin has approved them
+    if(user.user_type === 'customer' || (fresh.acc_status ?? user.acc_status) === 'OK')
+    {
+      const url = user.user_type === 'customer' ?
+        `http://localhost:3000/trip/for-customer?customerId=${user.user_id}` :
+        `http://localhost:3000/trip/for-agent?agentId=${user.user_id}`;
+      const response = await apiFetch(url, {
+        method: "GET"
+      });
+      if(response.ok)
+      {
+        fresh.trips = await response.json();
+      }
+    }
+
+    // a new object, so everything showing the account redraws (unless the user logged out meanwhile)
+    if(userInfoRef.current && userInfoRef.current.user_id === user.user_id)
+    {
+      setInfo({...userInfoRef.current, ...fresh});
+    }
+  };
+  const refreshAccountRef = useRef(refreshAccount);
+  refreshAccountRef.current = refreshAccount;
 
   // Keeps the logged-in user's notifications up to date. The server pushes each new one over socket.io
   // the moment the database creates it (see Backend/realtime.js), so there's no polling.
@@ -61,6 +115,8 @@ function App() {
         notification,
         ...prevNotifications.filter(previous => previous.notification_id !== notification.notification_id)
       ].slice(0, 30));
+      // whatever the notification is about (an approval, a trip update) may have changed the account
+      refreshAccountRef.current();
     });
     // Marked as seen in another tab
     socket.on('notifications-seen', () => {
@@ -92,7 +148,7 @@ function App() {
   useEffect(() => {
     const updateTripStatus = async () => {
       // Marking finished trips as COMPLETED needs a logged-in user
-      if(!userInfo)
+      if(!userInfoRef.current)
       {
         return;
       }
@@ -110,29 +166,8 @@ function App() {
       });
 
       await response.json();
-      
-      if(userInfo && userInfo.user_type!=='admin')
-      {
-        let result;
-        if(userInfo.user_type === 'customer')
-        {
-            const response = await apiFetch(`http://localhost:3000/trip/for-customer?customerId=${userInfo.user_id}`, {
-                method: "GET"
-            });
 
-            result = await response.json();
-        }
-        if(userInfo.user_type === 'agent')
-        {
-            const response = await apiFetch(`http://localhost:3000/trip/for-agent?agentId=${userInfo.user_id}`, {
-                method: "GET"
-            });
-
-            result = await response.json();
-        }
-        userInfo.trips = result;
-        setInfo(userInfo);
-      }
+      await refreshAccountRef.current();
     }
 
     updateTripStatus();
