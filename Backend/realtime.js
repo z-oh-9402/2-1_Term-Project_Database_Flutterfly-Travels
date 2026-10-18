@@ -1,8 +1,3 @@
-// Pushes notifications to logged-in users the moment they are created.
-//
-// Every row inserted into NOTIFICATION (by the database triggers, a route, or anything else) fires
-// pg_notify('notification_created', <id>) from the notification_created trigger. This file keeps one database
-// connection that LISTENs for it, looks the row up, and sends it over socket.io to that user's open tabs.
 const { Server } = require('socket.io');
 const { Client } = require('pg');
 const database = require('./database');

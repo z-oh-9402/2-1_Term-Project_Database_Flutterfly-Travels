@@ -1,5 +1,3 @@
-// Shared by GET /destination/fetch, /accommodation/fetch and /restaurant/fetch, which send the Destinations,
-// Accommodations and Restaurants sections one page of items at a time.
 const database = require('./database');
 
 const DEFAULT_LIMIT = 5;

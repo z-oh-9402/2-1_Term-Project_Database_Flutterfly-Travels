@@ -1,5 +1,3 @@
-// Creates an admin account (signing up in the app can only create customers and agents).
-// Usage, from Backend/: npm run create-admin
 require('dotenv').config({ quiet: true });
 const readline = require('readline');
 const bcrypt = require('bcryptjs');
