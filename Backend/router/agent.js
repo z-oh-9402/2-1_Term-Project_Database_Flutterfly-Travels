@@ -1,7 +1,7 @@
 const router = require("express-promise-router")();
 const database = require('../database');
 const bcrypt = require('bcryptjs');
-const { upload, deleting } = require('../file_handling');
+const { upload, savePhoto, deletePhoto } = require('../file_handling');
 const { signToken, requireAuth, requireRole, requireSelfOrAdmin } = require('../auth');
 
 router.get("/review-rating/:agentId/:customerId",async(req,res)=>{
@@ -147,9 +147,8 @@ router.post("/", upload.single('file'), async(req,res)=>{
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(plaintextPassword, salt);
 
-    if(req.file === undefined) {
-        req.file = { filename: "" }
-    }
+    // The photo is uploaded first, so its URL can be stored with the user
+    const photo = req.file ? await savePhoto(req.file) : "";
 
     // The user row and the agent row are created together or not at all
     let newUser;
@@ -158,7 +157,7 @@ router.post("/", upload.single('file'), async(req,res)=>{
             const query = `INSERT INTO Users (USERNAME, PASSWORD, FIRST_NAME, LAST_NAME, USER_TYPE, EMAIL, PHOTO)
                            VALUES ($1, $2, $3, $4, $5, $6, $7)
                            RETURNING *`;
-            const params = [user.username, hashedPassword, user.firstName, user.lastName, 'agent', user.email, req.file.filename];
+            const params = [user.username, hashedPassword, user.firstName, user.lastName, 'agent', user.email, photo];
             const ans = (await client.query(query,params)).rows;
 
             const query2 = `INSERT INTO Agent (AGENT_ID,EXPERIENCE_YEARS,FEE, ACC_STATUS, RATING)
@@ -169,8 +168,8 @@ router.post("/", upload.single('file'), async(req,res)=>{
         });
     }
     catch(error) {
-        // Discard the photo multer already saved for this failed signup
-        req.file.filename && deleting("uploads/"+req.file.filename);
+        // Discard the photo already uploaded for this failed signup
+        deletePhoto(photo);
         throw error;
     }
 
@@ -227,12 +226,7 @@ router.put("/:userId", requireAuth, requireSelfOrAdmin(req => req.params.userId)
     let ans = await database.query(check_query,[user.username]);
 
     // The username must be free, or already belong to this user
-    if(ans.length!==0 && ans[0].user_id!==userId)
-    {
-        // Discard the photo multer already saved for this rejected update
-        req.file && deleting("uploads/"+req.file.filename);
-    }
-    else
+    if(ans.length===0 || ans[0].user_id===userId)
     {
         const prev_user = await database.query(`SELECT PHOTO FROM Users WHERE USER_ID=$1`,[userId]);
 
@@ -243,14 +237,24 @@ router.put("/:userId", requireAuth, requireSelfOrAdmin(req => req.params.userId)
             hashedPassword = await bcrypt.hash(user.password, salt);
         }
 
+        // No new photo means "keep the current one"
+        const photo = req.file ? await savePhoto(req.file) : null;
+
         const query = `UPDATE Users
                        SET USERNAME=$1, PASSWORD=COALESCE($2, PASSWORD), FIRST_NAME=$3, LAST_NAME=$4, EMAIL=$5, PHOTO=COALESCE($6, PHOTO)
                        WHERE USER_ID=$7`;
-        await database.query(query,[user.username, hashedPassword, user.firstName, user.lastName, user.email, req.file ? req.file.filename : null, userId]);
+        try {
+            await database.query(query,[user.username, hashedPassword, user.firstName, user.lastName, user.email, photo, userId]);
+        }
+        catch(error) {
+            // Discard the photo already uploaded for this failed update
+            deletePhoto(photo);
+            throw error;
+        }
 
-        // Replace the photo only when a new one was uploaded (old file removed once the update succeeded)
-        if(req.file && prev_user.length!==0 && prev_user[0].photo) {
-            deleting("uploads/"+prev_user[0].photo);
+        // Replace the photo only when a new one was uploaded (old one removed once the update succeeded)
+        if(photo && prev_user.length!==0) {
+            deletePhoto(prev_user[0].photo);
         }
 
         const res_query = `SELECT U.*, A.EXPERIENCE_YEARS, A.FEE

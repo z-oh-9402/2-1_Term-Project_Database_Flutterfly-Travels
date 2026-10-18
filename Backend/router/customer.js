@@ -1,7 +1,7 @@
 const router = require("express-promise-router")();
 const database = require('../database');
 const bcrypt = require('bcryptjs');
-const { upload, deleting } = require('../file_handling');
+const { upload, savePhoto, deletePhoto } = require('../file_handling');
 const { signToken, requireAuth, requireSelfOrAdmin } = require('../auth');
 
 router.get("/fetch", requireAuth, requireSelfOrAdmin(req => req.query.customerId), async(req,res)=>{
@@ -45,10 +45,9 @@ router.post("/", upload.single('file'), async(req,res)=>{
     const plaintextPassword = user.password;
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(plaintextPassword, salt);
-    
-    if(req.file === undefined) {
-        req.file = { filename: "" }
-    }
+
+    // The photo is uploaded first, so its URL can be stored with the user
+    const photo = req.file ? await savePhoto(req.file) : "";
 
     // The user, customer and preference rows are created together or not at all
     let newUser;
@@ -57,7 +56,7 @@ router.post("/", upload.single('file'), async(req,res)=>{
             let query = `INSERT INTO Users (USERNAME, PASSWORD, FIRST_NAME, LAST_NAME, USER_TYPE, EMAIL, PHOTO)
                          VALUES ($1, $2, $3, $4, $5, $6, $7)
                          RETURNING *`;
-            let params = [user.username, hashedPassword, user.firstName, user.lastName, 'customer', user.email, req.file.filename];
+            let params = [user.username, hashedPassword, user.firstName, user.lastName, 'customer', user.email, photo];
             const ans = (await client.query(query,params)).rows;
 
             query = `INSERT INTO Customer (CUSTOMER_ID,PASSPORT_NUMBER,TRIP_BOOKED)
@@ -84,8 +83,8 @@ router.post("/", upload.single('file'), async(req,res)=>{
         });
     }
     catch(error) {
-        // Discard the photo multer already saved for this failed signup
-        req.file.filename && deleting("uploads/"+req.file.filename);
+        // Discard the photo already uploaded for this failed signup
+        deletePhoto(photo);
         throw error;
     }
 
@@ -101,7 +100,6 @@ router.put("/:userId", requireAuth, requireSelfOrAdmin(req => req.params.userId)
     // The username must be free, or already belong to this user
     const taken = await database.query(`SELECT USER_ID FROM Users WHERE USERNAME=$1 AND USER_ID<>$2`,[user.username, userId]);
     if(taken.length!==0) {
-        req.file && deleting("uploads/"+req.file.filename);
         res.status(409).json({ message: "This username is already taken. Use another one." });
         return;
     }
@@ -118,6 +116,9 @@ router.put("/:userId", requireAuth, requireSelfOrAdmin(req => req.params.userId)
         hashedPassword = await bcrypt.hash(user.password, salt);
     }
 
+    // No new photo means "keep the current one"
+    const photo = req.file ? await savePhoto(req.file) : null;
+
     // Users, Customer and the preference list are updated together or not at all
     let preferences = [];
     try {
@@ -125,7 +126,7 @@ router.put("/:userId", requireAuth, requireSelfOrAdmin(req => req.params.userId)
             let query = `UPDATE Users
                          SET USERNAME=$1, PASSWORD=COALESCE($2, PASSWORD),FIRST_NAME=$3,LAST_NAME=$4,EMAIL=$5, PHOTO=COALESCE($6, PHOTO)
                          WHERE USER_ID=$7`;
-            let params = [user.username, hashedPassword, user.firstName, user.lastName, user.email, req.file ? req.file.filename : null, userId];
+            let params = [user.username, hashedPassword, user.firstName, user.lastName, user.email, photo, userId];
             await client.query(query,params);
 
             query = `UPDATE Customer
@@ -148,14 +149,14 @@ router.put("/:userId", requireAuth, requireSelfOrAdmin(req => req.params.userId)
         });
     }
     catch(error) {
-        // Discard the photo multer already saved for this failed update
-        req.file && deleting("uploads/"+req.file.filename);
+        // Discard the photo already uploaded for this failed update
+        deletePhoto(photo);
         throw error;
     }
 
-    // Replace the photo only when a new one was uploaded (old file removed once the update succeeded)
-    if(req.file && prev_user.length!==0 && prev_user[0].photo) {
-        deleting("uploads/"+prev_user[0].photo);
+    // Replace the photo only when a new one was uploaded (old one removed once the update succeeded)
+    if(photo && prev_user.length!==0) {
+        deletePhoto(prev_user[0].photo);
     }
 
     const res_query = `SELECT U.*,C.PASSPORT_NUMBER,C.TRIP_BOOKED

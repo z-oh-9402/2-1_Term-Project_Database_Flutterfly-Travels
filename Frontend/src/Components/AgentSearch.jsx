@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import PropTypes from 'prop-types';
 import '../Styles/search.css';
-import { apiFetch } from '../api';
+import { apiFetch, photoUrl } from '../api';
 
 const AgentSearch = (props) => {
     const {setProfile} = props;
@@ -109,7 +109,7 @@ const AgentSearch = (props) => {
                         <div key={index} className="suggested-items" onClick={()=>selectAgent(suggestion.user_id)}>
                             <div className="profile-pic">
                                 {console.log(suggestion)}
-                                <img src={suggestion.photo ?'http://localhost:3000/uploads/'+suggestion.photo : "default_profile_pic.jpeg"}/>
+                                <img src={photoUrl(suggestion.photo)}/>
                             </div>
                             <div className="agent-profile-info">
                                 <h4>{suggestion.username}</h4>

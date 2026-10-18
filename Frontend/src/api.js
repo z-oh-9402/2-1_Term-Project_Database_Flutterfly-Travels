@@ -11,6 +11,9 @@ export const setToken = (token) => {
     }
 }
 
+// Profile photos are stored as full Supabase URLs; with no photo (or an old file name from before the move) the default picture shows
+export const photoUrl = (photo) => photo && photo.startsWith('https://') ? photo : "default_profile_pic.jpeg";
+
 // Same as fetch(), but sends the login token, and logs the user out if the backend rejects it (expired or invalid)
 export const apiFetch = async (url, options = {}) => {
     const token = getToken();

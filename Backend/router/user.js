@@ -1,7 +1,7 @@
 const router = require("express-promise-router")();
 const database = require('../database');
 const bcrypt = require('bcryptjs');
-const { deleting } = require('../file_handling');
+const { deletePhoto } = require('../file_handling');
 const { signToken, requireAuth, requireSelfOrAdmin } = require('../auth');
 const { emitToUser } = require('../realtime');
 
@@ -79,7 +79,7 @@ router.delete("/:userId", requireAuth, requireSelfOrAdmin(req => req.params.user
     await database.query(query,params);
 
     // Remove the profile picture once the user is gone
-    user.length!==0 && user[0].photo && deleting("uploads/"+user[0].photo);
+    user.length!==0 && deletePhoto(user[0].photo);
 
     res.status(200).json({
         status: "ok"

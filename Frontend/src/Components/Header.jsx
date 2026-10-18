@@ -12,6 +12,7 @@ import { BsChatDots, BsPeopleFill } from "react-icons/bs";
 import { FaRegHeart, FaTripadvisor } from "react-icons/fa";
 
 import Notification from "./Notification";
+import { photoUrl } from "../api";
 
 const Header = (props)=>{
     const {handleIsInLoginOrSignUpFromNavbar, setShowTrips, setShowWishlist, notifications, onNotificationsSeen} = props;
@@ -74,7 +75,7 @@ const Header = (props)=>{
                             </>}
                         <Link to='user'>
                                 <div className="profile-pic">
-                                    <img src={userInfo.photo.length ? 'http://localhost:3000/uploads/'+userInfo.photo : "default_profile_pic.jpeg"}/>
+                                    <img src={photoUrl(userInfo.photo)}/>
                                 </div>
                         </Link>
                         <Notification notifications={notifications} onSeen={onNotificationsSeen}/>

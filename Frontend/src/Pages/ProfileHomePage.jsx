@@ -13,7 +13,7 @@ import { RxCross2 } from "react-icons/rx";
 import PhotoUploader from "../Components/PhotoUploader";
 import DeleteConfirmation from "./DeleteConfirmation";
 import Rating from "../Components/Rating";
-import { apiFetch } from '../api';
+import { apiFetch, photoUrl } from '../api';
 
 const list = ["Mountains", "Lakes", "Beaches", "Forests", "Hill Tracks", "Tea Gardens", "Historical Places"];
 
@@ -63,11 +63,12 @@ const ProfileHomePage = ({setLogOut}) => {
 
     useEffect(() => {
         const fetchData = async () => {
-            if(!selectedFile && user.photo)
+            // Current photo, shown in the edit form (a plain fetch: Supabase must not get our login token)
+            if(!selectedFile && photoUrl(user.photo) === user.photo)
             {
-                const response = await apiFetch('http://localhost:3000/uploads/'+user.photo);
+                const response = await fetch(user.photo);
                 const blob = await response.blob();
-                const file = new File([blob], "image.jpg", { type: 'image/jpeg' });
+                const file = new File([blob], "image", { type: blob.type });
                 setSelectedFile(file);
             }
 
@@ -192,7 +193,7 @@ const ProfileHomePage = ({setLogOut}) => {
         }
         else {
             let formData = new FormData();
-            formData.append('file', selectedFile);
+            if (isFileChanged && selectedFile) formData.append('file', selectedFile); // no file = keep the current photo
             formData.append('username', username);
             formData.append('firstName', firstName);
             formData.append('lastName', lastName);
@@ -244,7 +245,7 @@ const ProfileHomePage = ({setLogOut}) => {
         }
         else {
             let formData = new FormData();
-            formData.append('file', selectedFile);
+            if (isFileChanged && selectedFile) formData.append('file', selectedFile); // no file = keep the current photo
             formData.append('username', username);
             formData.append('firstName', firstName);
             formData.append('lastName', lastName);
@@ -374,7 +375,7 @@ const ProfileHomePage = ({setLogOut}) => {
             <div className='profile-container'>
                 {!isBeingUpdated ?
                 <div className="profile-card">
-                    <div className="profile-pic larger-profile-pic profile-card-pic"><img src={user.photo.length ? 'http://localhost:3000/uploads/'+user.photo : "default_profile_pic.jpeg"}/></div>
+                    <div className="profile-pic larger-profile-pic profile-card-pic"><img src={photoUrl(user.photo)}/></div>
                     <h2 className="profile-name">{user.first_name} {user.last_name}</h2>
                     <p className="profile-username">@{user.username}</p>
                     <span className="profile-role">{roleLabels[user.user_type]}</span>

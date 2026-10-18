@@ -3,7 +3,6 @@ const PORT = process.env.PORT;
 
 const morgan = require('morgan');
 const express = require('express');
-const path = require('path');
 const cors = require('cors');
 
 const app = express();
@@ -13,8 +12,6 @@ app.use(cors());
 app.options('*',cors());
 
 app.use("/",require('./router/routes'))
-
-app.use("/uploads", express.static(path.join(__dirname, 'uploads')));
 
 // Any error thrown in a route ends up here
 app.use((err, req, res, next) => {
