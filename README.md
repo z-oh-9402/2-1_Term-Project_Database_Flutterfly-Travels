@@ -19,11 +19,12 @@ Backend/
     schema.sql        Tables, constraints, functions, procedure and triggers
     seed.sql          Sample data (locations, airports, flights, destinations, ...), no user accounts
   create-admin.js     Creates an admin account (npm run create-admin)
-  uploads/            Profile photos uploaded at runtime
+  file_handling.js    Profile photo upload and removal (Supabase Storage)
 Frontend/
   src/api.js          apiFetch: fetch wrapper that sends the login token
   src/Pages/, src/Components/
 ERD.pdf               Entity-relationship diagram
+IMAGE_CREDITS.md      Authors and licences of the Wikimedia Commons photos
 ```
 
 ## Setup
@@ -48,6 +49,7 @@ Fill in `Backend/.env`:
 
 - `DB_PASSWORD`: the password of the `postgres` role. If it has none yet, set one with `sudo -u postgres psql -c "\password postgres"`.
 - `JWT_SECRET`: a long random string. Generate one with `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"`.
+- `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`: from the Supabase dashboard, under Project Settings > API. The backend needs them to upload profile photos. The service role key bypasses all access rules, so it belongs only in this file, never in the frontend.
 
 Never commit `Backend/.env`; it is git-ignored.
 
@@ -103,6 +105,18 @@ Notifications reach the user instantly, without polling:
 1. The `notification_created` trigger calls `pg_notify('notification_created', <id>)` for every new row in `notification`. Postgres delivers this message only when the transaction commits.
 2. The backend (`Backend/realtime.js`) keeps one connection doing `LISTEN notification_created`. It looks up the row and sends it over socket.io to that user's open tabs.
 3. Socket connections log in with the same JWT, and each user only receives their own notifications. On every (re)connect the app reloads the list, so nothing is missed while it's offline.
+
+### Images
+
+The homepage slider photos ship with the frontend, in `Frontend/public/homepage/`. All other images are served from public buckets in Supabase Storage, so the app doesn't depend on other websites' links:
+
+| Bucket | Contents | Referenced from |
+|---|---|---|
+| `destinations`, `accomodations`, `restaurants` | `<id>-<name>/image.jpg`, `image1` to `image3` | the item's `image*` columns |
+| `flights` | one photo per airline | `flight.image` |
+| `users` | profile photos, uploaded by the backend | `users.photo` (full URL) |
+
+The photos that replaced broken links come from Wikimedia Commons. Their authors and licences are in [IMAGE_CREDITS.md](IMAGE_CREDITS.md).
 
 ### Authentication
 

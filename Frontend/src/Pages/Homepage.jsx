@@ -4,22 +4,25 @@ import 'slick-carousel/slick/slick-theme.css';
 import "../Styles/image-slider.css";
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
+// Slider photos are part of the app (Frontend/public/homepage/)
+const SLIDE_IMAGES = "/homepage/";
+
 const Homepage = () => {
     const slides = [
         {
-            image: "https://cosmosgroup.sgp1.cdn.digitaloceanspaces.com/news/details/9880772_largest%20tea%20gardens%20Bangladesh.jpg",
+            image: SLIDE_IMAGES + "tea-garden.jpg",
             text: "Seeking a heavenly experience? Let's make it divine.",
         },
         {
-            image: "https://cosmosgroup.sgp1.digitaloceanspaces.com/news/details/3921007.webp",
+            image: SLIDE_IMAGES + "food.webp",
             text: "Wanna enjoy the best food in town???",
         },
         {
-            image: "https://th.bing.com/th/id/R.3af5e8f7e610806fb5f8e9d046052a5d?rik=96WNlUsdwAZ%2f7A&pid=ImgRaw&r=0",
+            image: SLIDE_IMAGES + "beach.jpg",
             text: "Get the ultimate travel experience!!!",
         },
         {
-            image: "https://businessinspection.com.bd/wp-content/uploads/2022/06/Top-Resorts-in-Bangladesh-1.jpg",
+            image: SLIDE_IMAGES + "resort.jpg",
             text: "Get the best hotel deals here!!!",
         }
     ];
