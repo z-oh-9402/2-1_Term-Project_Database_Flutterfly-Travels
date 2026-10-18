@@ -18,8 +18,8 @@ const Restaurants = ()=>{
     const [priceRange, setPriceRange] = useState(3);
     const PRarray = ["$","$$","$$$", "$$$$"];
     const [isFilterApplied, setIsFilterApplied] = useState(false);
-    const [cuisineArray, setCuisineArray] = useState([false,false,false,false]);
-    const cuisines = ["Seafood","Indian","Chinese","Cafe"];
+    const cuisines = ["Bangladeshi","Seafood","Indian","Chinese","Thai","Cafe","Fast Food"];
+    const [cuisineArray, setCuisineArray] = useState(cuisines.map(() => false));
     const [privArray, setPrivArray] = useState([false,false,false,false,false,false]);
     const navigate = useNavigate();
 
@@ -32,7 +32,7 @@ const Restaurants = ()=>{
         setRatingValue(0);
         setRestaurantClass(0);
         setPriceRange(3);
-        setCuisineArray([false,false,false,false]);
+        setCuisineArray(cuisines.map(() => false));
         setPrivArray([false,false,false,false,false,false]);
         setIsFilterApplied(false);
     }
