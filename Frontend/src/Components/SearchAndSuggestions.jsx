@@ -60,7 +60,7 @@ const SearchAndSuggestions = (props) => {
             <span id="dim-background"></span>
             <div id='search-items' style={{position: "relative", zIndex: "0"}}>
                 <div className="search-container">
-                    <input id="search-bar" type="text" onFocus={setOnFocus} onBlur={setOnBlur} className="search-input" value={data.search} placeholder={`Search ${data.category} name or area...`} onChange={functions.handleSearch}/>
+                    <input id="search-bar" type="text" autoComplete="off" onFocus={setOnFocus} onBlur={setOnBlur} className="search-input" value={data.search} placeholder={`Search ${data.category} name or area...`} onChange={functions.handleSearch}/>
                     <button className="search-button custom-btn" onClick={functions.handleSubmit}>
                         <h1>🔍</h1>
                     </button>

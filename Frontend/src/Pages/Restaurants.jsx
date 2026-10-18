@@ -104,8 +104,9 @@ const Restaurants = ()=>{
         setSearch("");
     }
 
-    const showRestaurant = async (e) => {
-        navigate(`${e.target.innerText}`);
+    // Called by SearchAndSuggestions with the clicked suggestion's name, like on the other pages
+    const showRestaurant = async (name) => {
+        navigate(`${name}`);
     }
 
     // the search and filters, as GET /restaurant/fetch parameters
