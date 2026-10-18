@@ -158,8 +158,94 @@ iframe{
     border-radius: 8px;
 }
 
+/* Checkboxes and radio buttons: drawn here instead of the browser's own */
+input[type="checkbox"],
 input[type="radio"]{
+    appearance: none;
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    padding: 0;
+    border: 2px solid #6b7c85;
+    background-color: transparent;
+    background-position: center;
+    background-repeat: no-repeat;
     box-shadow: none;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+}
+
+input[type="checkbox"]{
+    border-radius: 5px;
+}
+
+input[type="radio"]{
+    border-radius: 50%;
+}
+
+/* undoes the glow search.css gives every focused input */
+input[type="checkbox"]:focus,
+input[type="radio"]:focus{
+    border-color: #6b7c85;
+    box-shadow: none;
+    outline: none;
+}
+
+input[type="checkbox"]:hover,
+input[type="radio"]:hover{
+    border-color: #45deec;
+}
+
+input[type="checkbox"]:active,
+input[type="radio"]:active{
+    transform: scale(0.9);
+}
+
+input[type="checkbox"]:checked{
+    border-color: #25afe6;
+    background-color: #25afe6;
+    background-size: 14px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.5l3 3 6-7' fill='none' stroke='%2308161c' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+input[type="radio"]:checked{
+    border-color: #25afe6;
+    background-image: radial-gradient(circle, #25afe6 0 4px, transparent 4.5px);
+}
+
+input[type="checkbox"]:checked:hover{
+    border-color: #45deec;
+    background-color: #45deec;
+}
+
+input[type="radio"]:checked:hover{
+    border-color: #45deec;
+    background-image: radial-gradient(circle, #45deec 0 4px, transparent 4.5px);
+}
+
+input[type="checkbox"]:focus-visible,
+input[type="radio"]:focus-visible{
+    outline: 2px solid #45deec;
+    outline-offset: 2px;
+}
+
+input[type="checkbox"]:disabled,
+input[type="radio"]:disabled{
+    opacity: 0.5;
+    cursor: default;
+}
+
+/* The text next to a checkbox or radio button lines up with it, and clicking it toggles the box
+   (the profile page's preference chips have their own look) */
+label:not(.pref-chip):has(> input[type="checkbox"]),
+label:not(.pref-chip):has(> input[type="radio"]){
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 0;
+    cursor: pointer;
+    user-select: none;
 }
 
 .information-container{
