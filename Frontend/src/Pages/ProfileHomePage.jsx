@@ -181,8 +181,16 @@ const ProfileHomePage = ({setLogOut}) => {
         setRePassword("");
     }
 
+    // Fields marked with a red * in the edit form
+    const isEmpty = (value) => String(value ?? '').trim() === '';
+    const hasEmptyRequiredField = (includePassport) =>
+        [username, firstName, lastName, email, ...(includePassport ? [passportNumber] : [])].some(isEmpty);
+
     const updateInfo2 = async () => {
-        if (!isFileChanged && username === user.username && firstName === user.first_name && lastName === user.last_name && email === user.email && password.length === 0) {
+        if (hasEmptyRequiredField(false)) {
+            alert("Please fill in all the required fields (marked with *).");
+        }
+        else if (!isFileChanged && username === user.username && firstName === user.first_name && lastName === user.last_name && email === user.email && password.length === 0) {
             alert("No data change was detected.");
         }
         else if (password.length < 8 && password.length !== 0) {
@@ -234,7 +242,10 @@ const ProfileHomePage = ({setLogOut}) => {
             isPrefSame = false;
         }
 
-        if (!isFileChanged && username === user.username && firstName === user.first_name && lastName === user.last_name && email === user.email && passportNumber === user.passport_number && isPrefSame && password.length === 0) {
+        if (hasEmptyRequiredField(true)) {
+            alert("Please fill in all the required fields (marked with *).");
+        }
+        else if (!isFileChanged && username === user.username && firstName === user.first_name && lastName === user.last_name && email === user.email && passportNumber === user.passport_number && isPrefSame && password.length === 0) {
             alert("No data change was detected.");
         }
         else if (password.length < 8 && password.length !== 0) {
@@ -454,22 +465,26 @@ const ProfileHomePage = ({setLogOut}) => {
                         <label><span>Username <span className="required">*</span></span>
                             <input value={username} placeholder='Enter username' onChange={handleUsernameChange} />
                         </label>
+                        {isEmpty(username) && <p className="field-error">Username is required</p>}
                         {!isValidUsername && <p className="field-error">This username is already taken</p>}
                     </div>
                     <div className="profile-form-field">
                         <label><span>First Name <span className="required">*</span></span>
                             <input value={firstName} placeholder='Enter first name' onChange={handleFirstNameChange} />
                         </label>
+                        {isEmpty(firstName) && <p className="field-error">First name is required</p>}
                     </div>
                     <div className="profile-form-field">
                         <label><span>Last Name <span className="required">*</span></span>
                             <input value={lastName} placeholder='Enter last name' onChange={handleLastNameChange} />
                         </label>
+                        {isEmpty(lastName) && <p className="field-error">Last name is required</p>}
                     </div>
                     <div className="profile-form-field">
                         <label><span>Email <span className="required">*</span></span>
                             <input type="email" value={email} placeholder='Enter email' onChange={handleEmailChange} />
                         </label>
+                        {isEmpty(email) && <p className="field-error">Email is required</p>}
                     </div>
 
                     {user.user_type === 'customer' &&
@@ -478,7 +493,9 @@ const ProfileHomePage = ({setLogOut}) => {
                             <label><span>Passport Number <span className="required">*</span></span>
                                 <input value={passportNumber} placeholder='Enter passport number' onChange={handlePassportNumberChange} />
                             </label>
-                            {!isValidPassport && !isPassportStarting && <p className="field-error">Passport number must be 12 characters</p>}
+                            {isEmpty(passportNumber) ?
+                                <p className="field-error">Passport number is required</p>
+                                : (!isValidPassport && !isPassportStarting && <p className="field-error">Passport number must be 12 characters</p>)}
                         </div>
 
                         <div className="profile-form-section">
@@ -503,10 +520,12 @@ const ProfileHomePage = ({setLogOut}) => {
                         <p className="profile-form-hint">Leave both fields empty to keep your current password.</p>
                         <div className="profile-form-field">
                             <PasswordInput Label="New Password" password={password} setPassword={handlePasswordChange} />
-                            {!isValidPassword && !isPasswordStarting && <p className="field-error">Password must be at least 8 characters</p>}
+                            {/* Empty is allowed here (keeps the current password), so only warn about a non-empty short one */}
+                            {password.length !== 0 && !isValidPassword && !isPasswordStarting && <p className="field-error">Password must be at least 8 characters</p>}
                         </div>
                         <div className="profile-form-field">
                             <PasswordInput Label="Confirm New Password" password={rePassword} setPassword={handleRePasswordChange} />
+                            {rePassword.length !== 0 && rePassword !== password && <p className="field-error">Passwords don&apos;t match</p>}
                         </div>
                     </div>
 

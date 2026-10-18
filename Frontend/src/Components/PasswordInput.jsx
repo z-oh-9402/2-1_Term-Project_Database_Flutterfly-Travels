@@ -37,7 +37,7 @@ const PasswordInput = (props) => {
                     }}
                     onClick={handleTogglePassword}
                 >
-                    {password.length!==0 && (showPassword ? <FaEyeSlash /> : <FaEye />)}
+                    {password.length!==0 && (showPassword ? <FaEyeSlash size={20} /> : <FaEye size={20} />)}
                 </span>
             </span></label>
         </div>
