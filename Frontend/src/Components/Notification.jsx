@@ -1,22 +1,27 @@
 import { useContext, useEffect, useState } from 'react';
 import '../Styles/notification.css';
 import PropTypes from 'prop-types';
-import '../Styles/login-signup.css';
+import { IoMdNotificationsOutline } from "react-icons/io";
 import UserInfoContext from '../Context/UserInfoContext';
+
+// "just now", "5 min ago", "3 h ago", "yesterday", or the date for anything older
+const timeAgo = (date) => {
+    const minutes = Math.floor((Date.now() - date.getTime()) / 60000);
+    if(minutes < 1) return 'just now';
+    if(minutes < 60) return `${minutes} min ago`;
+    const hours = Math.floor(minutes / 60);
+    if(hours < 24) return `${hours} h ago`;
+    if(hours < 48) return 'yesterday';
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+const fullDate = (date) => date.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
 
 const Notification = (props) => {
     const {notifications, onSeen} = props;
     const {showDetailedNotification, setShowDetailedNotification} = useContext(UserInfoContext);
     // Notifications that were unread while the list was open stay highlighted until it is closed
     const [highlightedIds, setHighlightedIds] = useState([]);
-
-    useEffect(() => {
-        if(showDetailedNotification)
-        {
-            const scrollThreshold = document.getElementById('main-nav').offsetHeight;
-            document.getElementById('detailed-notif').style.top = `${scrollThreshold}px`;
-        }
-    }, [showDetailedNotification]);
 
     // While the list is open, a click anywhere outside it (or Escape) closes it.
     // Clicks on the bell are left to the bell's own toggle, so clicking it again also closes the list.
@@ -66,30 +71,40 @@ const Notification = (props) => {
         }
     }, [showDetailedNotification, notifications, onSeen]);
 
+    if(!showDetailedNotification)
+    {
+        return null;
+    }
+
+    const newCount = notifications.filter(notification => highlightedIds.includes(notification.notification_id)).length;
+
+    // Positioned against the navbar (see navbar.css), just under its right end
     return (
-        <>
-            <div style={{position: 'relative'}}>
-                {showDetailedNotification &&
-                <div id='detailed-notif' className='detailed-notification'>
-                    {notifications.length===0 ?
-                        <p className="no-notification">No notifications yet</p>
-                        :
-                        notifications.map((notification) =>
-                            <div key={notification.notification_id} className={"detailed-notification-item" + (highlightedIds.includes(notification.notification_id) ? " unread" : "")}>
-                                <p>{notification.content}</p>
-                                <span className="notification-time">
-                                    {new Date(notification.created_at).toLocaleString('en-US', {
-                                        month: 'short',
-                                        day: 'numeric',
-                                        hour: 'numeric',
-                                        minute: '2-digit'
-                                    })}
-                                </span>
-                            </div>
-                    )}
-                </div>}
+        <div id='detailed-notif' className='detailed-notification' role='dialog' aria-label='Notifications'>
+            <div className='notification-header'>
+                <h3>Notifications</h3>
+                {newCount!==0 && <span className='notification-new-count'>{newCount} new</span>}
             </div>
-        </>
+
+            {notifications.length===0 ?
+                <div className='no-notification'>
+                    <IoMdNotificationsOutline className='no-notification-icon'/>
+                    <p>No notifications yet</p>
+                    <span>Updates about your trips and account will show up here.</span>
+                </div>
+                :
+                <ul className='notification-list'>
+                    {notifications.map((notification) => {
+                        const createdAt = new Date(notification.created_at);
+                        return (
+                            <li key={notification.notification_id} className={"detailed-notification-item" + (highlightedIds.includes(notification.notification_id) ? " unread" : "")}>
+                                <p>{notification.content}</p>
+                                <time className="notification-time" dateTime={createdAt.toISOString()} title={fullDate(createdAt)}>{timeAgo(createdAt)}</time>
+                            </li>
+                        );
+                    })}
+                </ul>}
+        </div>
     );
 }
 

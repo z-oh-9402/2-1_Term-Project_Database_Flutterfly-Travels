@@ -8,6 +8,9 @@
     padding: 16px 20px;
     display: flex;
     justify-content: space-between;
+    /* the notification panel hangs from the navbar's bottom edge */
+    position: relative;
+    z-index: 1;
 }
 
 .main-navbar .basicInfo{
@@ -58,7 +61,7 @@
 }
 
 .header-icons{
-    margin-right: 15px;
+    margin-right: 20px;
     color:white;
     cursor: pointer;
 }
