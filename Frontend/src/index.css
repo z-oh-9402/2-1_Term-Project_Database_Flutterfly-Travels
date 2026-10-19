@@ -350,6 +350,10 @@ label:not(.pref-chip):has(> input[type="radio"]){
     width: 180px;
 }
 
+.agent-suggestion-profile-pic{
+    margin-right: 10px;
+}
+
 /* Date pickers inside popups draw their calendar here (portalId="datepicker-portal"): above the popup, never clipped by it */
 #datepicker-portal .react-datepicker-popper{
     z-index: 20;

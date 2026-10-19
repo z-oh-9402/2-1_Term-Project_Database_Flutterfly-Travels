@@ -69,12 +69,9 @@
     margin-bottom: 4px;
 }
 
-.create-trip .agent-search{
+.create-trip .agent-search,
+.create-trip .agent-picked{
     margin-top: 6px;
-}
-
-.create-trip .trip-form-note{
-    margin: 8px 0 0;
 }
 
 .create-trip-dates{
@@ -242,4 +239,8 @@
 
 .trip-agent-picker{
     margin: 10px 0;
+}
+
+.trip-agent-picker .popup-buttons{
+    margin-top: 12px;
 }

@@ -211,7 +211,7 @@ const Trips = (props) => {
                         <div className='trip-agent-picker'>
                             {showAgentSearch ?
                             <>
-                                <AgentSearch setProfile={setPickedAgent}/>
+                                <AgentSearch profile={pickedAgent} setProfile={setPickedAgent}/>
                                 <div className='popup-buttons'>
                                     <button className='custom-btn' disabled={!pickedAgent} onClick={() => setAgent(visitingTrip)}>
                                         {pickedAgent ? `Send the request to ${pickedAgent.username}` : 'Pick an agent above'}

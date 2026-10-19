@@ -147,11 +147,7 @@ const CreateTrip = ({onCreated, onCancel, fromDate, toDate}) => {
                 <label><input type="radio" name="selectAnAgent" checked={selectAnAgent} onChange={()=>setSelectAnAgent(true)} />Choose one now</label>
                 <label><input type="radio" name="selectAnAgent" checked={!selectAnAgent} onChange={()=>setSelectAnAgent(false)} />Later, maybe</label>
             </div>
-            {selectAnAgent &&
-            <>
-                <AgentSearch setProfile={setAgent}/>
-                {agent && <p className='trip-form-note'>Agent: <strong>{agent.username}</strong></p>}
-            </>}
+            {selectAnAgent && <AgentSearch profile={agent} setProfile={setAgent}/>}
         </div>
 
         <div className='create-trip-dates'>
