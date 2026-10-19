@@ -356,36 +356,6 @@
     margin-top: 0;
 }
 
-.agent-trip-links{
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 10px;
-    margin-top: 16px;
-}
-
-.agent-trip-links a{
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
-    border: 1px solid rgba(37, 175, 230, 0.6);
-    border-radius: 999px;
-    color: white;
-    font-size: 14px;
-    text-decoration: none;
-    transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
-}
-
-.agent-trip-links a svg{
-    color: #45deec;
-}
-
-.agent-trip-links a:hover{
-    border-color: #45deec;
-    background-color: rgba(37, 175, 230, 0.15);
-}
-
 /* The trip's bookings (TripBookings.jsx): one card per booking, grouped by kind.
    The cards of a kind share the row, so a single booking takes the full width. */
 .agent-trips .trip-reservations{

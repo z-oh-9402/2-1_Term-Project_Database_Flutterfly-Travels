@@ -2,13 +2,12 @@ import '../Styles/confirmation-message.css';
 import '../Styles/trips.css';
 import '../Styles/agent-trips.css';
 import { useContext, useState } from 'react';
-import { Link } from 'react-router-dom';
 import UserInfoContext from '../Context/UserInfoContext';
 import Rating from '../Components/Rating';
 import { TiTick } from "react-icons/ti";
 import { RxCross2 } from "react-icons/rx";
 import { FaRegCalendarAlt } from "react-icons/fa";
-import { IoAirplaneSharp, IoArrowBack, IoBedSharp, IoGlobeSharp, IoRestaurant } from "react-icons/io5";
+import { IoArrowBack } from "react-icons/io5";
 import TripBookings from './TripBookings';
 import { canEditBookings, errorMessage, hasNoBookings, tripLength } from './tripHelpers';
 import { apiFetch, photoUrl } from '../api';
@@ -227,17 +226,7 @@ const AgentTrip = () => {
         <h3 className='agent-trip-section-title'>Bookings</h3>
         {hasNoBookings(visitingTrip) ?
             <div className='agent-trips-empty'>
-                {canEdit ?
-                <>
-                    <p>Nothing booked yet. Open a place and use &quot;Book Now!&quot; or &quot;Add to Trip&quot;.</p>
-                    <div className='agent-trip-links'>
-                        <Link to='/destinations'><IoGlobeSharp/> Destinations</Link>
-                        <Link to='/accommodations'><IoBedSharp/> Accommodations</Link>
-                        <Link to='/restaurants'><IoRestaurant/> Restaurants</Link>
-                        <Link to='/flights'><IoAirplaneSharp/> Flights</Link>
-                    </div>
-                </> :
-                <p>Nothing booked yet.</p>}
+                <p>Nothing booked yet.{canEdit && ' Open a place and use "Book Now!" or "Add to Trip".'}</p>
             </div>
         :
         <TripBookings trip={visitingTrip} canEdit={canEdit} onRemove={removeBooking}/>}
