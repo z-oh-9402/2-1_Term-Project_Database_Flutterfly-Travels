@@ -17,16 +17,22 @@ import Flights from './Pages/Flights.jsx';
 import RestaurantProfile from './Pages/RestaurantProfile.jsx';
 import Trips from './Pages/Trips.jsx';
 import Wishlist from './Components/Wishlist.jsx';
+import NotificationToasts from './Components/NotificationToasts.jsx';
 import { apiFetch, getToken } from './api';
 import { io } from 'socket.io-client';
 
 function App() {
   const [isLoginOrSignUpPageLoaded,setIsLoginOrSignUpPageLoaded] = useState(false);
   const [isInLoginPage, setIsInLoginPage] = useState(true);
-  const {userInfo, setInfo} = useContext(UserInfoContext);
+  const {userInfo, setInfo, showDetailedNotification, setShowDetailedNotification} = useContext(UserInfoContext);
   const [showTrips, setShowTrips] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [showWishlist, setShowWishlist] = useState(false);
+  // new notifications shown for a moment as pop-ups (not while the notification panel is already open)
+  const [toasts, setToasts] = useState([]);
+  const showDetailedNotificationRef = useRef(showDetailedNotification);
+  showDetailedNotificationRef.current = showDetailedNotification;
+  const dismissToast = useCallback((id) => setToasts(current => current.filter(toast => toast.id !== id)), []);
 
   const loggedInUserId = userInfo ? userInfo.user_id : null;
 
@@ -90,6 +96,7 @@ function App() {
     if(loggedInUserId===null)
     {
       setNotifications([]);
+      setToasts([]);
       return;
     }
 
@@ -115,6 +122,12 @@ function App() {
         notification,
         ...prevNotifications.filter(previous => previous.notification_id !== notification.notification_id)
       ].slice(0, 30));
+      if(!showDetailedNotificationRef.current)
+      {
+        // at most three at once; the oldest makes room
+        setToasts(current => [...current.filter(toast => toast.id !== notification.notification_id),
+                              { id: notification.notification_id, content: notification.content }].slice(-3));
+      }
       // whatever the notification is about (an approval, a trip update) may have changed the account
       refreshAccountRef.current();
     });
@@ -201,6 +214,7 @@ function App() {
                        : <SignUp goToHome={goToHome} setUserInfo={handleLogOut} goToLogin={handleChangeBetweenLoginAndSignUp} setNotifications={setNotifications}/>)}
       {userInfo!==null && showTrips && <Trips setShowTrips={setShowTrips}/>}
       {userInfo!==null && showWishlist && <Wishlist setShowWishlist={setShowWishlist} isWishlist={true}/>}
+      <NotificationToasts toasts={toasts} onDismiss={dismissToast} onOpen={() => { setToasts([]); setShowDetailedNotification(true); }}/>
       <Header handleIsInLoginOrSignUpFromNavbar={handleIsInLoginOrSignUpFromNavbar} setShowTrips={setShowTrips} setShowWishlist={setShowWishlist} notifications={notifications} onNotificationsSeen={markNotificationsSeen}/>
 
       <br/><br/>
