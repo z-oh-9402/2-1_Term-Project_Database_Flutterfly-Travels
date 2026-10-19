@@ -232,13 +232,14 @@ router.put('/update-trip', async (req, res) => {
 router.put('/update-trip-status', async (req, res) => {
     const {tripStatus, tripId} = req.body;
 
-    // Housekeeping called by every client on page load (App.jsx): marks every confirmed trip whose return date
-    // has passed as completed. It never touches any other trip, so any logged-in user may run it; tripId is ignored.
+    // Housekeeping called by every client on page load (App.jsx): once a trip's return day is over, a confirmed trip
+    // is marked completed, and one that never got confirmed is marked dropped. It only closes trips that are over,
+    // so any logged-in user may run it; tripId is ignored.
     if(tripStatus==='COMPLETED')
     {
         const query = `UPDATE Trip
-                       SET TRIP_STATUS = 'COMPLETED'
-                       WHERE TRIP_STATUS='CONFIRMED' AND RETURN_DATE < CURRENT_TIMESTAMP`;
+                       SET TRIP_STATUS = CASE WHEN TRIP_STATUS = 'CONFIRMED' THEN 'COMPLETED' ELSE 'DROPPED' END
+                       WHERE TRIP_STATUS IN ('REQUESTING', 'UPDATING', 'PENDING', 'CONFIRMED') AND RETURN_DATE < CURRENT_DATE`;
         await database.query(query,[]);
         res.status(200).json("Trip status updated successfully");
         return;

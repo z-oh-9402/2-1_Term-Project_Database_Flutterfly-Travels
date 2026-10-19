@@ -252,7 +252,15 @@ BEGIN
             RETURN NULL;
         END IF;
 
-        IF NEW.agent_id IS NULL THEN
+        -- its return date passed before an admin confirmed it (with or without an agent)
+        IF NEW.trip_status = 'DROPPED' THEN
+            INSERT INTO notification (user_id, content, notification_status)
+            VALUES (NEW.customer_id, 'Your trip ''' || NEW.name || ''' was dropped: its return date passed before it was confirmed.', 'NOT SHOWED');
+            IF NEW.agent_id IS NOT NULL THEN
+                INSERT INTO notification (user_id, content, notification_status)
+                VALUES (NEW.agent_id, 'The trip ''' || NEW.name || ''' was dropped: its return date passed before it was confirmed.', 'NOT SHOWED');
+            END IF;
+        ELSIF NEW.agent_id IS NULL THEN
             INSERT INTO notification (user_id, content, notification_status)
             VALUES (NEW.customer_id, 'Your request for trip ''' || NEW.name || ''' has been cancelled.', 'NOT SHOWED');
         ELSIF NEW.trip_status = 'UPDATING' THEN
@@ -1401,7 +1409,7 @@ CREATE TABLE public.trip (
     trip_status character varying(15),
     rating_count integer DEFAULT 0 NOT NULL,
     CONSTRAINT trip_rating_check CHECK ((rating <= (5)::numeric)),
-    CONSTRAINT trip_trip_status_check CHECK (((trip_status)::text = ANY (ARRAY[('REQUESTING'::character varying)::text, ('UPDATING'::character varying)::text, ('PENDING'::character varying)::text, ('CONFIRMED'::character varying)::text, ('COMPLETED'::character varying)::text])))
+    CONSTRAINT trip_trip_status_check CHECK (((trip_status)::text = ANY (ARRAY[('REQUESTING'::character varying)::text, ('UPDATING'::character varying)::text, ('PENDING'::character varying)::text, ('CONFIRMED'::character varying)::text, ('COMPLETED'::character varying)::text, ('DROPPED'::character varying)::text])))
 );
 
 

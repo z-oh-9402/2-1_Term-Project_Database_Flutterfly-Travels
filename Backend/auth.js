@@ -84,15 +84,18 @@ const bookingEditProblem = async (user, tripId) => {
         return null;
     }
     const trip = rows[0];
+    if (trip.customer_id !== user.id && trip.agent_id !== user.id) {
+        return [403, "Not allowed"];
+    }
+    if (['COMPLETED', 'DROPPED'].includes(trip.trip_status)) {
+        return [409, "This trip is over, so its bookings can no longer be changed"];
+    }
     if (trip.customer_id === user.id) {
         return ['REQUESTING', 'UPDATING'].includes(trip.trip_status) ? null
             : [409, "Bookings can only be changed until the trip is sent for approval"];
     }
-    if (trip.agent_id === user.id) {
-        return trip.trip_status === 'UPDATING' ? null
-            : [409, "Bookings can only be changed after you accept the trip, until it is sent for approval"];
-    }
-    return [403, "Not allowed"];
+    return trip.trip_status === 'UPDATING' ? null
+        : [409, "Bookings can only be changed after you accept the trip, until it is sent for approval"];
 }
 
 exports.signToken = signToken;

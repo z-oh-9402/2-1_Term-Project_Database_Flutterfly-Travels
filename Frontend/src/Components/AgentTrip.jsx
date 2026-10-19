@@ -9,7 +9,7 @@ import { RxCross2 } from "react-icons/rx";
 import { FaRegCalendarAlt } from "react-icons/fa";
 import { IoArrowBack } from "react-icons/io5";
 import TripBookings from './TripBookings';
-import { canEditBookings, errorMessage, hasNoBookings, tripLength } from './tripHelpers';
+import { canEditBookings, errorMessage, hasNoBookings, tabStatus, tripLength } from './tripHelpers';
 import { apiFetch, photoUrl } from '../api';
 
 const categories = [
@@ -27,6 +27,7 @@ const statusHints = {
     PENDING: 'The customer sent the trip to an admin for approval. Its bookings can no longer be changed.',
     CONFIRMED: 'Approved by an admin.',
     COMPLETED: 'This trip is over.',
+    DROPPED: 'This trip was dropped: its return date passed before an admin confirmed it.',
 };
 
 const customerName = (trip) => `${trip.first_name ?? ''} ${trip.last_name ?? ''}`.trim() || trip.username;
@@ -64,7 +65,7 @@ const AgentTrip = () => {
     const [error, setError] = useState(null);
 
     const trips = userInfo.trips ?? [];
-    const shownTrips = trips.filter(trip => trip.trip_status === categories[currentCategory].status);
+    const shownTrips = trips.filter(trip => tabStatus(trip) === categories[currentCategory].status);
     // looked up again on every render, so it always shows the trip as last loaded
     const visitingTrip = visitingTripId === null ? null : shownTrips.find(trip => trip.trip_id === visitingTripId) ?? null;
 
@@ -134,7 +135,7 @@ const AgentTrip = () => {
             <h2 className='agent-trips-heading'>My Trips</h2>
             <div className='agent-trips-tabs' role='tablist'>
                 {categories.map((category, index) => {
-                    const count = trips.filter(trip => trip.trip_status === category.status).length;
+                    const count = trips.filter(trip => tabStatus(trip) === category.status).length;
                     return (
                         <button key={category.name} role='tab' aria-selected={currentCategory === index}
                                 className={'agent-trips-tab' + (currentCategory === index ? ' selected' : '')}
@@ -155,7 +156,7 @@ const AgentTrip = () => {
                     <div key={trip.trip_id} className='agent-trip-card' role='button' tabIndex={0}
                          onClick={() => openTrip(trip)} onKeyDown={(e) => { if(e.target === e.currentTarget && e.key === 'Enter') openTrip(trip); }}>
                         <div className='agent-trip-card-top'>
-                            <h3>{trip.name}</h3>
+                            <h3>{trip.name}{trip.trip_status === 'DROPPED' && <span className='agent-trip-status status-dropped'>Dropped</span>}</h3>
                             <span className='agent-trip-cost'>{money(trip.total_cost)}</span>
                         </div>
                         <p className='agent-trip-line'>
@@ -182,7 +183,7 @@ const AgentTrip = () => {
 
         <div className='agent-trip-title'>
             <h2>{visitingTrip.name}</h2>
-            <span className={`agent-trip-status status-${status.toLowerCase()}`}>{categories.find(category => category.status === status)?.name}</span>
+            <span className={`agent-trip-status status-${status.toLowerCase()}`}>{status === 'DROPPED' ? 'Dropped' : categories.find(category => category.status === status)?.name}</span>
             {status === 'REQUESTING' && decisionButtons(visitingTrip)}
         </div>
 

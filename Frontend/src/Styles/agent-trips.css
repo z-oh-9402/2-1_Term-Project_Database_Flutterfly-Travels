@@ -114,8 +114,17 @@
 }
 
 .agent-trip-card h3{
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
     margin: 0;
     font-size: 1.15rem;
+}
+
+.agent-trip-card h3 .agent-trip-status{
+    padding: 1px 8px;
+    font-size: 11px;
 }
 
 .agent-trip-cost{
@@ -274,6 +283,12 @@
     border-color: rgba(154, 164, 173, 0.6);
     background-color: rgba(154, 164, 173, 0.1);
     color: #b5bec6;
+}
+
+.agent-trip-status.status-dropped{
+    border-color: rgba(229, 72, 77, 0.6);
+    background-color: rgba(229, 72, 77, 0.12);
+    color: #ff8a8d;
 }
 
 .agent-trips .trip-status-hint{

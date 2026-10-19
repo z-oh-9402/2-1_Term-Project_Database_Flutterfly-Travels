@@ -10,7 +10,7 @@ import CreateTrip from '../Components/CreateTrip';
 import AgentSearch from '../Components/AgentSearch';
 import AgentProfile from '../Components/AgentProfile';
 import TripBookings from '../Components/TripBookings';
-import { canEditBookings, errorMessage, formatDate } from '../Components/tripHelpers';
+import { canEditBookings, errorMessage, formatDate, tabStatus } from '../Components/tripHelpers';
 import { apiFetch } from '../api';
 
 // The tabs of My Trips; "Suggested" holds other customers' completed trips, as ideas
@@ -31,7 +31,10 @@ const statusHint = (trip) => ({
     PENDING: 'Waiting for an admin to approve the trip. Its bookings can no longer be changed.',
     CONFIRMED: 'Approved by an admin. Have a great trip!',
     COMPLETED: 'This trip is over.',
+    DROPPED: 'This trip was dropped: its return date passed before an admin confirmed it.',
 }[trip.trip_status]);
+
+const droppedTag = (trip) => trip.trip_status === 'DROPPED' && <span className='trip-dropped-tag'>Dropped</span>;
 
 // A customer's trips (opened from My Trips in the navbar)
 const Trips = (props) => {
@@ -56,7 +59,7 @@ const Trips = (props) => {
 
     const isSuggested = categories[currentCategory].status === undefined;
     const ownTrips = userInfo.trips ?? [];
-    const shownTrips = isSuggested ? suggestedTrips : ownTrips.filter(trip => trip.trip_status === categories[currentCategory].status);
+    const shownTrips = isSuggested ? suggestedTrips : ownTrips.filter(trip => tabStatus(trip) === categories[currentCategory].status);
     // looked up again on every render, so it always shows the trip as last loaded
     const visitingTrip = visitingTripId === null ? null : shownTrips.find(trip => trip.trip_id === visitingTripId) ?? null;
 
@@ -180,7 +183,7 @@ const Trips = (props) => {
                                     {trip.trip_status === 'REQUESTING' && !isSuggested &&
                                         <RiDeleteBin5Line className='delete-button' title='Delete trip' onClick={() => deleteTrip(trip)}/>}
                                     <div className='trip-child-div' onClick={() => openTrip(trip)}>
-                                        <h3 style={{marginTop: '0px', marginBottom: '8px'}}>{trip.name}</h3>
+                                        <h3 style={{marginTop: '0px', marginBottom: '8px'}}>{trip.name}{droppedTag(trip)}</h3>
                                         {tripSummary(trip)}
                                     </div>
                                 </div>
@@ -191,7 +194,7 @@ const Trips = (props) => {
                     :
                     <>
                         <div className='trips-header'>
-                            <h2>{visitingTrip.name}</h2>
+                            <h2>{visitingTrip.name}{droppedTag(visitingTrip)}</h2>
                             <button className='custom-btn customer-confirm-button' onClick={() => { setVisitingTripId(null); setError(null); }}>All Trips</button>
                         </div>
 

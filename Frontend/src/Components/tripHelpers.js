@@ -49,6 +49,9 @@ export const canEditBookings = (trip, user) => {
     return false;
 }
 
+// The tab a trip is listed under: a dropped trip (over before it was confirmed) sits with the completed ones
+export const tabStatus = (trip) => trip.trip_status === 'DROPPED' ? 'COMPLETED' : trip.trip_status;
+
 // Whether the trip has no destinations and no bookings yet
 export const hasNoBookings = (trip) => [trip.destinations, trip.accommodations, trip.restaurants, trip.flights].every(list => list.length === 0);
 
