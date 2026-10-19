@@ -172,7 +172,7 @@ const ProfileHomePage = ({setLogOut}) => {
         }
     }
 
-    const { containerProps, warning, invalid, showProblem, resetRules } = useFieldRules(fieldError);
+    const { containerProps, warning, invalid, showProblem, resetRules } = useFieldRules(fieldError, {rePassword: 'password'});
 
     // Before saving: goes to the first field that breaks its rule, or says when there is nothing to save
     const readyToSave = (nothingChanged) => {

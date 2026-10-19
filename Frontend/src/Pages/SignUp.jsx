@@ -49,7 +49,7 @@ const SignUp = (props) => {
         }
     }
 
-    const { containerProps, warning, invalid, showProblem, releaseField } = useFieldRules(fieldError);
+    const { containerProps, warning, invalid, showProblem, releaseField } = useFieldRules(fieldError, {rePassword: 'password'});
 
     // A field's name above its input, with the required mark
     const fieldLabel = (text) => <span className='field-label'>{text} <span className='required'>*</span></span>;

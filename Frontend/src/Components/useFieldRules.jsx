@@ -18,7 +18,9 @@ const fieldName = (field) => field.name || field.dataset.field;
 // Rules for the fields of a form (sign-up, edit profile). fieldError(name) says what is wrong with a field, or null.
 // While the field the user is in breaks its rule, no other field can be clicked or tabbed into,
 // and only that field's warning shows. Buttons and links keep working.
-const useFieldRules = (fieldError) => {
+// dependsOn maps a field to the one its rule compares against ({rePassword: 'password'}): while the first is wrong,
+// the user may go to the second to fix it, but from there only back to the first until it is right.
+const useFieldRules = (fieldError, dependsOn = {}) => {
     const containerRef = useRef(null);
     const currentRef = useRef(null); // the field the user is in
     const [currentField, setCurrentField] = useState(null); // its name
@@ -27,27 +29,40 @@ const useFieldRules = (fieldError) => {
 
     const markTouched = (name) => setTouched(t => t[name] ? t : {...t, [name]: true});
 
-    // Whether moving to this field is blocked because the field the user is in doesn't meet its rule yet
-    const isLockedOut = (field) => {
+    // The field that has to be fixed before the user can move to this one, or null when the move is fine
+    const blockingField = (field) => {
         const current = currentRef.current;
-        return current !== null && current.isConnected && fieldName(current) !== fieldName(field) && fieldError(fieldName(current)) !== null;
+        if(current === null || !current.isConnected || fieldName(current) === fieldName(field))
+        {
+            return null;
+        }
+        const currentName = fieldName(current);
+        if(fieldError(currentName) !== null)
+        {
+            return dependsOn[currentName] === fieldName(field) ? null : current;
+        }
+        // the field the user is in is fine, but they came here from a field that depends on it, which is still wrong
+        const dependent = Object.keys(dependsOn).find(name => dependsOn[name] === currentName && name !== fieldName(field)
+                                                              && touched[name] && fieldError(name) !== null);
+        return dependent ? containerRef.current.querySelector(`[name="${dependent}"]`) : null;
     }
 
-    // Sends the user back to the field they are in, with its warning showing
-    const holdCurrentField = () => {
-        currentRef.current.focus();
-        markTouched(fieldName(currentRef.current));
+    // Sends the user to the field they have to fix, with its warning showing
+    const holdField = (field) => {
+        field.focus();
+        markTouched(fieldName(field));
         setNudges(n => n + 1);
     }
 
     // Clicks on another field do nothing while the current one is wrong
     const guardPointer = (e) => {
         const field = fieldOf(e.target);
-        if(field && isLockedOut(field))
+        const blocker = field && blockingField(field);
+        if(blocker)
         {
             e.preventDefault();
             e.stopPropagation();
-            holdCurrentField();
+            holdField(blocker);
         }
     }
 
@@ -58,9 +73,10 @@ const useFieldRules = (fieldError) => {
         {
             return;
         }
-        if(isLockedOut(field))
+        const blocker = blockingField(field);
+        if(blocker)
         {
-            holdCurrentField();
+            holdField(blocker);
         }
         else
         {
