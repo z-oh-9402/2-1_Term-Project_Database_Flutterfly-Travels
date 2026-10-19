@@ -1,8 +1,6 @@
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
 import PropTypes from 'prop-types';
 import { useState } from 'react';
-import { FaRegCalendarAlt } from 'react-icons/fa';
+import DateField from './DateField';
 import { apiFetch } from '../api';
 import AddToTrip from './AddToTrip';
 import { BookingPopup } from './BookingPopup';
@@ -65,19 +63,13 @@ const DestinationBooking = ({ destination, setShowConfirmationMessage }) => {
                 <div className='booking-fields'>
                     <label> Arriving on:
                         <div style={{display: 'inline-block', marginLeft: '5px'}}>
-                            <div className='datepicker-container'>
-                                <DatePicker selected={arrivalDate} onChange={handleArrivalDateChange} dateFormat="dd/MM/yyyy"/>
-                                <FaRegCalendarAlt className='calendar-img'/>
-                            </div>
+                            <DateField selected={arrivalDate} onChange={handleArrivalDateChange} minDate={today} inPopup/>
                         </div>
                     </label>
 
                     <label> Leaving on:
                         <div style={{display: 'inline-block', marginLeft: '5px'}}>
-                            <div className='datepicker-container'>
-                                <DatePicker selected={leavingDate} onChange={handleLeavingDateChange} dateFormat="dd/MM/yyyy"/>
-                                <FaRegCalendarAlt className='calendar-img'/>
-                            </div>
+                            <DateField selected={leavingDate} onChange={handleLeavingDateChange} minDate={arrivalDate} inPopup/>
                         </div>
                     </label>
                 </div>

@@ -73,3 +73,8 @@
     25% { transform: translateX(-5px); }
     75% { transform: translateX(5px); }
 }
+
+/* date fields open a calendar instead of taking typing (see DateField.jsx) */
+.styled-form input.date-field:not([type="radio"]):not([type="checkbox"]){
+    cursor: pointer;
+}

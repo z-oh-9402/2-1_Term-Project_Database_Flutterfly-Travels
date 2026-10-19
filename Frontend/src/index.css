@@ -349,3 +349,19 @@ label:not(.pref-chip):has(> input[type="radio"]){
     height: 180px;
     width: 180px;
 }
+
+/* Date pickers inside popups draw their calendar here (portalId="datepicker-portal"): above the popup, never clipped by it */
+#datepicker-portal .react-datepicker-popper{
+    z-index: 20;
+}
+
+/* Date fields (DateField.jsx): the whole field opens the calendar, so it gets the hand cursor and no typing caret,
+   and clicks on the calendar icon go through to the field */
+input.date-field{
+    cursor: pointer;
+    caret-color: transparent;
+}
+
+.datepicker-container .calendar-img{
+    pointer-events: none;
+}

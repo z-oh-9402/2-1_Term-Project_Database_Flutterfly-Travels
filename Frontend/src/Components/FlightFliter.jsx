@@ -1,9 +1,8 @@
 import Select from 'react-select';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
 import '../Styles/flight-filter.css';
 import '../Styles/button.css';
-import { FaRegCalendarAlt } from "react-icons/fa";
+import DateField from './DateField';
+import { startOfDay } from './tripHelpers';
 import { FaPlus } from "react-icons/fa";
 import { FaMinus } from "react-icons/fa";
 
@@ -46,28 +45,16 @@ const FlightFliter = (props) => {
         })
     };
 
+    // The calendars don't offer past days (or a return before the departure), so any picked date is fine
     const handleDepartureDateChange = (date) => {
-        const sysdate = new Date();
-
-        if (departureDate < sysdate + 1) {
-            alert("Departure Date cannot be in the past");
-        }
-        else {
-            setDepartureDate(date);
-
-            if (flightStyle === "Round Trip" && returnDate < date) {
-                setReturnDate(date);
-            }
+        setDepartureDate(date);
+        if (startOfDay(returnDate) < startOfDay(date)) {
+            setReturnDate(date);
         }
     }
 
     const handleReturnDateChange = (date) => {
-        if (flightStyle === "Round Trip" && date < departureDate) {
-            setReturnDate(departureDate);
-        }
-        else {
-            setReturnDate(date);
-        }
+        setReturnDate(date);
     }
 
     const changeSeatNumber = (increase) => {
@@ -133,26 +120,10 @@ const FlightFliter = (props) => {
                 </div>
 
                 <div >
-                    <div className='datepicker-container' style={{ marginBottom: '10px' }}>
-                        <DatePicker
-                            selected={departureDate}
-                            onChange={(e) => handleDepartureDateChange(e)}
-                            dateFormat="dd/MM/yyyy"
-                            placeholderText="Departure Date"
-                        />
-                        <FaRegCalendarAlt className='calendar-img' />
-                    </div>
+                    <DateField selected={departureDate} onChange={handleDepartureDateChange} minDate={startOfDay(new Date())} style={{ marginBottom: '10px' }}/>
 
                     {flightStyle === "Round Trip" &&
-                        <div className='datepicker-container'>
-                            <DatePicker
-                                selected={returnDate}
-                                onChange={(e) => handleReturnDateChange(e)}
-                                dateFormat="dd/MM/yyyy"
-                                placeholderText="Return Date"
-                            />
-                            <FaRegCalendarAlt className='calendar-img' />
-                        </div>}
+                        <DateField selected={returnDate} onChange={handleReturnDateChange} minDate={startOfDay(departureDate)}/>}
                 </div>
 
                 <Select className="select"

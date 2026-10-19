@@ -1,8 +1,6 @@
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
 import PropTypes from 'prop-types';
 import { useState } from 'react';
-import { FaRegCalendarAlt } from 'react-icons/fa';
+import DateField from './DateField';
 import TimePicker from './TimePicker';
 import { apiFetch } from '../api';
 import AddToTrip from './AddToTrip';
@@ -95,10 +93,7 @@ const RestaurantBooking = ({restaurant, setShowConfirmationMessage}) => {
 
                     <label> Booking Date:
                         <div style={{display: 'inline-block', marginLeft: '5px'}}>
-                            <div className='datepicker-container'>
-                                <DatePicker selected={bookingDate} onChange={handleBookingDateChange} dateFormat="dd/MM/yyyy"/>
-                                <FaRegCalendarAlt className='calendar-img'/>
-                            </div>
+                            <DateField selected={bookingDate} onChange={handleBookingDateChange} minDate={today} inPopup/>
                         </div>
                     </label>
 
