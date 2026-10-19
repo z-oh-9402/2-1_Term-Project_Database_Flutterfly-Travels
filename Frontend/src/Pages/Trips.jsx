@@ -147,7 +147,7 @@ const Trips = (props) => {
             <div className="close-container" style={{position: 'relative'}}>
                 <ImCross className='close' onClick={() => setShowTrips(false)} />
 
-                <div className='login-signup-container trip-container'>
+                <div className={'login-signup-container trip-container' + (createTrip ? ' create-mode' : '')}>
                     {createTrip ?
                     <CreateTrip
                         onCreated={async () => { await reloadTrips(); setCreateTrip(false); setCurrentCategory(0); }}

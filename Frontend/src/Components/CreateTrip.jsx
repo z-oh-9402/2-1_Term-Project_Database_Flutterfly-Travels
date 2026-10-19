@@ -1,18 +1,31 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import AgentSearch from './AgentSearch';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
-import {FaRegCalendarAlt} from 'react-icons/fa';
+import DateField from './DateField';
 import PropTypes from 'prop-types';
+import UserInfoContext from '../Context/UserInfoContext';
 import { apiFetch } from '../api';
-import { addDays, errorMessage, formatDate, startOfDay, toApiDate } from './tripHelpers';
+import { errorMessage, formatDate, startOfDay, toApiDate } from './tripHelpers';
+import '../Styles/login-signup.css';
+import '../Styles/form-fields.css';
+import '../Styles/trips.css';
 
 // A customer creates a trip. When it is made for a booking (fromDate/toDate), the trip's dates must include the booking's.
-// The agent is optional: they can also be chosen later from My Trips.
+// The name and the agent are optional: an unnamed trip is called "Trip N", and the agent can be chosen later from My Trips.
 const CreateTrip = ({onCreated, onCancel, fromDate, toDate}) => {
+    const { userInfo } = useContext(UserInfoContext);
+    const today = startOfDay(new Date());
     const [tripName, setTripName] = useState('');
-    const [departureDate, setDepartureDate] = useState(startOfDay(fromDate ?? new Date()));
-    const [returnDate, setReturnDate] = useState(startOfDay(toDate ?? addDays(fromDate ?? new Date(), 1)));
+    const [departureDate, setDepartureDate] = useState(startOfDay(fromDate ?? today));
+    const [returnDate, setReturnDate] = useState(startOfDay(toDate ?? fromDate ?? today));
+
+    // The name a trip gets when it is left empty: "Trip N" after the customer's trip count, skipping names they already use
+    const takenNames = new Set((userInfo?.trips ?? []).map(trip => trip.name));
+    let defaultNumber = (userInfo?.trips?.length ?? 0) + 1;
+    while(takenNames.has(`Trip ${defaultNumber}`))
+    {
+        defaultNumber++;
+    }
+    const defaultName = `Trip ${defaultNumber}`;
     const [agent, setAgent] = useState(undefined);
     const [isTripNameUnique, setIsTripNameUnique] = useState(true);
     const [selectAnAgent, setSelectAnAgent] = useState(false);
@@ -78,19 +91,15 @@ const CreateTrip = ({onCreated, onCancel, fromDate, toDate}) => {
     }
 
     const createTripPackage = async () => {
-        if(tripName.trim() === "")
-        {
-            setError("Give the trip a name");
-            return;
-        }
-        if(!isTripNameUnique)
+        const name = tripName.trim() || defaultName;
+        if(tripName.trim() !== "" && !isTripNameUnique)
         {
             setError("You already have a trip with this name");
             return;
         }
         if(selectAnAgent && agent === undefined)
         {
-            setError("Pick an agent from the search, or choose No");
+            setError("Pick an agent from the search, or choose Later");
             return;
         }
 
@@ -102,7 +111,7 @@ const CreateTrip = ({onCreated, onCancel, fromDate, toDate}) => {
             },
             body: JSON.stringify({
                 agentId: selectAnAgent ? agent.user_id : null,
-                name: tripName.trim(),
+                name: name,
                 departureDate: toApiDate(departureDate),
                 returnDate: toApiDate(returnDate)
             }),
@@ -115,71 +124,55 @@ const CreateTrip = ({onCreated, onCancel, fromDate, toDate}) => {
             return;
         }
         const { tripId } = await response.json();
-        onCreated(tripId, tripName.trim());
+        onCreated(tripId, name);
     }
 
+    // Laid out like the sign-up and login forms: each field's name above it, and a fixed slot for its warning
     return(
-    <>
+    <div className='create-trip styled-form'>
         <div className='message-title'>Create a new trip</div>
 
-        <div className='trip-creation-container'>
-            <label>Trip Name: <input type='text' value={tripName} placeholder='Enter a name' onChange={handleTripNameChange}/></label>
-            {!isTripNameUnique && <h5 className='trip-form-error'>You already have a trip with this name</h5>}
+        <label className='create-trip-field'>
+            <span className='field-label'>Trip name (Optional)</span>
+            {/* left empty, the trip gets the name shown in the placeholder */}
+            <input type='text' aria-invalid={!isTripNameUnique} value={tripName} placeholder={defaultName} onChange={handleTripNameChange}/>
+        </label>
+        <div className='field-warning-slot'>
+            {!isTripNameUnique && <h5 className='field-warning'>You already have a trip with this name</h5>}
+        </div>
 
-            <div className="radio-group">
-                <h3>Choose an agent now?</h3>
-                <label className="radio-option">
-                    <input type="radio" name="selectAnAgent" checked={selectAnAgent} onChange={()=>setSelectAnAgent(true)} />Yes
-                </label>
-
-                <label className="radio-option">
-                    <input type="radio" name="selectAnAgent" checked={!selectAnAgent} onChange={()=>setSelectAnAgent(false)} />No, later
-                </label>
+        <div className='create-trip-field'>
+            <span className='field-label'>Agent</span>
+            <div className='create-trip-choices'>
+                <label><input type="radio" name="selectAnAgent" checked={selectAnAgent} onChange={()=>setSelectAnAgent(true)} />Choose one now</label>
+                <label><input type="radio" name="selectAnAgent" checked={!selectAnAgent} onChange={()=>setSelectAnAgent(false)} />Later, maybe</label>
             </div>
-
             {selectAnAgent &&
-            <div id='select-agent'>
-                <span>Search for an agent:</span>
+            <>
                 <AgentSearch setProfile={setAgent}/>
                 {agent && <p className='trip-form-note'>Agent: <strong>{agent.username}</strong></p>}
-            </div>}
+            </>}
+        </div>
 
-            <label> Departure Date:
-                <div style={{display: 'inline-block', marginLeft: '5px'}}>
-                    <div className='datepicker-container'>
-                        <DatePicker
-                            selected={departureDate}
-                            onChange={handleDepartureDateChange}
-                            dateFormat="dd/MM/yyyy"
-                            placeholderText="Departure Date"
-                        />
-                        <FaRegCalendarAlt className='calendar-img'/>
-                    </div>
-                </div>
-            </label><br/>
-
-            <label> Return Date:
-                <div style={{display: 'inline-block', marginLeft: '5px'}}>
-                    <div className='datepicker-container'>
-                        <DatePicker
-                            selected={returnDate}
-                            onChange={handleReturnDateChange}
-                            dateFormat="dd/MM/yyyy"
-                            placeholderText="Return Date"
-                        />
-                        <FaRegCalendarAlt className='calendar-img'/>
-                    </div>
-                </div>
+        <div className='create-trip-dates'>
+            <label className='create-trip-field'>
+                <span className='field-label'>Departure <span className='required'>*</span></span>
+                <DateField selected={departureDate} onChange={handleDepartureDateChange} minDate={today} maxDate={fromDate ? startOfDay(fromDate) : undefined} inPopup/>
             </label>
-
-            {error && <p className='trip-form-error'>{error}</p>}
+            <label className='create-trip-field'>
+                <span className='field-label'>Return <span className='required'>*</span></span>
+                <DateField selected={returnDate} onChange={handleReturnDateChange} minDate={toDate && startOfDay(toDate) > departureDate ? startOfDay(toDate) : departureDate} inPopup/>
+            </label>
+        </div>
+        <div className='field-warning-slot'>
+            {error && <h5 className='field-warning'>{error}</h5>}
         </div>
 
         <div className='popup-buttons'>
             <button className='custom-btn' style={{color:"black"}} disabled={isSaving} onClick={createTripPackage}>Create Trip</button>
             <button className='custom-btn' style={{color:"black"}} onClick={onCancel}>Back</button>
         </div>
-    </>);
+    </div>);
 }
 
 CreateTrip.propTypes = {
