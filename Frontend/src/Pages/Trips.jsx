@@ -3,38 +3,32 @@ import { ImCross } from 'react-icons/im';
 import '../Styles/login-signup.css';
 import '../Styles/confirmation-message.css';
 import '../Styles/trips.css';
+import '../Styles/my-trips.css';
 import { useContext, useEffect, useState } from 'react';
 import UserInfoContext from '../Context/UserInfoContext';
 import { RiDeleteBin5Line } from "react-icons/ri";
+import { FaPlus, FaRegCalendarAlt, FaUserTie } from "react-icons/fa";
+import { IoArrowBack } from "react-icons/io5";
 import CreateTrip from '../Components/CreateTrip';
 import AgentSearch from '../Components/AgentSearch';
 import AgentProfile from '../Components/AgentProfile';
 import TripBookings from '../Components/TripBookings';
-import { canEditBookings, errorMessage, formatDate, tabStatus } from '../Components/tripHelpers';
-import { apiFetch } from '../api';
+import { bookingSummary, canEditBookings, dateRange, errorMessage, hasNoBookings, money, tabStatus, tripLength } from '../Components/tripHelpers';
+import { apiFetch, photoUrl } from '../api';
 
 // The tabs of My Trips; "Suggested" holds other customers' completed trips, as ideas
 const categories = [
-    { name: 'Requesting', status: 'REQUESTING' },
-    { name: 'Updating', status: 'UPDATING' },
-    { name: 'Pending', status: 'PENDING' },
-    { name: 'Confirmed', status: 'CONFIRMED' },
-    { name: 'Completed', status: 'COMPLETED' },
-    { name: 'Suggested' },
+    { name: 'Requesting', status: 'REQUESTING', empty: 'No trips waiting for an agent. Create a trip to start planning.' },
+    { name: 'Updating', status: 'UPDATING', empty: 'No trips being planned with an agent right now.' },
+    { name: 'Pending', status: 'PENDING', empty: 'No trips waiting for an admin.' },
+    { name: 'Confirmed', status: 'CONFIRMED', empty: 'No confirmed trips yet.' },
+    { name: 'Completed', status: 'COMPLETED', empty: 'No finished trips yet.' },
+    { name: 'Suggested', empty: 'No completed trips to suggest yet.' },
 ];
 
-// What happens next with a trip in each status
-const statusHint = (trip) => ({
-    REQUESTING: trip.agent_id ? `Waiting for ${trip.username} to accept the trip. You can already add bookings.`
-                              : 'Choose an agent to send them this trip. You can already add bookings.',
-    UPDATING: 'Your agent accepted the trip and is putting it together with you. When it looks right, send it to an admin for approval.',
-    PENDING: 'Waiting for an admin to approve the trip. Its bookings can no longer be changed.',
-    CONFIRMED: 'Approved by an admin. Have a great trip!',
-    COMPLETED: 'This trip is over.',
-    DROPPED: 'This trip was dropped: its return date passed before an admin confirmed it.',
-}[trip.trip_status]);
+const statusNames = { REQUESTING: 'Requesting', UPDATING: 'Updating', PENDING: 'Pending', CONFIRMED: 'Confirmed', COMPLETED: 'Completed', DROPPED: 'Dropped' };
 
-const droppedTag = (trip) => trip.trip_status === 'DROPPED' && <span className='trip-dropped-tag'>Dropped</span>;
+const statusPill = (trip) => <span className={`my-trip-status status-${trip.trip_status.toLowerCase()}`}>{statusNames[trip.trip_status]}</span>;
 
 // A customer's trips (opened from My Trips in the navbar)
 const Trips = (props) => {
@@ -137,13 +131,141 @@ const Trips = (props) => {
         return <AgentProfile agent={visitingAgent} setShowAgentProfile={() => setVisitingAgent(undefined)}/>;
     }
 
-    const tripSummary = (trip) => (
-        <div className="trip-details">
-            <p>{formatDate(trip.departure_date)} – {formatDate(trip.return_date)}</p>
-            <p>Total Cost: ৳ {Number(trip.total_cost).toLocaleString('en-US')}</p>
-            <p>Agent: {trip.agent_id ? trip.username : 'not chosen yet'}</p>
-        </div>
+    const backToList = () => {
+        setVisitingTripId(null);
+        setError(null);
+    }
+
+    const errorLine = error && <p className='trip-form-error my-trips-error'>{error}</p>;
+
+    const tripList = () => (
+        <>
+            <div className='my-trips-header'>
+                <h2>My Trips</h2>
+                <button className='my-trips-btn my-trips-btn-primary' onClick={()=>setCreateTrip(true)}><FaPlus/> Create a new trip</button>
+            </div>
+            <div className='my-trips-tabs' role='tablist'>
+                {categories.map((category, index) => {
+                    const count = category.status === undefined ? 0 : ownTrips.filter(trip => tabStatus(trip) === category.status).length;
+                    return (
+                        <button key={category.name} role='tab' aria-selected={currentCategory === index}
+                                className={'my-trips-tab' + (currentCategory === index ? ' selected' : '')}
+                                onClick={() => { setCurrentCategory(index); setVisitingTripId(null); setError(null); }}>
+                            {category.name}
+                            {count !== 0 && <span className='my-trips-count'>{count}</span>}
+                        </button>
+                    );
+                })}
+            </div>
+
+            {errorLine}
+            {shownTrips.length === 0 ?
+                <div className='my-trips-empty'>{categories[currentCategory].empty}</div>
+            :
+            <div className='my-trips-list'>
+                {shownTrips.map((trip) =>
+                    <div key={trip.trip_id} className='my-trip-card' role='button' tabIndex={0}
+                         onClick={() => openTrip(trip)} onKeyDown={(e) => { if(e.target === e.currentTarget && e.key === 'Enter') openTrip(trip); }}>
+                        <div className='my-trip-card-top'>
+                            <h3>{trip.name}{trip.trip_status === 'DROPPED' && statusPill(trip)}</h3>
+                            <span className='my-trip-cost'>{money(trip.total_cost)}</span>
+                            {trip.trip_status === 'REQUESTING' && !isSuggested &&
+                                <button className='my-trip-delete' title='Delete trip' onClick={(e) => { e.stopPropagation(); deleteTrip(trip); }}>
+                                    <RiDeleteBin5Line/>
+                                </button>}
+                        </div>
+                        <p className='my-trip-line'>
+                            <FaRegCalendarAlt/> {dateRange(trip)} <span className='my-trip-muted'>· {tripLength(trip)}</span>
+                        </p>
+                        <p className='my-trip-line'>
+                            {trip.agent_id ?
+                                <><img className='my-trip-avatar' src={photoUrl(trip.photo)} alt=''/> {trip.username}</> :
+                                <><FaUserTie/> <span className='my-trip-muted'>No agent yet</span></>}
+                        </p>
+                        <p className='my-trip-bookings'>{bookingSummary(trip) ?? 'No bookings yet'}</p>
+                    </div>
+                )}
+            </div>}
+        </>
     );
+
+    const tripPage = (trip) => {
+        const canEdit = !isSuggested && canEditBookings(trip, userInfo);
+        const canPickAgent = !isSuggested && trip.trip_status === 'REQUESTING' && !trip.agent_id;
+        return (
+        <>
+            <button className='my-trips-back' onClick={backToList}><IoArrowBack/> All trips</button>
+            <div className='my-trip-title'>
+                <h2>{trip.name}</h2>
+                {trip.trip_status === 'DROPPED' && statusPill(trip)}
+            </div>
+
+            <div className='my-trip-stats'>
+                <div className='my-trip-stat'>
+                    <span className='my-trip-stat-label'>Dates</span>
+                    <span className='my-trip-stat-value'>{dateRange(trip)}</span>
+                    <span className='my-trip-stat-note'>{tripLength(trip)}</span>
+                </div>
+                <div className='my-trip-stat'>
+                    <span className='my-trip-stat-label'>Total cost</span>
+                    <span className='my-trip-stat-value my-trip-cost'>{money(trip.total_cost)}</span>
+                    <span className='my-trip-stat-note'>
+                        {Number(trip.discount) !== 0 ? `${trip.discount}% discount` : bookingSummary(trip) ?? 'Nothing booked yet'}
+                    </span>
+                </div>
+                <div className='my-trip-stat my-trip-stat-wide'>
+                    <span className='my-trip-stat-label'>Agent</span>
+                    {trip.agent_id ?
+                    <div className='my-trip-person' role='button' tabIndex={0} title='See their profile'
+                         onClick={() => visitAgentProfile(trip.agent_id)} onKeyDown={(e) => { if(e.key === 'Enter') visitAgentProfile(trip.agent_id); }}>
+                        <img src={photoUrl(trip.photo)} alt=''/>
+                        <div>
+                            <span className='my-trip-stat-value my-trip-agent-name'>{trip.username}</span>
+                            {trip.experience_years !== undefined &&
+                                <span className='my-trip-stat-note'>{trip.experience_years} years · {money(trip.fee)} fee</span>}
+                        </div>
+                    </div>
+                    : canPickAgent && showAgentSearch ?
+                    <div className='trip-agent-picker'>
+                        <AgentSearch profile={pickedAgent} setProfile={setPickedAgent}/>
+                        <div className='my-trip-actions'>
+                            <button className='my-trips-btn' onClick={() => { setShowAgentSearch(false); setPickedAgent(undefined); }}>Cancel</button>
+                            <button className='my-trips-btn my-trips-btn-primary' disabled={!pickedAgent} onClick={() => setAgent(trip)}>
+                                {pickedAgent ? `Send the request to ${pickedAgent.username}` : 'Pick an agent above'}
+                            </button>
+                        </div>
+                    </div>
+                    :
+                    <div className='my-trip-no-agent'>
+                        <span className='my-trip-stat-note'>Not chosen yet</span>
+                        {canPickAgent &&
+                            <button className='my-trips-btn my-trips-btn-primary' onClick={() => setShowAgentSearch(true)}>Choose an agent</button>}
+                    </div>}
+                </div>
+            </div>
+
+            {errorLine}
+
+            <h3 className='my-trip-section-title'>Bookings</h3>
+            {hasNoBookings(trip) ?
+                <div className='my-trips-empty'>
+                    Nothing booked yet.{canEdit && ' Use "Add to Trip" on a destination, or "Book Now!" on a hotel, restaurant or flight.'}
+                </div>
+            :
+            <TripBookings trip={trip} canEdit={canEdit} onRemove={removeBooking}/>}
+
+            {!isSuggested && (trip.trip_status === 'UPDATING' || trip.trip_status === 'REQUESTING') &&
+            <div className='my-trip-actions'>
+                {trip.trip_status === 'REQUESTING' &&
+                    <button className='my-trips-btn my-trips-btn-danger' onClick={() => deleteTrip(trip)}><RiDeleteBin5Line/> Delete trip</button>}
+                {trip.trip_status === 'UPDATING' &&
+                    <button className='my-trips-btn my-trips-btn-primary' onClick={() => sendForApproval(trip)} disabled={hasNoBookings(trip)}
+                            title={hasNoBookings(trip) ? 'Add a booking first' : undefined}>
+                        Send for approval
+                    </button>}
+            </div>}
+        </>);
+    }
 
     return(
         <div className='login-signup-popup'>
@@ -155,92 +277,10 @@ const Trips = (props) => {
                     <CreateTrip
                         onCreated={async () => { await reloadTrips(); setCreateTrip(false); setCurrentCategory(0); }}
                         onCancel={() => setCreateTrip(false)}/>
-
-                    : visitingTrip === null ?
-                    <>
-                        <div className='trips-header'>
-                            <h2>My Trips</h2>
-                            <button className="customer-confirm-button custom-btn" onClick={()=>setCreateTrip(true)}>Create a new trip</button>
-                        </div>
-                        <div className="category-bar">
-                            {categories.map((category, index) =>
-                                <div key={category.name} className={"category" + (currentCategory===index ? " selected-category" : "")}
-                                     onClick={() => { setCurrentCategory(index); setVisitingTripId(null); }}>
-                                    {category.name}
-                                </div>
-                            )}
-                        </div>
-
-                        {error && <p className='trip-form-error'>{error}</p>}
-                        <div className="category-data">
-                            {shownTrips.length===0 ?
-                                <div className="no-trips">
-                                    <h3>{isSuggested ? 'No completed trips to suggest yet' : 'No trips in this category'}</h3>
-                                </div>
-                            :
-                            shownTrips.map((trip) =>
-                                <div key={trip.trip_id} className="trip">
-                                    {trip.trip_status === 'REQUESTING' && !isSuggested &&
-                                        <RiDeleteBin5Line className='delete-button' title='Delete trip' onClick={() => deleteTrip(trip)}/>}
-                                    <div className='trip-child-div' onClick={() => openTrip(trip)}>
-                                        <h3 style={{marginTop: '0px', marginBottom: '8px'}}>{trip.name}{droppedTag(trip)}</h3>
-                                        {tripSummary(trip)}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </>
-
                     :
-                    <>
-                        <div className='trips-header'>
-                            <h2>{visitingTrip.name}{droppedTag(visitingTrip)}</h2>
-                            <button className='custom-btn customer-confirm-button' onClick={() => { setVisitingTripId(null); setError(null); }}>All Trips</button>
-                        </div>
-
-                        {!isSuggested && <p className='trip-status-hint'>{statusHint(visitingTrip)}</p>}
-
-                        <div className="trip-details">
-                            <p>{formatDate(visitingTrip.departure_date)} – {formatDate(visitingTrip.return_date)}</p>
-                            <p>Total Cost: ৳ {Number(visitingTrip.total_cost).toLocaleString('en-US')}</p>
-                            {Number(visitingTrip.discount) !== 0 && <p>Discount: {visitingTrip.discount}%</p>}
-                            <p>Agent: {visitingTrip.agent_id ?
-                                <span className='visit-agent-profile' onClick={() => visitAgentProfile(visitingTrip.agent_id)}>{visitingTrip.username}</span> :
-                                'not chosen yet'}
-                            </p>
-                        </div>
-
-                        {visitingTrip.trip_status === 'REQUESTING' && !visitingTrip.agent_id && !isSuggested &&
-                        <div className='trip-agent-picker'>
-                            {showAgentSearch ?
-                            <>
-                                <AgentSearch profile={pickedAgent} setProfile={setPickedAgent}/>
-                                <div className='popup-buttons'>
-                                    <button className='custom-btn' disabled={!pickedAgent} onClick={() => setAgent(visitingTrip)}>
-                                        {pickedAgent ? `Send the request to ${pickedAgent.username}` : 'Pick an agent above'}
-                                    </button>
-                                    <button className='custom-btn' onClick={() => { setShowAgentSearch(false); setPickedAgent(undefined); }}>Cancel</button>
-                                </div>
-                            </>
-                            :
-                            <button className='custom-btn' onClick={() => setShowAgentSearch(true)}>Choose an agent</button>}
-                        </div>}
-
-                        {error && <p className='trip-form-error'>{error}</p>}
-
-                        <TripBookings trip={visitingTrip} canEdit={!isSuggested && canEditBookings(visitingTrip, userInfo)} onRemove={removeBooking}/>
-
-                        {!isSuggested &&
-                        <div className='popup-buttons'>
-                            {visitingTrip.trip_status === 'UPDATING' &&
-                                <button className='custom-btn' onClick={() => sendForApproval(visitingTrip)}
-                                        disabled={[visitingTrip.destinations, visitingTrip.accommodations, visitingTrip.restaurants, visitingTrip.flights].every(list => list.length === 0)}>
-                                    Send for approval
-                                </button>}
-                            {visitingTrip.trip_status === 'REQUESTING' &&
-                                <button className='custom-btn btn-no' onClick={() => deleteTrip(visitingTrip)}>Delete trip</button>}
-                        </div>}
-                    </>}
+                    <div className='my-trips'>
+                        {visitingTrip === null ? tripList() : tripPage(visitingTrip)}
+                    </div>}
                 </div>
             </div>
         </div>

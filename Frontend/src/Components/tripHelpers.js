@@ -49,6 +49,32 @@ export const canEditBookings = (trip, user) => {
     return false;
 }
 
+// "৳ 20,400"
+export const money = (amount) => `৳ ${Number(amount).toLocaleString('en-US')}`;
+
+// "Oct 21 – Oct 25, 2026"; both years when the trip runs into the next one, a single day for a day trip
+export const dateRange = (trip) => {
+    const from = new Date(trip.departure_date);
+    const to = new Date(trip.return_date);
+    const short = (date, withYear) => date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', ...(withYear ? { year: 'numeric' } : {}) });
+    if(from.toDateString() === to.toDateString())
+    {
+        return short(to, true);
+    }
+    return `${short(from, from.getFullYear() !== to.getFullYear())} – ${short(to, true)}`;
+}
+
+// "1 destination · 2 restaurants", or null when there is nothing booked
+export const bookingSummary = (trip) => {
+    const parts = [
+        [trip.destinations.length, 'destination'],
+        [trip.accommodations.length, 'accommodation'],
+        [trip.restaurants.length, 'restaurant'],
+        [trip.flights.length, 'flight'],
+    ].filter(([count]) => count !== 0).map(([count, word]) => `${count} ${word}${count === 1 ? '' : 's'}`);
+    return parts.length === 0 ? null : parts.join(' · ');
+}
+
 // The tab a trip is listed under: a dropped trip (over before it was confirmed) sits with the completed ones
 export const tabStatus = (trip) => trip.trip_status === 'DROPPED' ? 'COMPLETED' : trip.trip_status;
 

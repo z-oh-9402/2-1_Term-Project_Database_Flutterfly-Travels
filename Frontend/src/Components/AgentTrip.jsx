@@ -20,16 +20,6 @@ const categories = [
     { name: 'Completed', status: 'COMPLETED', empty: 'No completed trips yet.' },
 ];
 
-// What the agent can do with a trip in each status
-const statusHints = {
-    REQUESTING: 'The customer asked you to plan this trip. Accept it to start adding bookings, or decline it.',
-    UPDATING: 'Add bookings with "Book Now!" or "Add to Trip" on any hotel, restaurant, flight or destination page. The customer sends the trip for approval when it is ready.',
-    PENDING: 'The customer sent the trip to an admin for approval. Its bookings can no longer be changed.',
-    CONFIRMED: 'Approved by an admin.',
-    COMPLETED: 'This trip is over.',
-    DROPPED: 'This trip was dropped: its return date passed before an admin confirmed it.',
-};
-
 const customerName = (trip) => `${trip.first_name ?? ''} ${trip.last_name ?? ''}`.trim() || trip.username;
 
 const money = (amount) => `৳ ${Number(amount).toLocaleString('en-US')}`;
@@ -186,8 +176,6 @@ const AgentTrip = () => {
             <span className={`agent-trip-status status-${status.toLowerCase()}`}>{status === 'DROPPED' ? 'Dropped' : categories.find(category => category.status === status)?.name}</span>
             {status === 'REQUESTING' && decisionButtons(visitingTrip)}
         </div>
-
-        <p className='trip-status-hint'>{statusHints[status]}</p>
 
         <div className='agent-trip-stats'>
             <div className='agent-trip-stat'>

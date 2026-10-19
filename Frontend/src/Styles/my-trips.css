@@ -1,0 +1,474 @@
+/* A customer's My Trips popup (Trips.jsx), inside the popup's light glass box */
+.my-trips{
+    color: #1d2a33;
+    text-align: left;
+}
+
+.my-trips-header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.my-trips-header h2{
+    margin: 0;
+    font-size: 1.6rem;
+}
+
+/* Buttons: outlined by default, filled blue for the main action, red outline for deleting */
+.my-trips-btn{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border: 1px solid rgba(29, 42, 51, 0.25);
+    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.7);
+    color: #1d2a33;
+    font-size: 14px;
+    font-weight: bold;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+}
+
+.my-trips-btn:hover{
+    border-color: #25afe6;
+    background-color: white;
+}
+
+.my-trips-btn-primary{
+    border-color: #1593c6;
+    background-color: #1593c6;
+    color: white;
+}
+
+.my-trips-btn-primary:hover{
+    border-color: #0b7fae;
+    background-color: #0b7fae;
+}
+
+.my-trips-btn-danger{
+    border-color: rgba(211, 47, 47, 0.6);
+    color: #c62828;
+}
+
+.my-trips-btn-danger:hover{
+    border-color: #c62828;
+    background-color: rgba(211, 47, 47, 0.08);
+}
+
+.my-trips-btn:disabled{
+    opacity: 0.45;
+    cursor: default;
+}
+
+/* Status tabs, with how many trips each has */
+.my-trips-tabs{
+    display: flex;
+    gap: 2px;
+    padding: 3px;
+    border: 1px solid rgba(29, 42, 51, 0.12);
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.5);
+    /* the six tabs just fit; with large counts the row scrolls sideways instead of spilling out */
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+/* six tabs share the width, each at least as wide as its name */
+.my-trips-tab{
+    flex: 1 1 auto;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 3px;
+    padding: 7px 3px;
+    white-space: nowrap;
+    border: none;
+    border-radius: 7px;
+    background-color: transparent;
+    color: #3d4c56;
+    font-size: 11.5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
+}
+
+.my-trips-tab:hover{
+    background-color: rgba(255, 255, 255, 0.8);
+    color: #1d2a33;
+}
+
+.my-trips-tab.selected{
+    background-color: #1593c6;
+    color: white;
+}
+
+.my-trips-count{
+    min-width: 13px;
+    padding: 0 3px;
+    border-radius: 999px;
+    background-color: rgba(29, 42, 51, 0.12);
+    font-size: 10px;
+    line-height: 15px;
+}
+
+.my-trips-tab.selected .my-trips-count{
+    background-color: rgba(255, 255, 255, 0.25);
+}
+
+.my-trips-error{
+    margin: 12px 0 0;
+}
+
+.my-trips-empty{
+    margin-top: 16px;
+    padding: 26px 20px;
+    border: 1px dashed rgba(29, 42, 51, 0.25);
+    border-radius: 12px;
+    color: #5b6b76;
+    text-align: center;
+}
+
+/* Trip cards */
+.my-trips-list{
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.my-trip-card{
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 14px 16px;
+    border: 1px solid rgba(29, 42, 51, 0.12);
+    border-radius: 12px;
+    background-color: rgba(255, 255, 255, 0.75);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    cursor: pointer;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out, transform 0.15s ease-in-out;
+}
+
+.my-trip-card:hover,
+.my-trip-card:focus-visible{
+    border-color: #25afe6;
+    box-shadow: 0 4px 14px rgba(21, 147, 198, 0.2);
+    transform: translateY(-1px);
+    outline: none;
+}
+
+.my-trip-card-top{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.my-trip-card h3{
+    flex: 1;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.my-trip-cost{
+    color: #0b7fae;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.my-trip-delete{
+    display: inline-flex;
+    padding: 5px;
+    border: 1px solid rgba(211, 47, 47, 0.45);
+    border-radius: 6px;
+    background-color: transparent;
+    color: #c62828;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.my-trip-delete:hover{
+    background-color: rgba(211, 47, 47, 0.1);
+}
+
+.my-trip-line{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    color: #3d4c56;
+    font-size: 14px;
+}
+
+.my-trip-line svg{
+    color: #1593c6;
+}
+
+.my-trip-avatar{
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.my-trip-muted{
+    color: #6b7a85;
+}
+
+.my-trip-bookings{
+    margin: 2px 0 0;
+    padding-top: 8px;
+    border-top: 1px solid rgba(29, 42, 51, 0.1);
+    color: #5b6b76;
+    font-size: 13px;
+}
+
+/* One trip */
+.my-trips-back{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+    padding: 0;
+    border: none;
+    background: none;
+    color: #0b7fae;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.my-trips-back:hover{
+    text-decoration: underline;
+}
+
+.my-trip-title{
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    margin-bottom: 12px;
+}
+
+.my-trip-title h2{
+    margin: 0;
+    font-size: 1.6rem;
+}
+
+.my-trip-status{
+    padding: 2px 9px;
+    border: 1px solid;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.my-trip-status.status-requesting{
+    border-color: rgba(176, 120, 0, 0.5);
+    background-color: rgba(240, 180, 41, 0.18);
+    color: #8a5d00;
+}
+
+.my-trip-status.status-updating{
+    border-color: rgba(21, 147, 198, 0.5);
+    background-color: rgba(37, 175, 230, 0.14);
+    color: #0b7fae;
+}
+
+.my-trip-status.status-pending{
+    border-color: rgba(122, 63, 209, 0.45);
+    background-color: rgba(122, 63, 209, 0.1);
+    color: #6a32bd;
+}
+
+.my-trip-status.status-confirmed{
+    border-color: rgba(30, 125, 69, 0.45);
+    background-color: rgba(30, 125, 69, 0.1);
+    color: #1e7d45;
+}
+
+.my-trip-status.status-completed{
+    border-color: rgba(86, 99, 109, 0.45);
+    background-color: rgba(86, 99, 109, 0.1);
+    color: #4a5761;
+}
+
+.my-trip-status.status-dropped{
+    border-color: rgba(211, 47, 47, 0.5);
+    background-color: rgba(211, 47, 47, 0.1);
+    color: #c62828;
+}
+
+/* Dates and cost side by side, the agent below them */
+.my-trip-stats{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.my-trip-stat{
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+    padding: 12px 14px;
+    border: 1px solid rgba(29, 42, 51, 0.12);
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.75);
+}
+
+.my-trip-stat-wide{
+    grid-column: 1 / -1;
+}
+
+.my-trip-stat-label{
+    margin-bottom: 2px;
+    color: #6b7a85;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.my-trip-stat-value{
+    display: block;
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+.my-trip-stat-note{
+    display: block;
+    color: #5b6b76;
+    font-size: 13px;
+}
+
+.my-trip-person{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    align-self: flex-start;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.my-trip-person img{
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border: 2px solid #25afe6;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.my-trip-person:hover .my-trip-agent-name{
+    color: #0b7fae;
+    text-decoration: underline;
+}
+
+.my-trip-no-agent{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.my-trips .trip-agent-picker{
+    margin: 2px 0 0;
+}
+
+.my-trips .trip-agent-picker .my-trip-actions{
+    margin-top: 12px;
+}
+
+.my-trip-section-title{
+    margin: 0 0 10px;
+    font-size: 1.15rem;
+}
+
+.my-trip-section-title + .my-trips-empty{
+    margin-top: 0;
+}
+
+.my-trip-actions{
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+/* The trip's bookings (TripBookings.jsx): one card per booking, grouped by kind; cards of a kind share the row */
+.my-trips .trip-reservations{
+    gap: 18px;
+    margin: 0;
+    padding: 0;
+    background: none;
+}
+
+.my-trips .trip-reservations > div{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.my-trips .trip-reservations > div > .reservation{
+    flex: 1 1 220px;
+}
+
+.my-trips .trip-reservations h3{
+    flex-basis: 100%;
+    margin: 0;
+    color: #6b7a85;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.my-trips .reservation{
+    margin: 0;
+    padding: 12px 14px;
+    border: 1px solid rgba(29, 42, 51, 0.12);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.75);
+    cursor: default;
+}
+
+.my-trips .reservation p{
+    margin: 3px 0;
+    padding-right: 36px;
+    color: #3d4c56;
+    font-size: 14px;
+}
+
+.my-trips .reservation .reservation-name{
+    margin-top: 0;
+    color: #1d2a33;
+    font-size: 15px;
+}
+
+.my-trips .reservation .delete-button{
+    top: 10px;
+    right: 10px;
+    transform: none;
+    padding: 4px;
+    border: 1px solid rgba(211, 47, 47, 0.45);
+    border-radius: 6px;
+    background-color: transparent;
+    color: #c62828;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.my-trips .reservation .delete-button:hover{
+    background-color: rgba(211, 47, 47, 0.1);
+}

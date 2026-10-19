@@ -261,12 +261,6 @@
     color: #f0b429;
 }
 
-.agent-trip-status.status-updating{
-    border-color: rgba(69, 222, 236, 0.6);
-    background-color: rgba(37, 175, 230, 0.12);
-    color: #45deec;
-}
-
 .agent-trip-status.status-pending{
     border-color: rgba(199, 155, 255, 0.6);
     background-color: rgba(199, 155, 255, 0.1);
@@ -289,10 +283,6 @@
     border-color: rgba(229, 72, 77, 0.6);
     background-color: rgba(229, 72, 77, 0.12);
     color: #ff8a8d;
-}
-
-.agent-trips .trip-status-hint{
-    margin: 0 0 20px;
 }
 
 /* Dates, cost, customer (and rating) side by side */

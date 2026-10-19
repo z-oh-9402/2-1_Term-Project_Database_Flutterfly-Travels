@@ -107,10 +107,10 @@ router.get('/for-agent', requireSelfOrAdmin(req => req.query.agentId), async (re
 })
 
 // Completed trips of all customers, shown to customers as ideas in the "Suggested" tab of Trips.jsx.
-// The customer's identity (CUSTOMER_ID) is left out; only the agent's public username/id is included.
+// The customer's identity (CUSTOMER_ID) is left out; only the agent's public username/id/photo is included.
 router.get('/fetch-complete-trips', requireRole('customer', 'admin'), async (req, res) => {
     const query = `SELECT T.TRIP_ID, T.AGENT_ID, T.NAME, T.DEPARTURE_DATE, T.RETURN_DATE, T.TOTAL_COST, T.DISCOUNT, T.RATING, T.TRIP_STATUS,
-                          U.USERNAME, U.USER_ID
+                          U.USERNAME, U.USER_ID, U.PHOTO
                    FROM Trip T LEFT JOIN USERS U ON T.AGENT_ID=U.USER_ID
                    WHERE T.TRIP_STATUS = 'COMPLETED'
                    ORDER BY T.RATING`;

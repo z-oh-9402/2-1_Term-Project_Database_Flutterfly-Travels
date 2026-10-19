@@ -212,17 +212,6 @@
     font-size: 13px;
 }
 
-/* what happens next with the trip */
-.trip-status-hint{
-    margin: 4px 0 8px;
-    padding: 8px 12px;
-    border-left: 3px solid #25afe6;
-    border-radius: 4px;
-    background-color: rgba(37, 175, 230, 0.12);
-    font-size: 14px;
-    line-height: 1.4;
-}
-
 .reservation p{
     margin: 4px 0;
     padding-right: 36px;
@@ -235,22 +224,6 @@
 .no-bookings{
     margin-top: 14px;
     opacity: 0.8;
-}
-
-/* next to the name of a trip that ended before it was confirmed */
-.trip-dropped-tag{
-    display: inline-block;
-    margin-left: 10px;
-    padding: 2px 9px;
-    border: 1px solid rgba(211, 47, 47, 0.6);
-    border-radius: 999px;
-    background-color: rgba(211, 47, 47, 0.12);
-    color: #c62828;
-    font-size: 11px;
-    font-weight: bold;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    vertical-align: middle;
 }
 
 .trip-agent-picker{
