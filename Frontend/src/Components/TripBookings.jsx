@@ -1,14 +1,13 @@
 import PropTypes from 'prop-types';
 import { RiDeleteBin5Line } from "react-icons/ri";
-import { formatDate, formatTime } from './tripHelpers';
+import { formatDate, formatTime, hasNoBookings } from './tripHelpers';
 import '../Styles/trips.css';
 
 const cost = (booking) => booking.cost !== undefined && booking.cost !== null && <p>Cost: ৳ {Number(booking.cost).toLocaleString('en-US')}</p>;
 
 // A trip's destinations and bookings (customer's and agent's trip views), with remove buttons while they can be changed
 const TripBookings = ({ trip, canEdit, onRemove }) => {
-    const isEmpty = [trip.destinations, trip.accommodations, trip.restaurants, trip.flights].every(list => list.length === 0);
-    if(isEmpty)
+    if(hasNoBookings(trip))
     {
         return (
             <p className='no-bookings'>

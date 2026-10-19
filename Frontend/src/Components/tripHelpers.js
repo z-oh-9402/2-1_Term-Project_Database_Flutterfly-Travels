@@ -49,6 +49,15 @@ export const canEditBookings = (trip, user) => {
     return false;
 }
 
+// Whether the trip has no destinations and no bookings yet
+export const hasNoBookings = (trip) => [trip.destinations, trip.accommodations, trip.restaurants, trip.flights].every(list => list.length === 0);
+
+// "4 nights", or "Day trip" when it starts and ends on the same day
+export const tripLength = (trip) => {
+    const nights = Math.round((startOfDay(trip.return_date) - startOfDay(trip.departure_date)) / (24 * 60 * 60 * 1000));
+    return nights === 0 ? 'Day trip' : `${nights} ${nights === 1 ? 'night' : 'nights'}`;
+}
+
 // Whether the trip's dates include every day from `from` to `to`
 export const tripCovers = (trip, from, to) =>
     startOfDay(from) >= startOfDay(trip.departure_date) && startOfDay(to) <= startOfDay(trip.return_date);

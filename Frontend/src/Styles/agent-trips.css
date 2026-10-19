@@ -1,0 +1,454 @@
+/* An agent's trips on their profile page (AgentTrip.jsx), on the page's dark background */
+.agent-trips{
+    box-sizing: border-box;
+    max-width: 1150px;
+    padding: 28px 40px 60px;
+    color: white;
+}
+
+.agent-trips-heading{
+    margin: 0 0 16px;
+    font-size: 1.8rem;
+}
+
+/* Status tabs, with how many trips each has */
+.agent-trips-tabs{
+    display: flex;
+    gap: 6px;
+    padding: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.agent-trips-tab{
+    flex: 1;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 12px;
+    border: none;
+    border-radius: 7px;
+    background-color: transparent;
+    color: #c9d1d9;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
+}
+
+.agent-trips-tab:hover{
+    background-color: rgba(255, 255, 255, 0.07);
+    color: white;
+}
+
+.agent-trips-tab.selected{
+    background-color: #25afe6;
+    color: #06202c;
+}
+
+.agent-trips-count{
+    min-width: 20px;
+    padding: 1px 7px;
+    border-radius: 999px;
+    background-color: rgba(255, 255, 255, 0.14);
+    font-size: 12px;
+}
+
+.agent-trips-tab.selected .agent-trips-count{
+    background-color: rgba(6, 32, 44, 0.2);
+}
+
+.agent-trips-error{
+    margin: 14px 0 0;
+    color: #ff6b6f;
+}
+
+.agent-trips-empty{
+    margin-top: 20px;
+    padding: 28px 20px;
+    border: 1px dashed rgba(255, 255, 255, 0.18);
+    border-radius: 12px;
+    color: #9aa4ad;
+    text-align: center;
+}
+
+.agent-trips-empty p{
+    margin: 0;
+}
+
+/* Trip cards */
+.agent-trips-grid{
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.agent-trip-card{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 18px 20px;
+    border: 1px solid rgba(189, 232, 245, 0.2);
+    border-radius: 12px;
+    background-color: rgba(255, 255, 255, 0.04);
+    cursor: pointer;
+    transition: border-color 0.15s ease-in-out, background-color 0.15s ease-in-out, transform 0.15s ease-in-out;
+}
+
+.agent-trip-card:hover,
+.agent-trip-card:focus-visible{
+    border-color: #45deec;
+    background-color: rgba(37, 175, 230, 0.08);
+    transform: translateY(-2px);
+    outline: none;
+}
+
+.agent-trip-card-top{
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+}
+
+.agent-trip-card h3{
+    margin: 0;
+    font-size: 1.15rem;
+}
+
+.agent-trip-cost{
+    color: #45deec;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.agent-trip-line{
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0;
+    color: #c9d1d9;
+    font-size: 14px;
+}
+
+.agent-trip-line svg{
+    color: #45deec;
+}
+
+.agent-trip-avatar{
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.agent-trip-muted{
+    color: #8b96a0;
+}
+
+.agent-trip-bookings{
+    margin: 2px 0 0;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    color: #9aa4ad;
+    font-size: 13px;
+}
+
+/* Accept / Decline */
+.agent-trip-decision{
+    display: flex;
+    gap: 10px;
+}
+
+.agent-btn{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+}
+
+.agent-btn svg{
+    font-size: 17px;
+}
+
+.agent-btn-accept{
+    border: 1px solid #2fbf71;
+    background-color: #2fbf71;
+    color: #05130b;
+}
+
+.agent-btn-accept:hover{
+    border-color: #3dd683;
+    background-color: #3dd683;
+}
+
+.agent-btn-decline{
+    border: 1px solid rgba(229, 72, 77, 0.7);
+    background-color: transparent;
+    color: #ff8a8d;
+}
+
+.agent-btn-decline:hover{
+    background-color: rgba(229, 72, 77, 0.15);
+}
+
+/* One trip */
+.agent-trips-back{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 14px;
+    padding: 0;
+    border: none;
+    background: none;
+    color: #45deec;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.agent-trips-back:hover{
+    text-decoration: underline;
+}
+
+.agent-trip-title{
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px 14px;
+    margin-bottom: 16px;
+}
+
+.agent-trip-title h2{
+    margin: 0;
+    font-size: 1.9rem;
+}
+
+.agent-trip-title .agent-trip-decision{
+    margin-left: auto;
+}
+
+.agent-trip-status{
+    padding: 3px 10px;
+    border: 1px solid;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.agent-trip-status.status-requesting{
+    border-color: rgba(240, 180, 41, 0.6);
+    background-color: rgba(240, 180, 41, 0.1);
+    color: #f0b429;
+}
+
+.agent-trip-status.status-updating{
+    border-color: rgba(69, 222, 236, 0.6);
+    background-color: rgba(37, 175, 230, 0.12);
+    color: #45deec;
+}
+
+.agent-trip-status.status-pending{
+    border-color: rgba(199, 155, 255, 0.6);
+    background-color: rgba(199, 155, 255, 0.1);
+    color: #c79bff;
+}
+
+.agent-trip-status.status-confirmed{
+    border-color: rgba(95, 214, 143, 0.6);
+    background-color: rgba(95, 214, 143, 0.1);
+    color: #5fd68f;
+}
+
+.agent-trip-status.status-completed{
+    border-color: rgba(154, 164, 173, 0.6);
+    background-color: rgba(154, 164, 173, 0.1);
+    color: #b5bec6;
+}
+
+.agent-trips .trip-status-hint{
+    margin: 0 0 20px;
+}
+
+/* Dates, cost, customer (and rating) side by side */
+.agent-trip-stats{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 14px;
+    margin-bottom: 30px;
+}
+
+.agent-trip-stat{
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    padding: 14px 16px;
+    border: 1px solid rgba(189, 232, 245, 0.2);
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.04);
+}
+
+.agent-trip-stat-label{
+    margin-bottom: 2px;
+    color: #9aa4ad;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.agent-trip-stat-value{
+    display: block;
+    font-size: 1.05rem;
+    font-weight: bold;
+}
+
+.agent-trip-stat-note{
+    display: block;
+    color: #9aa4ad;
+    font-size: 13px;
+    overflow-wrap: anywhere;
+}
+
+.agent-trip-person{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+/* a long email is cut with "…" (the whole of it shows on hover) instead of breaking mid-word */
+.agent-trip-person-text{
+    min-width: 0;
+}
+
+.agent-trip-person-text .agent-trip-stat-note{
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.agent-trip-person img{
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border: 2px solid #25afe6;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.agent-trip-section-title{
+    margin: 0 0 14px;
+    font-size: 1.3rem;
+}
+
+.agent-trip-section-title + .agent-trips-empty{
+    margin-top: 0;
+}
+
+.agent-trip-links{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.agent-trip-links a{
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border: 1px solid rgba(37, 175, 230, 0.6);
+    border-radius: 999px;
+    color: white;
+    font-size: 14px;
+    text-decoration: none;
+    transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+}
+
+.agent-trip-links a svg{
+    color: #45deec;
+}
+
+.agent-trip-links a:hover{
+    border-color: #45deec;
+    background-color: rgba(37, 175, 230, 0.15);
+}
+
+/* The trip's bookings (TripBookings.jsx): one card per booking, grouped by kind.
+   The cards of a kind share the row, so a single booking takes the full width. */
+.agent-trips .trip-reservations{
+    gap: 24px;
+    margin: 0;
+    padding: 0;
+    background: none;
+}
+
+.agent-trips .trip-reservations > div{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.agent-trips .trip-reservations > div > .reservation{
+    flex: 1 1 300px;
+}
+
+.agent-trips .trip-reservations h3{
+    flex-basis: 100%;
+    margin: 0;
+    color: #9aa4ad;
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.agent-trips .reservation{
+    margin: 0;
+    padding: 14px 16px;
+    border: 1px solid rgba(189, 232, 245, 0.2);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    cursor: default;
+}
+
+.agent-trips .reservation p{
+    margin: 3px 0;
+    color: #c9d1d9;
+    font-size: 14px;
+}
+
+.agent-trips .reservation .reservation-name{
+    margin-top: 0;
+    color: white;
+    font-size: 15px;
+}
+
+.agent-trips .reservation .delete-button{
+    top: 12px;
+    right: 12px;
+    transform: none;
+    padding: 5px;
+    border: 1px solid rgba(229, 72, 77, 0.5);
+    border-radius: 6px;
+    background-color: transparent;
+    color: #ff8a8d;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+.agent-trips .reservation .delete-button:hover{
+    background-color: rgba(229, 72, 77, 0.18);
+    color: #ffb4b6;
+}
