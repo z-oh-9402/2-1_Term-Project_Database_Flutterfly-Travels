@@ -1,10 +1,8 @@
 import PropTypes from 'prop-types'
 import Rating from './Rating';
-import "../Styles/card.css"
-import "../Styles/item-bar.css"
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaHeart } from "react-icons/fa6";
+import { FaHeart, FaLocationDot } from "react-icons/fa6";
 import { setInWishlist, wishlistItemId } from '../wishlist';
 
 const ITEM_PAGES = {
@@ -12,6 +10,19 @@ const ITEM_PAGES = {
     accommodation: 'accommodations',
     restaurant: 'restaurants',
 };
+
+// A short line about the item under its name: the room price for an accommodation, the cuisine for a restaurant
+const itemDetail = (itemType, item) => {
+    if(itemType === 'accommodation')
+    {
+        return [item.accommodation_type, item.room_price && `৳ ${Number(item.room_price).toLocaleString('en-US')} a night`].filter(Boolean).join(' · ');
+    }
+    if(itemType === 'restaurant')
+    {
+        return [item.cuisine_type, item.price_range].filter(Boolean).join(' · ');
+    }
+    return null;
+}
 
 // One saved item in the wishlist panel: click it to open its page, click the heart to remove it
 const WishlistBar = (props) => {
@@ -45,18 +56,22 @@ const WishlistBar = (props) => {
         navigate(`/${ITEM_PAGES[itemType]}/${item.name}`);
     }
 
+    const place = [item.location_name, item.district_name].filter(Boolean).join(', ');
+    const detail = itemDetail(itemType, item);
+
     return (
-        <div className={"bar wishlist-bar" + (isRemoving ? " removing" : "")} onClick={openItem}>
-            <FaHeart className='fav-icon' onClick={removeFromWishlist} title="Remove from wishlist" role="button" aria-label={`Remove ${item.name} from wishlist`}/>
-            <div className='main-info-container wishlist-container'>
-                <img className='cover-img wishlist-img' src={item.image} alt={item.name}/>
-                <div>
-                    <h3 className='title'>{item.name}</h3>
-                    <div className='item-rating-container'>
-                        <label>Rating: <Rating rating={parseFloat(item.rating)} isChanging={false} setRating={null} count={Number(item.rating_count)}/></label>
-                    </div>
-                </div>
+        <div className={"wishlist-item" + (isRemoving ? " removing" : "")} role="button" tabIndex={0}
+             onClick={openItem} onKeyDown={(e) => { if(e.target === e.currentTarget && e.key === 'Enter') openItem(); }}>
+            <img className='wishlist-item-img' src={item.image} alt=''/>
+            <div className='wishlist-item-info'>
+                <h4>{item.name}</h4>
+                {place && <p className='wishlist-item-line'><FaLocationDot/> {place}</p>}
+                {detail && <p className='wishlist-item-line wishlist-item-muted'>{detail}</p>}
+                <Rating rating={parseFloat(item.rating)} isChanging={false} setRating={null} count={Number(item.rating_count)}/>
             </div>
+            <button className='wishlist-item-remove' onClick={removeFromWishlist} title="Remove from wishlist" aria-label={`Remove ${item.name} from wishlist`}>
+                <FaHeart/>
+            </button>
         </div>
     )
 };

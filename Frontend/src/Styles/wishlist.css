@@ -1,0 +1,165 @@
+/* The wishlist popup (Wishlist.jsx, WishlistBar.jsx), inside the popup's light glass box, styled like My Trips */
+.wishlist-panel{
+    color: #1d2a33;
+    text-align: left;
+}
+
+.wishlist-header{
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.wishlist-header h2{
+    margin: 0;
+    font-size: 1.6rem;
+}
+
+.wishlist-total{
+    color: #5b6b76;
+    font-size: 14px;
+}
+
+.wishlist-category + .wishlist-category{
+    margin-top: 22px;
+}
+
+.wishlist-category h3{
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0 0 10px;
+    color: #6b7a85;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.wishlist-category-count{
+    min-width: 16px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background-color: rgba(29, 42, 51, 0.12);
+    color: #3d4c56;
+    font-size: 11px;
+    line-height: 16px;
+    text-align: center;
+}
+
+.wishlist-empty{
+    margin: 0;
+    padding: 26px 20px;
+    border: 1px dashed rgba(29, 42, 51, 0.25);
+    border-radius: 12px;
+    color: #5b6b76;
+    line-height: 1.5;
+    text-align: center;
+}
+
+/* One saved item: photo, name, where it is, and its rating; the heart removes it */
+.wishlist-item{
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 10px;
+    padding: 10px 50px 10px 10px;
+    border: 1px solid rgba(29, 42, 51, 0.12);
+    border-radius: 12px;
+    background-color: rgba(255, 255, 255, 0.75);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    cursor: pointer;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out, transform 0.15s ease-in-out, opacity 0.15s ease-in-out;
+}
+
+.wishlist-item:hover,
+.wishlist-item:focus-visible{
+    border-color: #25afe6;
+    box-shadow: 0 4px 14px rgba(21, 147, 198, 0.2);
+    transform: translateY(-1px);
+    outline: none;
+}
+
+.wishlist-item.removing{
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.wishlist-item-img{
+    flex-shrink: 0;
+    width: 110px;
+    height: 80px;
+    border-radius: 8px;
+    /* shows while the photo loads */
+    background-color: rgba(29, 42, 51, 0.08);
+    object-fit: cover;
+}
+
+.wishlist-item-info{
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.wishlist-item-info h4{
+    margin: 0;
+    overflow: hidden;
+    font-size: 1.05rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.wishlist-item-line{
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    color: #3d4c56;
+    font-size: 13px;
+}
+
+.wishlist-item-line svg{
+    flex-shrink: 0;
+    color: #1593c6;
+}
+
+.wishlist-item-muted{
+    color: #6b7a85;
+}
+
+.wishlist-item .rating-container span{
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.wishlist-item .rating{
+    width: 15px;
+    height: 15px;
+}
+
+.wishlist-item .rating-count{
+    color: #6b7a85;
+}
+
+.wishlist-item-remove{
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    display: inline-flex;
+    padding: 7px;
+    border: 1px solid rgba(229, 72, 77, 0.35);
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.9);
+    color: #e5484d;
+    font-size: 15px;
+    cursor: pointer;
+    transform: translateY(-50%);
+    transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+}
+
+.wishlist-item-remove:hover{
+    border-color: #e5484d;
+    background-color: rgba(229, 72, 77, 0.12);
+}

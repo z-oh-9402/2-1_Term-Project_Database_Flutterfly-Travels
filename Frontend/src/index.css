@@ -317,18 +317,6 @@ label:not(.pref-chip):has(> input[type="radio"]){
     text-align: center;
 }
 
-.wishlist-container{
-    display: flex;
-    justify-content: space-around;
-    width: 100%;
-    margin-bottom: 20px;
-    margin: 0px;
-}
-
-.wishlist-container .wishlist-img{
-    width: 150px;
-}
-
 .profile-pic{
     height: 40px;
     width: 40px;

@@ -5,6 +5,7 @@ import WishlistBar from "./WishlistBar";
 import { apiFetch } from '../api';
 import { onWishlistChanged } from '../wishlist';
 import "../Styles/trips.css"
+import "../Styles/wishlist.css"
 
 const CATEGORY_TITLES = {
     destination: 'Destinations',
@@ -41,6 +42,7 @@ const Wishlist = (props)=>{
     }, []);
 
     const savedCategories = wishlist===null ? [] : wishlist.filter(list => list.items.length!==0);
+    const savedCount = savedCategories.reduce((count, list) => count + list.items.length, 0);
 
     return(
         <div className='login-signup-popup'>
@@ -48,16 +50,19 @@ const Wishlist = (props)=>{
                 <ImCross className='close' onClick={() => setShowWishlist(false)} />
 
                 <div className='login-signup-container trip-container'>
-                    <h2>Wishlist -</h2>
-                    <div className='category-data'>
+                    <div className='wishlist-panel'>
+                        <div className='wishlist-header'>
+                            <h2>Wishlist</h2>
+                            {savedCount !== 0 && <span className='wishlist-total'>{savedCount} saved</span>}
+                        </div>
                         {wishlist===null ?
-                            <p>Loading...</p>
+                            <p className='wishlist-empty'>Loading...</p>
                         : savedCategories.length===0 ?
                             <p className="wishlist-empty">Your wishlist is empty. Tap the heart on any destination, accommodation or restaurant to save it here.</p>
                         :
                             savedCategories.map(list =>
                                 <div key={list.category} className="wishlist-category">
-                                    <h3>{CATEGORY_TITLES[list.category]}</h3>
+                                    <h3>{CATEGORY_TITLES[list.category]} <span className='wishlist-category-count'>{list.items.length}</span></h3>
                                     {list.items.map(item =>
                                         <WishlistBar key={item.wishlist_id} item={item} itemType={list.category} setShowWishlist={setShowWishlist}/>
                                     )}
