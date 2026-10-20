@@ -1,6 +1,8 @@
 {
   "name": "frontend",
   "private": true,
+  "description": "Frontend of Flutterfly Travels, a travel planning web app (React and Vite)",
+  "license": "MIT",
   "version": "0.0.0",
   "type": "module",
   "scripts": {
