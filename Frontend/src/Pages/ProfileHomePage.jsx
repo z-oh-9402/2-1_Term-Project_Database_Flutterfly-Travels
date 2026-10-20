@@ -9,6 +9,7 @@ import UserInfoContext from '../Context/UserInfoContext';
 import CategorizedDestination from '../Components/CategorizedDestination';
 import AgentTrip from '../Components/AgentTrip';
 import AdminTasks from '../Components/AdminTasks';
+import { FaSuitcase, FaUser, FaUserShield } from 'react-icons/fa';
 import PhotoUploader from "../Components/PhotoUploader";
 import DeleteConfirmation from "./DeleteConfirmation";
 import Rating from "../Components/Rating";
@@ -299,7 +300,8 @@ const ProfileHomePage = ({setLogOut}) => {
         ? recommendedDestinations.filter(category => category.category === activePreference)
         : recommendedDestinations;
 
-    const roleLabels = { customer: 'Customer', agent: 'Travel Agent', admin: 'Admin' };
+    const roleLabels = { customer: 'Customer', agent: 'Travel agent', admin: 'Admin' };
+    const RoleIcon = { customer: FaUser, agent: FaSuitcase, admin: FaUserShield }[user?.user_type] ?? FaUser;
     const isCustomer = user?.user_type === 'customer';
     const isAgent = user?.user_type === 'agent';
     const isApprovedAgent = isAgent && user.acc_status === 'OK';
@@ -314,7 +316,7 @@ const ProfileHomePage = ({setLogOut}) => {
                     <div className="profile-pic larger-profile-pic profile-card-pic"><img src={photoUrl(user.photo)}/></div>
                     <h2 className="profile-name">{user.first_name} {user.last_name}</h2>
                     <p className="profile-username">@{user.username}</p>
-                    <span className="profile-role">{roleLabels[user.user_type]}</span>
+                    <span className="profile-role"><RoleIcon/> {roleLabels[user.user_type]}</span>
 
                     <dl className="profile-details">
                         <div className="profile-detail">

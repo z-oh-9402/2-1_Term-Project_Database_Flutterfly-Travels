@@ -238,12 +238,9 @@
 }
 
 .booking-trip-tag{
+    color: #5b6b76;
+    font-size: 13px;
     font-weight: normal;
-    padding: 3px 9px;
-    border: 1px solid rgba(86, 99, 109, 0.4);
-    border-radius: 999px;
-    color: #4a5761;
-    font-size: 12px;
     white-space: nowrap;
 }
 

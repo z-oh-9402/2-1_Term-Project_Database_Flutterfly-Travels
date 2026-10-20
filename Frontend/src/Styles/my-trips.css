@@ -264,48 +264,42 @@
 }
 
 .my-trip-status{
-    padding: 2px 9px;
-    border: 1px solid;
-    border-radius: 999px;
-    font-size: 11px;
-    font-weight: bold;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.my-trip-status::before{
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background-color: currentColor;
 }
 
 .my-trip-status.status-requesting{
-    border-color: rgba(176, 120, 0, 0.5);
-    background-color: rgba(240, 180, 41, 0.18);
     color: #8a5d00;
 }
 
 .my-trip-status.status-updating{
-    border-color: rgba(21, 147, 198, 0.5);
-    background-color: rgba(37, 175, 230, 0.14);
     color: #0b7fae;
 }
 
 .my-trip-status.status-pending{
-    border-color: rgba(122, 63, 209, 0.45);
-    background-color: rgba(122, 63, 209, 0.1);
     color: #6a32bd;
 }
 
 .my-trip-status.status-confirmed{
-    border-color: rgba(30, 125, 69, 0.45);
-    background-color: rgba(30, 125, 69, 0.1);
     color: #1e7d45;
 }
 
 .my-trip-status.status-completed{
-    border-color: rgba(86, 99, 109, 0.45);
-    background-color: rgba(86, 99, 109, 0.1);
     color: #4a5761;
 }
 
 .my-trip-status.status-dropped{
-    border-color: rgba(211, 47, 47, 0.5);
-    background-color: rgba(211, 47, 47, 0.1);
     color: #c62828;
 }
 
