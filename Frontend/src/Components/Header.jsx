@@ -8,7 +8,7 @@ import UserInfoContext from "../Context/UserInfoContext";
 
 import { IoMdNotifications } from "react-icons/io";
 import { IoAirplaneSharp, IoGlobeSharp, IoBedSharp, IoRestaurant } from "react-icons/io5";
-import { BsChatDots, BsPeopleFill } from "react-icons/bs";
+import { BsChatDots } from "react-icons/bs";
 import { FaRegHeart, FaTripadvisor } from "react-icons/fa";
 
 import Notification from "./Notification";
@@ -60,7 +60,6 @@ const Header = (props)=>{
                     {sectionButton('/accommodations', 'Accommodations', IoBedSharp)}
                     {sectionButton('/restaurants', 'Restaurants', IoRestaurant)}
                     {sectionButton('/flights', 'Flights', IoAirplaneSharp)}
-                    {(userInfo!==null && userInfo.user_type !== 'admin') && <button className="btn-primary nav-button">People<BsPeopleFill className="icon"/></button>}
                 </div>
                 {userInfo!==null ? 
                     <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
