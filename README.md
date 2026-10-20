@@ -1,37 +1,56 @@
 # Flutterfly Travels
 
-A travel agency web app built as the CSE 216 (Database) term project at BUET. Customers browse destinations, accommodations, restaurants and flights in Bangladesh, plan trips with a travel agent, and book items into those trips. Agents build the trips, and an admin approves new agents and confirmed trips.
+A travel planning web app for Bangladesh, built as the CSE 216 (Database) term project at BUET. Customers explore destinations, hotels, restaurants and flights, put them together into trips with a travel agent (or on their own), and chat with agents and other travellers. Agents plan the trips they are asked to, and admins approve new agents and finished trips.
 
-- **Database:** PostgreSQL, with business logic in PL/pgSQL functions, a procedure and triggers
-- **Backend:** Node.js and Express (`Backend/`)
-- **Frontend:** React and Vite (`Frontend/`)
+Much of the app's logic lives in PostgreSQL: functions, a procedure and triggers keep costs, ratings, notifications and chat rules correct whatever the API is asked.
 
-## Project structure
+![Trip planning in Flutterfly Travels](docs/screenshots/trip.png)
 
-```
-Backend/
-  index.js            Express app (port from .env, default 3000)
-  auth.js             JWT login checks (requireAuth, roles, trip ownership)
-  database.js         Postgres connection pool (query, transaction)
-  realtime.js         Pushes new notifications to users instantly (socket.io + Postgres LISTEN)
-  router/             API routes, one file per resource
-  database/
-    schema.sql        Tables, constraints, functions, procedure and triggers
-    seed.sql          Sample data (locations, airports, flights, destinations, ...), no user accounts
-  create-admin.js     Creates an admin account (npm run create-admin)
-  file_handling.js    Profile photo upload and removal (Supabase Storage)
-Frontend/
-  src/api.js          apiFetch: fetch wrapper that sends the login token
-  src/Pages/, src/Components/
-ERD.pdf               Entity-relationship diagram
-IMAGE_CREDITS.md      Authors and licences of the Wikimedia Commons photos
-```
+## Features
 
-## Setup
+**Customers**
+- Browse 39 destinations, 29 places to stay, 33 restaurants and domestic flights, with filters for area, rating, type, facilities, price and time.
+- Plan trips: add destinations, hotels, restaurants and flights. Only trips whose dates cover the booking are offered.
+- Request an agent when creating a trip or later, or plan it alone and send it straight to an admin.
+- Rate and review places and agents, and keep a wishlist.
+
+**Travel agents**
+- Accept or decline requests, then build each trip with its customer.
+- Approval by an admin before they can be chosen.
+
+**Admins**
+- Review new agent sign-ups and trips sent for approval.
+
+**Everyone (except admins)**
+- Chat in real time, with photos, a typing indicator, read receipts and unread counts. Agents can only message other agents and the customers they work with.
+- Live notifications, for example "Sayeman Beach Resort was added to trip 'Cox's Bazar getaway'", shown as a pop-up and kept in the notification panel.
+
+## Screenshots
+
+*Taken with made-up demo accounts.*
+
+| | |
+|---|---|
+| ![Home page](docs/screenshots/home.png) Home page | ![Destination list with filters](docs/screenshots/destinations.png) Destinations, with filters |
+| ![A destination's page](docs/screenshots/destination.png) A destination's page | ![Flight search](docs/screenshots/flights.png) Flights |
+| ![Adding a hotel to a trip](docs/screenshots/add-to-trip.png) Adding a hotel to a trip | ![A customer's trips](docs/screenshots/my-trips.png) A customer's trips |
+| ![Chat](docs/screenshots/chat.png) Chat between a customer and her agent | ![Notifications](docs/screenshots/notifications.png) Notifications |
+| ![An agent's trips](docs/screenshots/agent.png) An agent's trips | ![An admin reviewing a trip](docs/screenshots/admin.png) An admin reviewing a trip |
+
+## Tech stack
+
+| Part | Built with |
+|---|---|
+| Database | PostgreSQL 16+, with PL/pgSQL functions, a procedure, triggers and `LISTEN`/`NOTIFY` |
+| Backend | Node.js, Express, `pg`, JSON Web Tokens, bcrypt, socket.io, multer |
+| Frontend | React 18, Vite, React Router, socket.io-client |
+| Images | Supabase Storage (public buckets) |
+
+## Getting started
 
 You need Node.js 20 or newer and PostgreSQL 16 or newer. `schema.sql` was dumped by `pg_dump` 18, and its `\restrict` lines need a recent `psql`.
 
-### 1. Create the database
+**1. Create the database**
 
 ```bash
 sudo -u postgres createdb flutterfly_travels
@@ -39,90 +58,92 @@ sudo -u postgres psql -d flutterfly_travels -f Backend/database/schema.sql
 sudo -u postgres psql -d flutterfly_travels -f Backend/database/seed.sql
 ```
 
-### 2. Configure the backend
+**2. Configure the backend**
 
 ```bash
 cp Backend/.env.example Backend/.env
 ```
 
-Fill in `Backend/.env`:
+Then fill in `Backend/.env`:
 
 - `DB_PASSWORD`: the password of the `postgres` role. If it has none yet, set one with `sudo -u postgres psql -c "\password postgres"`.
-- `JWT_SECRET`: a long random string. Generate one with `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"`.
-- `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`: from the Supabase dashboard, under Project Settings > API. The backend needs them to upload profile photos. The service role key bypasses all access rules, so it belongs only in this file, never in the frontend.
+- `JWT_SECRET`: a long random string, for example from `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"`.
+- `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`: from your Supabase project (Project Settings > API). The backend uses them to store profile and chat photos in a public bucket named `users`. The service role key bypasses Supabase's access rules, so keep it in this file only. `Backend/.env` is git-ignored.
 
-Never commit `Backend/.env`; it is git-ignored.
+**3. Run it**
 
-### 3. Install and run
-
-Use two terminals:
+In two terminals:
 
 ```bash
 cd Backend && npm install && npm start      # API on http://localhost:3000
 cd Frontend && npm install && npm run dev   # App on http://localhost:5000
 ```
 
-## Accounts
+**4. Create accounts**
 
-The seed data contains no user accounts.
-
-- **Customers and agents:** sign up in the app. A new agent stays pending, and customers can't pick them for trips, until an admin approves them.
-- **Admins:** signup can't create admins. Create one from the command line after setting up the database:
+The sample data has no accounts. Customers and agents sign up in the app; a new agent waits until an admin approves them. Admins can't sign up in the app. Create one from the command line:
 
 ```bash
-cd Backend
-npm run create-admin
+cd Backend && npm run create-admin
 ```
 
-The script asks for a username, email, name and password. It stores the password as a bcrypt hash.
+The script asks for a username, email, name and password, and stores the password as a bcrypt hash.
 
 ## How it works
 
-### Trip lifecycle
+### The database does the bookkeeping
 
-`REQUESTING` → `UPDATING` → `PENDING` → `CONFIRMED` → `COMPLETED`
+Triggers keep each trip's total cost, every item's average rating and each customer's count of completed trips up to date, and they write the notifications. A trip's status moves from `REQUESTING` or `UPDATING` through `PENDING` and `CONFIRMED` to `COMPLETED`, or to `DROPPED` if it was never confirmed before its return date.
 
-1. A customer creates a trip and requests an agent (`REQUESTING`).
-2. The agent accepts and adds bookings (`UPDATING`).
-3. The trip is sent to the admin (`PENDING`), who confirms it (`CONFIRMED`).
-4. It becomes `COMPLETED` once its return date has passed.
+The full design, with an entity-relationship diagram, the trip lifecycle and every function and trigger, is in **[docs/database.md](docs/database.md)**.
 
-### Database logic
+### Live notifications and chat
 
-- **Functions:** `check_username` and `check_trip_name` check availability. `get_booking_id` creates a booking and returns its id.
-- **Procedure:** `fetch_filtered_flights` returns a cursor of flights between two airports for a seat class. A NULL airport or seat class means any, so the Flights page opens with every one-way flight from Dhaka in all classes.
-- **Triggers:**
-  - keep each trip's total cost up to date as bookings are added
-  - keep each destination's, accommodation's, restaurant's and agent's rating equal to the average of its customers' ratings (0 = not rated yet)
-  - count each customer's completed trips and issue discount coupons
-  - delete the ratings and reviews of deleted items
-  - send notifications for trip, booking, wishlist and agent-approval events
+When a notification or a chat message is inserted, a trigger calls `pg_notify`. The backend listens on those channels and pushes the new row over socket.io to the people concerned, so nothing needs polling. Who may message whom is decided by the `can_message` function, and a trigger refuses any message it doesn't allow.
 
-### Real-time notifications
+### Accounts and access
 
-Notifications reach the user instantly, without polling:
-
-1. The `notification_created` trigger calls `pg_notify('notification_created', <id>)` for every new row in `notification`. Postgres delivers this message only when the transaction commits.
-2. The backend (`Backend/realtime.js`) keeps one connection doing `LISTEN notification_created`. It looks up the row and sends it over socket.io to that user's open tabs.
-3. Socket connections log in with the same JWT, and each user only receives their own notifications. On every (re)connect the app reloads the list, so nothing is missed while it's offline.
+Logging in returns a JWT (valid for a day by default), which the app sends with every request. Browsing is public. Booking, trips, wishlists, reviews and chat need an account. A trip can be changed only by its customer, its agent or an admin, and only while it is being planned. Agent approval and trip confirmation are for admins only.
 
 ### Images
 
-The homepage slider photos ship with the frontend, in `Frontend/public/homepage/`. All other images are served from public buckets in Supabase Storage, so the app doesn't depend on other websites' links:
+The home page photos ship with the frontend, in `Frontend/public/homepage/`. All other images are served from public Supabase Storage buckets: `destinations`, `accomodations`, `restaurants` and `flights` hold the places' photos (referenced from their `image*` columns), and `users` holds profile and chat photos uploaded through the backend.
 
-| Bucket | Contents | Referenced from |
-|---|---|---|
-| `destinations`, `accomodations`, `restaurants` | `<id>-<name>/image.jpg`, `image1` to `image3` | the item's `image*` columns |
-| `flights` | one photo per airline | `flight.image` |
-| `users` | profile photos, uploaded by the backend | `users.photo` (full URL) |
+## Project structure
 
-The photos that replaced broken links come from Wikimedia Commons. Their authors and licences are in [IMAGE_CREDITS.md](IMAGE_CREDITS.md).
+```
+Backend/
+  index.js            Express app (port from .env, default 3000)
+  auth.js             JWT checks: logged in, role, trip participant
+  database.js         PostgreSQL connection pool (query, transaction)
+  realtime.js         socket.io server: live notifications, chat messages and typing
+  file_handling.js    Photo uploads to Supabase Storage
+  create-admin.js     Creates an admin account (npm run create-admin)
+  router/             API routes, one file per resource (user, customer, agent, destination,
+                      accommodation, restaurant, flight, booking, trip, wishlist, chat)
+  database/
+    schema.sql        Tables, constraints, functions, procedure and triggers
+    seed.sql          Places, flights and airports in Bangladesh (no accounts)
+Frontend/
+  src/Pages/          One component per page (destinations, flights, chat, profile, ...)
+  src/Components/     Shared pieces (booking popups, trip views, date fields, ...)
+  src/api.js          apiFetch: fetch that sends the login token
+  src/chat.js         Chat events and the "who can I message" rule
+docs/
+  database.md         Database design
+  screenshots/        The pictures in this README
+ERD.pdf               The original conceptual ER diagram
+IMAGE_CREDITS.md      Authors and licences of the Wikimedia Commons photos
+```
 
-### Authentication
+## Credits
 
-Logging in (`POST /user/login`) returns a JWT that is valid for `JWT_EXPIRES_IN` (default 1 day). The frontend sends it as `Authorization: Bearer <token>` on every request. The backend enforces four levels of access:
+The photos of places and aircraft that come from Wikimedia Commons are listed, with their authors and licences, in [IMAGE_CREDITS.md](IMAGE_CREDITS.md).
 
-- **Public:** browsing.
-- **Logged-in users:** booking, trips, wishlists and reviews.
-- **Trip participants only:** a trip can be changed only by its customer, its agent or an admin.
-- **Admins only:** agent approval and trip confirmation.
+## Authors
+
+<!-- TODO: list the team members, for example: - Name (student ID) — @github-handle -->
+
+## License
+
+The code is released under the [MIT License](LICENSE). Photos keep their own licences, listed in [IMAGE_CREDITS.md](IMAGE_CREDITS.md).
