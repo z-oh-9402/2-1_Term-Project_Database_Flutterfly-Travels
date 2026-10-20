@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import useFillWindow from '../Components/useFillWindow';
 import "../Styles/search.css"
 import { useNavigate } from "react-router-dom";
 import SearchAndSuggestions from "../Components/SearchAndSuggestions";
@@ -9,6 +10,11 @@ const facilityColumns = ['free_wifi','parking','delivery','takeaway','dine_in','
 const placeKinds = {1: 'location', 2: 'district', 3: 'division'}; // SearchAndSuggestions' place categories
 
 const Restaurants = ()=>{
+    // the filters and the results fill the window below the search, and scroll on their own
+    const [fillRef, fillStyle] = useFillWindow();
+    // opens from the top, like Destinations, not where the previous page was scrolled to
+    useEffect(() => { window.scrollTo(0, 0); }, []);
+
     const [search,setSearch] = useState("");
     const [suggestions,setSuggestions] = useState(undefined);
     const [narrowedTo,setNarrowedTo] = useState({}); // {keyword} or {location | district | division: name}; {} = everything
@@ -138,7 +144,7 @@ const Restaurants = ()=>{
         <div className="homepage">
             <SearchAndSuggestions data={data} functions={functions}/>
             
-            <div className='destination-search'>
+            <div className='destination-search fill-window' ref={fillRef} style={fillStyle}>
                 <div className="filter">
                     <button className="btn-primary" style={{marginBottom:'10px'}} onClick={resetFilter}>Reset Filter</button>
                     

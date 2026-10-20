@@ -268,7 +268,7 @@ function App() {
       <NotificationToasts toasts={toasts} onDismiss={dismissToast} onOpen={() => { setToasts([]); setShowDetailedNotification(true); }}/>
       <Header handleIsInLoginOrSignUpFromNavbar={handleIsInLoginOrSignUpFromNavbar} setShowTrips={setShowTrips} setShowWishlist={setShowWishlist} notifications={notifications} onNotificationsSeen={markNotificationsSeen} chatUnread={chatUnread}/>
 
-      <br/><br/>
+      {/* <br/><br/> */}
 
       <Routes>
         <Route path='' element={<Homepage/>}/>

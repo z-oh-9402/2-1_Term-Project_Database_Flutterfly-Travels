@@ -42,7 +42,8 @@ const Homepage = () => {
 
     return (
 
-        <div style={{ width: "650px", margin: "0 auto", justifyContent: "center", alignItems: "center" }}>
+        // room between the navbar and the slider
+        <div style={{ width: "650px", margin: "40px auto 0", justifyContent: "center", alignItems: "center" }}>
             <Slider {...settings}>
                 {slides.map((slide, index) => (
                     <div key={index}>

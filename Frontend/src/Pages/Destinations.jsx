@@ -1,4 +1,5 @@
 import { useState } from "react";
+import useFillWindow from '../Components/useFillWindow';
 import { useNavigate } from "react-router-dom";
 import SearchAndSuggestions from "../Components/SearchAndSuggestions";
 import PaginatedItemBars from "../Components/PaginatedItemBars";
@@ -8,6 +9,8 @@ const placeTypes = ["Mountains","Lakes","Beaches","Forests","Hill Tracks","Tea G
 const placeKinds = {1: 'location', 2: 'district', 3: 'division'}; // SearchAndSuggestions' place categories
 
 const Destinations = ()=>{
+    // the filters and the results fill the window below the search, and scroll on their own
+    const [fillRef, fillStyle] = useFillWindow();
     const [search,setSearch] = useState("");
     const [suggestions,setSuggestions] = useState(undefined);
     const [narrowedTo,setNarrowedTo] = useState({}); // {keyword} or {location | district | division: name}; {} = everything
@@ -108,7 +111,7 @@ const Destinations = ()=>{
         <div className="homepage">
             <SearchAndSuggestions data={data} functions={functions}/>
             
-            <div className='destination-search'>
+            <div className='destination-search fill-window' ref={fillRef} style={fillStyle}>
                 <div className="filter">
                     <button className="btn-primary" style={{marginBottom:'10px'}} onClick={resetFilter}>Reset Filter</button>
                     <h3>Minimum Rating:</h3>

@@ -34,7 +34,6 @@ input:focus {
     display: flex;
     padding : 10px;
     max-width: 700px;
-    margin: 10px 0px 15px 0px;
     border-radius: 5px;
     height: 55px;
 }
@@ -98,22 +97,6 @@ input:focus {
     max-height: 325px;
     color:black;
     background-color: rgba(71, 62, 49, 0.527);
-}
-
-::-webkit-scrollbar {
-    width: 8px;
-}
-  
-::-webkit-scrollbar-track {
-    background-color: rgb(235, 226, 226);
-    border-top-right-radius: 100px;
-    border-bottom-right-radius: 100px;
-}
-  
-::-webkit-scrollbar-thumb {
-    background-color: #687c8570;
-    border-radius: 100px;
-    box-shadow: 0 0px 6px rgba(25, 27, 27, 0.8);;
 }
 
 .suggested-items{

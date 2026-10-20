@@ -77,7 +77,9 @@ const RangeSlider = (props) => {
     };
 
     return (
-        <div style={{paddingLeft: "10px"}}>
+        // the first price label is centred on the slider's start, so the slider sits in far enough for all of it to
+        // show inside a scrolling column (which clips anything sticking out)
+        <div style={{paddingLeft: "20px"}}>
             <div style={{display: "block", width: "90%"}}>
                 <Slider range
                     className="range-slider"

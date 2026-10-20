@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types'
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import ItemBar from './ItemBar';
 import { apiFetch } from '../api';
 import "../Styles/item-bar.css"
@@ -78,9 +78,12 @@ const PaginatedItemBars = ({itemType, query, items, showBooking, emptyMessage}) 
         };
     }, [isLoaded, itemType, signature, page]);
 
+    // a new page starts from the top of the results column (or of the window, where the page scrolls as a whole)
+    const paginationRef = useRef(null);
     const goTo = (p) => {
         setPageState({signature, page: p});
-        window.scrollTo({top: 0, behavior: 'smooth'});
+        const column = paginationRef.current?.closest('.browse-results');
+        (column && column.scrollHeight > column.clientHeight ? column : window).scrollTo({top: 0, behavior: 'smooth'});
     }
 
     const offset = (page-1)*PAGE_SIZE;
@@ -100,7 +103,7 @@ const PaginatedItemBars = ({itemType, query, items, showBooking, emptyMessage}) 
                     <ItemBar key={itemKey(item)} itemType={itemType} item={item} index={`${itemType}-${result.offset+i}`} showBooking={showBooking}/>
                 )}
             </div>
-            <div className='pagination'>
+            <div className='pagination' ref={paginationRef}>
                 <span className='page-summary'>Showing {result.offset+1}–{result.offset+result.items.length} of {result.total}</span>
                 {pageCount>1 &&
                     <nav className='page-buttons' aria-label='Pages'>

@@ -2,6 +2,7 @@
     from {
         transform: translateX(100%);
     }
+
     to {
         transform: translateX(0%);
     }
@@ -11,25 +12,32 @@
     from {
         transform: translateX(0%);
     }
+
     to {
         transform: translateX(-100%);
     }
 }
-body{
-    background-color:rgb(37, 36, 36);
-    background-image: radial-gradient(ellipse at center, rgba(255,255,255,0.1) 0%,rgba(0,0,0,0.9) 100%); /* Add radial gradient for texture */
-    background-size: cover; /* Ensure background covers entire viewport */
-    background-attachment: fixed; /* Fix background position */
-    background-blend-mode: overlay; 
+
+body {
+    background-color: rgb(37, 36, 36);
+    background-image: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.1) 0%, rgba(0, 0, 0, 0.9) 100%);
+    /* Add radial gradient for texture */
+    background-size: cover;
+    /* Ensure background covers entire viewport */
+    background-attachment: fixed;
+    /* Fix background position */
+    background-blend-mode: overlay;
 }
-body, p {
+
+body,
+p {
     margin: 0;
     padding: 0;
     font-family: Arial, sans-serif;
     font-size: 15px;
 }
 
-.homepage{
+.homepage {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -37,7 +45,7 @@ body, p {
     color: #30c5d2;
 }
 
-.main-section{
+.main-section {
     display: flex;
     align-items: center;
 }
@@ -46,7 +54,7 @@ button {
     cursor: pointer;
 }
 
-.profile-page{
+.profile-page {
     display: flex;
     background-color: rgb(37, 36, 36);
 }
@@ -61,18 +69,22 @@ button {
     margin-bottom: 10px;
 }
 
-.profile-container{
-    padding: 0px 50px 0px 40px;
-    width: 25%;
-    color:white;
+.profile-container {
+    padding: 0px 30px 0px 40px;
+    width: 23%;
+    color: white;
     background-color: rgb(37, 36, 36);
-    background-image: radial-gradient(ellipse at center, rgba(255,255,255,0.1) 0%,rgba(0,0,0,0.9) 100%); /* Add radial gradient for texture */
-    background-size: cover; /* Ensure background covers entire viewport */
-    background-attachment: fixed; /* Fix background position */
-    background-blend-mode: overlay; /* Blend mode for gradient */    
+    background-image: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.1) 0%, rgba(0, 0, 0, 0.9) 100%);
+    /* Add radial gradient for texture */
+    background-size: cover;
+    /* Ensure background covers entire viewport */
+    background-attachment: fixed;
+    /* Fix background position */
+    background-blend-mode: overlay;
+    /* Blend mode for gradient */
 }
 
-.destination-search{
+.destination-search {
     display: flex;
     min-width: 100%;
     padding: 40px;
@@ -80,45 +92,44 @@ button {
     color: white;
 }
 
-.recommendation-container{ 
-    
+.recommendation-container { 
     background-color: rgb(37, 36, 36);
-    background-image: radial-gradient(ellipse at center, rgba(255,255,255,0.1) 0%,rgba(0,0,0,0.9) 100%); /* Add radial gradient for texture */
-    background-size: cover; /* Ensure background covers entire viewport */
-    background-attachment: fixed; /* Fix background position */
-    background-blend-mode: overlay; 
-    
+    background-image: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.1) 0%, rgba(0, 0, 0, 0.9) 100%);
+    /* Add radial gradient for texture */
+    background-size: cover;
+    /* Ensure background covers entire viewport */
+    background-attachment: fixed;
+    /* Fix background position */
+    background-blend-mode: overlay;
     width: 100%;
-    /* display: flex;
-    flex-direction: column; */
-    color:white;
-    
+    padding: 0px 0px 0px 30px;
+    color: white;
+
 }
 
-.destination-info-container{
+.destination-info-container {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    margin-top: auto; /* Pushes the container to the bottom */
+    margin-top: auto;
+    /* Pushes the container to the bottom */
     padding-bottom: 50px;
 }
 
-.filter{
+.filter {
     width: 25%;
+    padding-right: 20px;
     margin-right: 40px;
-    padding-right: 40px;
-    border-right: 1px solid gray;
+    /* border-right: 1px solid gray; */
 }
 
-.slider
-{
+.slider {
     margin-bottom: 40px;
     display: flex;
     align-items: center;
 }
 
-.filter-value
-{
+.filter-value {
     font-weight: bold;
     width: 20px;
     text-align: center;
@@ -137,7 +148,7 @@ button {
     z-index: 0;
 }
 
-input{
+input {
     cursor: pointer;
 }
 
@@ -150,17 +161,17 @@ input{
     border-radius: 8px;
     width: 30px;
     height: 17px;
-    background:  #25afe6;
+    background: #25afe6;
 }
 
-iframe{
+iframe {
     border: 0px;
     border-radius: 8px;
 }
 
 /* Checkboxes and radio buttons: drawn here instead of the browser's own */
 input[type="checkbox"],
-input[type="radio"]{
+input[type="radio"] {
     appearance: none;
     flex-shrink: 0;
     width: 18px;
@@ -176,62 +187,62 @@ input[type="radio"]{
     transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
 }
 
-input[type="checkbox"]{
+input[type="checkbox"] {
     border-radius: 5px;
 }
 
-input[type="radio"]{
+input[type="radio"] {
     border-radius: 50%;
 }
 
 /* undoes the glow search.css gives every focused input */
 input[type="checkbox"]:focus,
-input[type="radio"]:focus{
+input[type="radio"]:focus {
     border-color: #6b7c85;
     box-shadow: none;
     outline: none;
 }
 
 input[type="checkbox"]:hover,
-input[type="radio"]:hover{
+input[type="radio"]:hover {
     border-color: #45deec;
 }
 
 input[type="checkbox"]:active,
-input[type="radio"]:active{
+input[type="radio"]:active {
     transform: scale(0.9);
 }
 
-input[type="checkbox"]:checked{
+input[type="checkbox"]:checked {
     border-color: #25afe6;
     background-color: #25afe6;
     background-size: 14px;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.5l3 3 6-7' fill='none' stroke='%2308161c' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
 
-input[type="radio"]:checked{
+input[type="radio"]:checked {
     border-color: #25afe6;
     background-image: radial-gradient(circle, #25afe6 0 4px, transparent 4.5px);
 }
 
-input[type="checkbox"]:checked:hover{
+input[type="checkbox"]:checked:hover {
     border-color: #45deec;
     background-color: #45deec;
 }
 
-input[type="radio"]:checked:hover{
+input[type="radio"]:checked:hover {
     border-color: #45deec;
     background-image: radial-gradient(circle, #45deec 0 4px, transparent 4.5px);
 }
 
 input[type="checkbox"]:focus-visible,
-input[type="radio"]:focus-visible{
+input[type="radio"]:focus-visible {
     outline: 2px solid #45deec;
     outline-offset: 2px;
 }
 
 input[type="checkbox"]:disabled,
-input[type="radio"]:disabled{
+input[type="radio"]:disabled {
     opacity: 0.5;
     cursor: default;
 }
@@ -239,7 +250,7 @@ input[type="radio"]:disabled{
 /* The text next to a checkbox or radio button lines up with it, and clicking it toggles the box
    (the profile page's preference chips have their own look) */
 label:not(.pref-chip):has(> input[type="checkbox"]),
-label:not(.pref-chip):has(> input[type="radio"]){
+label:not(.pref-chip):has(> input[type="radio"]) {
     display: inline-flex;
     align-items: center;
     gap: 10px;
@@ -248,35 +259,35 @@ label:not(.pref-chip):has(> input[type="radio"]){
     user-select: none;
 }
 
-.information-container{
+.information-container {
     display: inline-block;
-    color:white;
+    color: white;
 }
 
-.information-container h3{
+.information-container h3 {
     display: inline-block;
     margin-top: 5px;
-    color:white;
+    color: white;
 }
 
-.see-all-link{
+.see-all-link {
     color: #25afe6;
     cursor: pointer;
 }
 
-.see-all-link:hover{
+.see-all-link:hover {
     color: #46cdd7;
     text-decoration: underline;
 }
 
-.all-times-container{
+.all-times-container {
     display: flex;
     height: 60px;
     width: 172px;
     justify-content: space-between;
 }
 
-.time-container{
+.time-container {
     width: 40px;
     height: 40px;
     display: flex;
@@ -291,33 +302,33 @@ label:not(.pref-chip):has(> input[type="radio"]){
     transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, color 0.15s ease;
 }
 
-.time-container:hover{
+.time-container:hover {
     border-color: #45deec;
 }
 
 /* a picked part of the day glows sky blue */
-.time-container.selected{
+.time-container.selected {
     border-color: #45deec;
     background-color: rgba(37, 175, 230, 0.28);
     color: #c9f6ff;
     box-shadow: 0 0 8px rgba(69, 222, 236, 0.75), inset 0 0 8px rgba(69, 222, 236, 0.35);
 }
 
-.time-container:focus-visible{
+.time-container:focus-visible {
     outline: 2px solid #45deec;
     outline-offset: 2px;
 }
 
-.time-img{
+.time-img {
     font-size: 39px;
 }
 
-.time-label{
+.time-label {
     font-size: 13px;
     text-align: center;
 }
 
-.profile-pic{
+.profile-pic {
     height: 40px;
     width: 40px;
     border-radius: 100%;
@@ -329,31 +340,132 @@ label:not(.pref-chip):has(> input[type="radio"]){
     box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.3);
 }
 
-.profile-pic img{
+.profile-pic img {
     height: 100%;
 }
 
-.larger-profile-pic{
+.larger-profile-pic {
     height: 180px;
     width: 180px;
 }
 
-.agent-suggestion-profile-pic{
+.agent-suggestion-profile-pic {
     margin-right: 10px;
 }
 
 /* Date pickers inside popups draw their calendar here (portalId="datepicker-portal"): above the popup, never clipped by it */
-#datepicker-portal .react-datepicker-popper{
+#datepicker-portal .react-datepicker-popper {
     z-index: 20;
 }
 
 /* Date fields (DateField.jsx): the whole field opens the calendar, so it gets the hand cursor and no typing caret,
    and clicks on the calendar icon go through to the field */
-input.date-field{
+input.date-field {
     cursor: pointer;
     caret-color: transparent;
 }
 
-.datepicker-container .calendar-img{
+.datepicker-container .calendar-img {
     pointer-events: none;
+}
+
+/* The profile page fits the window (its height is set by ProfileHomePage); each side scrolls on its own */
+.profile-page {
+    overflow: hidden;
+    background: transparent;
+    /* the same space under the navbar as the browse pages' search bar has (their 20px top margin) */
+    margin-top: 20px;
+}
+
+.profile-page>.profile-container,
+.profile-page>.recommendation-container {
+    box-sizing: border-box;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.profile-page>.profile-container {
+    flex-shrink: 0;
+    min-width: 300px;
+}
+
+/* Scrollbars across the site: slim, no track, a soft thumb that brightens on hover (dark pages and light popups) */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 100px;
+    background-color: rgba(150, 160, 170, 0.35);
+    background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(69, 222, 236, 0.6);
+}
+
+/* Firefox has no ::-webkit-scrollbar */
+@supports not selector(::-webkit-scrollbar) {
+    * {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(150, 160, 170, 0.35) transparent;
+    }
+}
+/* Browse pages (Destinations, Accommodations, Restaurants, Flights): the filters and the results fill the window
+   below the search (height set by useFillWindow) and each scrolls on its own */
+.destination-search.fill-window{
+    overflow: hidden;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.destination-search.fill-window > .filter,
+.destination-search.fill-window > .browse-results{
+    box-sizing: border-box;
+    min-height: 0;
+    overflow-y: auto;
+    padding-bottom: 40px;
+}
+
+/* The scrolling columns (browse pages and profile) fade out at an edge where there is more to scroll, instead of
+   cutting cards off on a hard line: the top edge once scrolled down, the bottom edge until the end is reached.
+   Driven by the column's own scroll position; browsers without scroll-driven animations show no fade. */
+@property --fade-top {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 0px;
+}
+
+@property --fade-bottom {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 0px;
+}
+
+@keyframes scroll-edge-fade {
+    0%   { --fade-top: 0px;  --fade-bottom: 40px; }
+    6%   { --fade-top: 40px; }
+    94%  { --fade-bottom: 40px; }
+    100% { --fade-top: 40px; --fade-bottom: 0px; }
+}
+
+@supports (animation-timeline: scroll()) {
+    .destination-search.fill-window > .filter,
+    .destination-search.fill-window > .browse-results,
+    .profile-page > .profile-container,
+    .profile-page > .recommendation-container{
+        /* a mask stops a fixed background from lining up with the page's, which shows as a lighter box with hard
+           edges; the columns let the page's own background show through instead */
+        background: transparent;
+        mask-image: linear-gradient(to bottom, transparent 0, #000 var(--fade-top), #000 calc(100% - var(--fade-bottom)), transparent 100%);
+        animation: scroll-edge-fade linear both;
+        animation-timeline: scroll(self);
+    }
 }

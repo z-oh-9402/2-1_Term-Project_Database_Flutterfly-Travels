@@ -2,13 +2,14 @@ import "../Styles/button.css"
 import "../Styles/profile.css"
 
 import PropTypes from 'prop-types'
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PasswordInput from '../Components/PasswordInput';
 import UserInfoContext from '../Context/UserInfoContext';
 import CategorizedDestination from '../Components/CategorizedDestination';
 import AgentTrip from '../Components/AgentTrip';
 import AdminTasks from '../Components/AdminTasks';
+import useFillWindow from '../Components/useFillWindow';
 import { FaSuitcase, FaUser, FaUserShield } from 'react-icons/fa';
 import PhotoUploader from "../Components/PhotoUploader";
 import DeleteConfirmation from "./DeleteConfirmation";
@@ -177,6 +178,17 @@ const ProfileHomePage = ({setLogOut}) => {
         showProblem('username');
     }
 
+    // The page fills the window below the navbar (and the gap App.jsx leaves under it); the profile column and the
+    // other side scroll on their own
+    const [pageRef, fillStyle] = useFillWindow();
+    const profileColumnRef = useRef(null);
+    useLayoutEffect(() => { window.scrollTo(0, 0); }, []);
+
+    // opening or closing the edit form starts the profile column from its top
+    useEffect(() => {
+        profileColumnRef.current?.scrollTo(0, 0);
+    }, [isBeingUpdated]);
+
     const goToUpdate = () => {
         resetRules();
         setFormNote(null);
@@ -308,9 +320,9 @@ const ProfileHomePage = ({setLogOut}) => {
     const isDeclinedAgent = isAgent && user.acc_status !== 'OK' && user.acc_status !== 'PENDING';
 
     return (
-        <div className='profile-page'>
+        <div className='profile-page' ref={pageRef} style={fillStyle}>
             {showDeleteConfirmation && <DeleteConfirmation goBack={()=>setShowDeleteConfirmation(false)} shouldDelete={()=>handleLogOutOrDeleteAccount(true)}/>}
-            <div className='profile-container'>
+            <div className='profile-container' ref={profileColumnRef}>
                 {!isBeingUpdated ?
                 <div className="profile-card">
                     <div className="profile-pic larger-profile-pic profile-card-pic"><img src={photoUrl(user.photo)}/></div>
@@ -389,7 +401,7 @@ const ProfileHomePage = ({setLogOut}) => {
                      onInput={(e) => { containerProps.onInput(e); setFormNote(null); }}>
                     <h2 className="profile-form-title">Edit Profile</h2>
                     <div data-field="photo">
-                        <PhotoUploader height={120}  selectedFile={selectedFile} setSelectedFile={setSelectedFile} />
+                        <PhotoUploader height={180} selectedFile={selectedFile} setSelectedFile={setSelectedFile} />
                     </div>
 
                     <div className="profile-form-field">

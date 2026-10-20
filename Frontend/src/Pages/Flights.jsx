@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import useFillWindow from '../Components/useFillWindow';
 import FlightFliter from '../Components/FlightFliter';
 import RangeSlider from '../Components/RangeSlider';
 import { WiSunrise } from "react-icons/wi";
@@ -72,6 +73,11 @@ const noTimeSlots = times.map(() => false);
 const inPickedSlots = (time, picked) => !picked.includes(true) || picked.some((isPicked, slot) => isPicked && inTimeSlot(time, slot));
 
 const Flights = () => {
+    // the filters and the results fill the window below the search, and scroll on their own
+    const [fillRef, fillStyle] = useFillWindow();
+    // opens from the top, like Destinations, not where the previous page was scrolled to
+    useEffect(() => { window.scrollTo(0, 0); }, []);
+
     const [showBooking, setShowBooking] = useState(false);
     const [departureAirport, setDepartureAirport] = useState(defaultSearch.departureAirport);
     const [arrivalAirport, setArrivalAirport] = useState(defaultSearch.arrivalAirport);
@@ -278,7 +284,7 @@ const Flights = () => {
             {showBooking && <FlightBooking flight={flight} setShowConfirmationMessage={setShowBooking} bookingDetails={bookingDetails}/>}
             <FlightFliter airportSet={airportSet} seatClass={seatClass} setSeatClass={setSeatClass} dateSet={dateSet} flightStyleSet={flightStyleSet} seatNumberSet={seatNumberSet} airportOptions={airportOptions} arrivalOptions={arrivalOptions} seatClassOptions={seatClassOptions}/>
 
-            <div className='destination-search' style={{marginTop: "20px"}}>
+            <div className='destination-search fill-window' ref={fillRef} style={fillStyle}>
                 <div className="filter">
                     <button className="btn-primary" style={{marginBottom:'10px'}} onClick={resetFilter}>Reset Filter</button>
 
