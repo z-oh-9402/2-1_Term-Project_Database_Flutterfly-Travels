@@ -10,5 +10,6 @@ router.use("/flight",require('./flight'));
 router.use("/booking",require('./booking'));
 router.use("/trip",require('./trip'));
 router.use("/wishlist",require('./wishlist'));
+router.use("/chat",require('./chat'));
 
 module.exports = router;
