@@ -208,7 +208,7 @@ router.post("/",async(req,res)=>{
                         LEFT JOIN DESTINATION_TYPE DT ON D.DESTINATION_ID=DT.DESTINATION_ID 
                         LEFT JOIN PLACE_TYPE P ON DT.PLACE_TYPE_ID=P.PLACE_TYPE_ID
                         WHERE P.TYPE_NAME=$1
-                        ORDER BY D.RATING DESC`;
+                        ORDER BY D.RATING DESC, D.RATING_COUNT DESC, D.NAME`;
         const params = [category];
         const ans = await database.query(query,params);
         let data = {
