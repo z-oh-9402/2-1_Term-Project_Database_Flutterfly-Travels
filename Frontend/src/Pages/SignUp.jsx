@@ -208,16 +208,22 @@ const SignUp = (props) => {
 
                 {page === 1 ?
                     <div className='signup-page'>
-                        <div className="radio-group">
-                            <h3>Are you -</h3>
-                            <label className="radio-option">
-                                <input type="radio" name="userType" value="customer" checked={userType === 'customer'} onChange={handleUserTypeChange} />A Customer
-                            </label>
+                        {/* who they are on the left, their photo on the right */}
+                        <div className='signup-intro'>
+                            <div className="radio-group">
+                                <h3>Are you -</h3>
+                                <label className="radio-option">
+                                    <input type="radio" name="userType" value="customer" checked={userType === 'customer'} onChange={handleUserTypeChange} />A Customer
+                                </label>
 
-                            <label className="radio-option">
-                                <input type="radio" name="userType" value="agent" checked={userType === 'agent'} onChange={handleUserTypeChange} />A Travel Agent
-                            </label>
-                            {warning('userType')}
+                                <label className="radio-option">
+                                    <input type="radio" name="userType" value="agent" checked={userType === 'agent'} onChange={handleUserTypeChange} />A Travel Agent
+                                </label>
+                                {warning('userType')}
+                            </div>
+                            <div data-field="photo" className='signup-intro-photo'>
+                                <PhotoUploader height={110} selectedFile={selectedFile} setSelectedFile={setSelectedFile}/>
+                            </div>
                         </div>
                         <div className='popup-fields'>
                             <label>{fieldLabel('Username')}<input name="username" aria-invalid={invalid('username')} value={username} placeholder='Enter username' onChange={handleUsernameChange} /></label>
@@ -234,10 +240,7 @@ const SignUp = (props) => {
                         </div>
                     </div> :
                     (page === 2 ?
-                        <div className='signup-page'>
-                            <div data-field="photo" className='signup-photo'>
-                                <PhotoUploader fill selectedFile={selectedFile} setSelectedFile={setSelectedFile}/>
-                            </div>
+                        <div className='signup-page signup-page-details'>
                             <div className='popup-fields'>
                                 <label>{fieldLabel('First Name')}<input name="firstName" aria-invalid={invalid('firstName')} value={firstName} placeholder='Enter first name' onChange={handleFirstNameChange} /></label>
                                 {warning('firstName')}

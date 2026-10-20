@@ -124,11 +124,20 @@
 }
 
 /* the photo circle takes whatever height page 2 has left */
-.signup-photo{
+/* page 1: the account type and the photo side by side */
+.signup-intro{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.signup-intro .radio-group{
     flex: 1;
-    min-height: 0;
-    box-sizing: border-box;
-    padding-bottom: 10px;
+}
+
+.signup-intro-photo .photo-uploader{
+    margin-bottom: 0 !important;
 }
 
 .signup-preferences{
@@ -148,3 +157,7 @@
     width: 460px;
 }
 
+/* page 2 starts with a field instead of a heading, so it gets the space pages 1 and 3 have under "Sign up" */
+.signup-page-details{
+    padding-top: 18px;
+}
