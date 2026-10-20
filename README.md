@@ -142,7 +142,8 @@ The photos of places and aircraft that come from Wikimedia Commons are listed, w
 
 ## Authors
 
-<!-- TODO: list the team members, for example: - Name (student ID) — @github-handle -->
+- Zaki Rehnoom Unmona ([@z-oh-9402](https://github.com/z-oh-9402))
+- Mafruha Islam Aishi ([@usaben](https://github.com/usaben))
 
 ## License
 

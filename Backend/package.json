@@ -8,7 +8,7 @@
     "create-admin": "node create-admin.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Aishi Unmona",
+  "author": "Zaki Rehnoom Unmona, Mafruha Islam Aishi",
   "license": "MIT",
   "dependencies": {
     "bcryptjs": "^3.0.3",
