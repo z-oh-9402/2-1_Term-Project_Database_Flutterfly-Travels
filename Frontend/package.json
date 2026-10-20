@@ -3,10 +3,7 @@
   "private": true,
   "description": "Frontend of Flutterfly Travels, a travel planning web app (React and Vite)",
   "license": "MIT",
-  "author": "Zaki Rehnoom Unmona",
-  "contributors": [
-    "Mafruha Islam Aishi"
-  ],
+  "author": "Zaki Rehnoom Unmona, Mafruha Islam Aishi",
   "version": "0.0.0",
   "type": "module",
   "scripts": {
