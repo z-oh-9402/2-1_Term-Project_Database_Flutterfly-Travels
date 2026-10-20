@@ -1,6 +1,7 @@
 import { useState } from "react";
 import PropTypes from 'prop-types';
-import { FaBriefcase, FaStar } from 'react-icons/fa';
+import { FaBriefcase } from 'react-icons/fa';
+import Rating from './Rating';
 import '../Styles/search.css';
 import { apiFetch, photoUrl } from '../api';
 
@@ -65,8 +66,7 @@ const AgentSearch = (props) => {
                     <div className='agent-picked-stats'>
                         <span><FaBriefcase/> {profile.experience_years} years</span>
                         <span>৳ {Number(profile.fee).toLocaleString('en-US')} fee</span>
-                        <span><FaStar className='agent-picked-star'/> {Number(profile.rating).toFixed(1)}
-                            {profile.rating_count !== undefined && ` (${profile.rating_count})`}</span>
+                        <Rating rating={parseFloat(profile.rating)} isChanging={false} setRating={null} count={Number(profile.rating_count)}/>
                     </div>
                 </div>
                 <button type='button' className='agent-picked-change' onClick={pickAnother}>Change</button>
@@ -91,7 +91,10 @@ const AgentSearch = (props) => {
 
                         <div className="agent-profile-info">
                             <h4>{suggestion.username}</h4>
-                            <p>Experience: {suggestion.experience_years} years · Fee: ৳ {Number(suggestion.fee).toLocaleString('en-US')} · Rating: {suggestion.rating}</p>
+                            <p className='agent-suggestion-stats'>
+                                Experience: {suggestion.experience_years} years · Fee: ৳ {Number(suggestion.fee).toLocaleString('en-US')} ·
+                                <Rating rating={parseFloat(suggestion.rating)} isChanging={false} setRating={null} count={Number(suggestion.rating_count)}/>
+                            </p>
                         </div>
                     </div>
                 )}

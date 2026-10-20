@@ -269,8 +269,34 @@ input:focus {
     color: #1593c6;
 }
 
-.agent-picked-stats .agent-picked-star{
-    color: #f0b429;
+/* the butterfly rating (Rating.jsx), sized to the text around it (over the larger sizes in item-bar.css) */
+.agent-picked-stats .item-rating .rating,
+.agent-suggestion-stats .item-rating .rating{
+    width: 14px;
+    height: 14px;
+    margin-left: 2px;
+}
+
+.agent-picked-stats .item-rating .rating-container span,
+.agent-suggestion-stats .item-rating .rating-container span{
+    margin-right: 2px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.agent-picked-stats .item-rating .rating-container .rating-count,
+.agent-suggestion-stats .item-rating .rating-container .rating-count{
+    margin-left: 4px;
+    color: inherit;
+    font-weight: normal;
+    opacity: 0.75;
+}
+
+.agent-suggestion-stats{
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0 5px;
 }
 
 .agent-picked-change{

@@ -129,17 +129,18 @@
     color: #6b7a85;
 }
 
-.wishlist-item .rating-container span{
+.wishlist-item .item-rating .rating-container span{
     font-size: 13px;
     font-weight: bold;
 }
 
-.wishlist-item .rating{
+.wishlist-item .item-rating .rating{
     width: 15px;
     height: 15px;
 }
 
-.wishlist-item .rating-count{
+.wishlist-item .item-rating .rating-container .rating-count{
+    font-weight: normal;
     color: #6b7a85;
 }
 
