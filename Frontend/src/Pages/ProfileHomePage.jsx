@@ -8,8 +8,7 @@ import PasswordInput from '../Components/PasswordInput';
 import UserInfoContext from '../Context/UserInfoContext';
 import CategorizedDestination from '../Components/CategorizedDestination';
 import AgentTrip from '../Components/AgentTrip';
-import { TiTick } from "react-icons/ti";
-import { RxCross2 } from "react-icons/rx";
+import AdminTasks from '../Components/AdminTasks';
 import PhotoUploader from "../Components/PhotoUploader";
 import DeleteConfirmation from "./DeleteConfirmation";
 import Rating from "../Components/Rating";
@@ -25,8 +24,6 @@ const ProfileHomePage = ({setLogOut}) => {
     const [recommendedDestinations, setRecommendedDestinations] = useState([]);
     // Preference chip the customer clicked to see only that category (null = all categories)
     const [selectedPreference, setSelectedPreference] = useState(null);
-    const [pendingAgents, setPendingAgents] = useState([]);
-    const [pendingTrips, setPendingTrips] = useState([]);
 
     const [isPref1Checked, setIsPref1Checked] = useState(pref ? pref.includes(list[0]) : pref);
     const [isPref2Checked, setIsPref2Checked] = useState(pref ? pref.includes(list[1]) : pref);
@@ -56,7 +53,6 @@ const ProfileHomePage = ({setLogOut}) => {
     const [isValidUsername, setIsValidUsername] = useState(true);
     const [formNote, setFormNote] = useState(null); // a message about the whole form, e.g. nothing to save
 
-    const [currentCategory, setCurrentCategory] = useState(0);
     const [ showDeleteConfirmation, setShowDeleteConfirmation ] = useState(false);
 
     useEffect(() => {
@@ -83,21 +79,6 @@ const ProfileHomePage = ({setLogOut}) => {
                 setRecommendedDestinations(data);
             }
 
-            if (user.user_type === 'admin') {
-                let response = await apiFetch(`http://localhost:3000/agent/pending-agents/`, {
-                    method: "GET"
-                });
-
-                const data = await response.json();
-                setPendingAgents(data);
-
-                response = await apiFetch(`http://localhost:3000/trip/fetch-pending-trips/`, {
-                    method: "GET"
-                });
-
-                const data2 = await response.json();
-                setPendingTrips(data2);
-            }
         };
         fetchData()
     }, [user.preferences]);
@@ -298,43 +279,6 @@ const ProfileHomePage = ({setLogOut}) => {
     }
 
 
-    const acceptRequest = async (agent) => {
-
-        const response = await apiFetch(`http://localhost:3000/agent/acceptRequest/${agent.user_id}`, {
-            method: "PUT",
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ "acc_status": "OK" })
-        });
-        const result = await response.json();
-        if (result.status === 1) {
-            const response = await apiFetch(`http://localhost:3000/agent/pending-agents/`, {
-                method: "GET"
-            });
-
-            const data = await response.json();
-            setPendingAgents(data);
-        }
-    }
-    const declineRequest = async (agent) => {
-        const response = await apiFetch(`http://localhost:3000/agent/declineRequest/${agent.user_id}`, {
-            method: "PUT",
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ "status": "" })
-        });
-        const result = await response.json();
-        if (result.status === 1) {
-            const response = await apiFetch(`http://localhost:3000/agent/pending-agents/`, {
-                method: "GET"
-            });
-
-            const data = await response.json();
-            setPendingAgents(data);
-        }
-    }
     const handleLogOutOrDeleteAccount = async (isDeletingAccount) => {
         if(isDeletingAccount)
         {
@@ -347,40 +291,6 @@ const ProfileHomePage = ({setLogOut}) => {
         setInfo(null);
         setLogOut(true);
         navigate("/");
-    }
-
-    const adminDecision = async (index, isAccepted) => {
-        const trip = pendingTrips[index];
-
-        let response;
-        if(isAccepted)
-        {
-            response = await apiFetch(`http://localhost:3000/trip/admin-decision/`, {
-                method: "PUT",
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ tripId: trip.trip_id })
-            });
-        }
-        else
-        {
-            response = await apiFetch(`http://localhost:3000/trip/admin-decision/`, {
-                method: "DELETE",
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ tripId: trip.trip_id })
-            });
-        }
-        await response.json();
-
-        response = await apiFetch(`http://localhost:3000/trip/fetch-pending-trips/`, {
-            method: "GET"
-        });
-
-        const data = await response.json();
-        setPendingTrips(data);
     }
 
     // Ignore a selection that's no longer one of the preferences (e.g. removed in Update Account)
@@ -563,63 +473,7 @@ const ProfileHomePage = ({setLogOut}) => {
 
                 {(user.user_type === 'agent' && user.acc_status === 'OK') && <AgentTrip/>}
 
-                {user.user_type === 'admin' &&
-                <>
-                    <h1>Pending Tasks -</h1>
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <div className='agent-side' style={{ display: 'flex', flexDirection: 'column', marginRight: '80px'}}>
-                            <div className="category-bar" id="categoryBar">
-                                <div className={"category" + (currentCategory===0 ? " selected-category" : "")} id="category0" onClick={()=>setCurrentCategory(0)}>Agent accounts to be reviewed</div>
-                                <div className={"category" + (currentCategory===1 ? " selected-category" : "")} id="category1" onClick={()=>setCurrentCategory(1)}>Trip packages to be reviewed</div>
-                            </div>
-
-                            <div style={{marginTop: "20px"}}>
-                                {currentCategory===0 && 
-                                (pendingAgents.length===0 ? <>Nothing to be reviewed</>
-                                :
-                                pendingAgents.map((agent, index) =>
-                                    <div key={index} className="agent-box">
-                                        <h3>{agent.username}</h3>
-                                        <p>Experience: {agent.experience_years} years</p>
-                                        <p>Fee: {agent.fee}</p>
-                                        <div className="button-container2">
-                                            <button className="btn-primary" onClick={() => acceptRequest(agent)}>Accept</button>
-                                            <span style={{ margin: '0 10px' }}></span>
-                                            <button className="btn-primary" onClick={() => declineRequest(agent)}>Decline</button>
-                                        </div>
-                                    </div>
-                                ))}
-
-                                {currentCategory===1 &&
-                                (pendingTrips.length===0 ? <div>Nothing to be reviewed</div>
-                                :
-                                pendingTrips.map((trip, index) =>
-                                <div key={index} className="agent-box">
-                                    <TiTick className='tick-button' onClick={()=>adminDecision(index, true)}/>
-                                    <RxCross2 className='delete-button' onClick={()=>adminDecision(index, false)}/>
-                                    <h3>{trip.name}</h3>
-                                    <p>Cost: {trip.total_cost}</p>
-                                    <p>Start Date:&nbsp;
-                                        {new Date(trip.departure_date).toLocaleDateString('en-US', {
-                                            year: 'numeric',
-                                            month: 'long',
-                                            day: 'numeric'
-                                        })}
-                                    </p>
-                                    <p>End Date:&nbsp;
-                                        {new Date(trip.return_date).toLocaleDateString('en-US', {
-                                            year: 'numeric',
-                                            month: 'long',
-                                            day: 'numeric'
-                                        })}
-                                    </p>
-                                    <p>Agent: {trip.agent_name}</p>
-                                    <p>Customer: {trip.customer_name}</p>
-                                </div>))}
-                            </div>
-                        </div>
-                    </div>
-                </>}
+                {user.user_type === 'admin' && <AdminTasks/>}
             </div>
         </div>
     )

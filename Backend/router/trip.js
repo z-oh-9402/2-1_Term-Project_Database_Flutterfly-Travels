@@ -144,10 +144,14 @@ router.get('/fetch-complete-trips', requireRole('customer', 'admin'), async (req
 })
 
 router.get('/fetch-pending-trips', requireRole('admin'), async (req, res) => {
-    const query = `SELECT T.*, A.USERNAME AS AGENT_NAME, C.USERNAME AS CUSTOMER_NAME
+    // with the customer's and the agent's public details, for the admin's review cards
+    const query = `SELECT T.*,
+                          C.USERNAME AS CUSTOMER_NAME, C.FIRST_NAME AS CUSTOMER_FIRST_NAME, C.LAST_NAME AS CUSTOMER_LAST_NAME,
+                          C.EMAIL AS CUSTOMER_EMAIL, C.PHOTO AS CUSTOMER_PHOTO,
+                          A.USERNAME AS AGENT_NAME, A.FIRST_NAME AS AGENT_FIRST_NAME, A.LAST_NAME AS AGENT_LAST_NAME, A.PHOTO AS AGENT_PHOTO
                    FROM Trip T LEFT JOIN USERS A ON T.AGENT_ID=A.USER_ID JOIN USERS C ON T.CUSTOMER_ID=C.USER_ID
                    WHERE T.TRIP_STATUS = 'PENDING'
-                   ORDER BY T.RATING`;
+                   ORDER BY T.DEPARTURE_DATE, T.TRIP_ID`;
     const result = await database.query(query,[]);
 
     res.json(await attachTripItems(result));

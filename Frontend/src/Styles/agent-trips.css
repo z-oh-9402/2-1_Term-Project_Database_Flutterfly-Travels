@@ -427,3 +427,47 @@
     background-color: rgba(229, 72, 77, 0.18);
     color: #ffb4b6;
 }
+
+.agent-btn:disabled{
+    opacity: 0.5;
+    cursor: default;
+}
+
+/* The admin's Pending Tasks (AdminTasks.jsx) reuse the cards above; a sign-up card isn't opened by clicking it */
+.agent-trip-card.admin-applicant{
+    cursor: default;
+}
+
+.agent-trip-card.admin-applicant:hover{
+    border-color: rgba(189, 232, 245, 0.2);
+    background-color: rgba(255, 255, 255, 0.04);
+    transform: none;
+}
+
+.admin-applicant-top{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.admin-applicant-top h3{
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.admin-applicant-photo{
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    border: 2px solid #25afe6;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.admin-applicant .agent-trip-line[title]{
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
