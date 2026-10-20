@@ -9,6 +9,7 @@ import { RxCross2 } from "react-icons/rx";
 import { FaRegCalendarAlt } from "react-icons/fa";
 import { IoArrowBack } from "react-icons/io5";
 import TripBookings from './TripBookings';
+import MessageHover from './MessageHover';
 import { canEditBookings, errorMessage, hasNoBookings, tabStatus, tripLength } from './tripHelpers';
 import { apiFetch, photoUrl } from '../api';
 
@@ -154,8 +155,10 @@ const AgentTrip = () => {
                             <span className='agent-trip-muted'>· {tripLength(trip)}</span>
                         </p>
                         <p className='agent-trip-line'>
-                            <img className='agent-trip-avatar' src={photoUrl(trip.photo)} alt=''/>
-                            {customerName(trip)} <span className='agent-trip-muted'>@{trip.username}</span>
+                            <MessageHover person={{ user_id: trip.customer_id, user_type: 'customer', username: trip.username }}>
+                                <img className='agent-trip-avatar' src={photoUrl(trip.photo)} alt=''/>
+                                {customerName(trip)} <span className='agent-trip-muted'>@{trip.username}</span>
+                            </MessageHover>
                         </p>
                         <p className='agent-trip-bookings'>{bookingSummary(trip) ?? 'No bookings yet'}</p>
                         {trip.trip_status === 'REQUESTING' && decisionButtons(trip)}
@@ -192,14 +195,16 @@ const AgentTrip = () => {
             </div>
             <div className='agent-trip-stat'>
                 <span className='agent-trip-stat-label'>Customer</span>
-                <div className='agent-trip-person'>
-                    <img src={photoUrl(visitingTrip.photo)} alt=''/>
-                    <div className='agent-trip-person-text'>
-                        <span className='agent-trip-stat-value'>{customerName(visitingTrip)}</span>
-                        <span className='agent-trip-stat-note'>@{visitingTrip.username}</span>
-                        <span className='agent-trip-stat-note' title={visitingTrip.email}>{visitingTrip.email}</span>
+                <MessageHover person={{ user_id: visitingTrip.customer_id, user_type: 'customer', username: visitingTrip.username }}>
+                    <div className='agent-trip-person'>
+                        <img src={photoUrl(visitingTrip.photo)} alt=''/>
+                        <div className='agent-trip-person-text'>
+                            <span className='agent-trip-stat-value'>{customerName(visitingTrip)}</span>
+                            <span className='agent-trip-stat-note'>@{visitingTrip.username}</span>
+                            <span className='agent-trip-stat-note' title={visitingTrip.email}>{visitingTrip.email}</span>
+                        </div>
                     </div>
-                </div>
+                </MessageHover>
             </div>
             {(status === 'CONFIRMED' || status === 'COMPLETED') &&
             <div className='agent-trip-stat'>

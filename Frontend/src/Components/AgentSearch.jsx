@@ -4,6 +4,7 @@ import { FaBriefcase } from 'react-icons/fa';
 import Rating from './Rating';
 import '../Styles/search.css';
 import { apiFetch, photoUrl } from '../api';
+import MessageHover from './MessageHover';
 
 // Finds an approved agent by username; picking one passes their profile to setProfile.
 // Once picked (profile is set), the agent is shown as a card instead of the search, with a button to pick another.
@@ -60,7 +61,7 @@ const AgentSearch = (props) => {
                 </div>
                 <div className='agent-picked-info'>
                     <div className='agent-picked-name'>
-                        {profile.username}
+                        <MessageHover person={{ user_id: profile.user_id, user_type: 'agent', username: profile.username }}>{profile.username}</MessageHover>
                     </div>
                     {fullName && <div className='agent-picked-fullname'>{fullName}</div>}
                     <div className='agent-picked-stats'>

@@ -13,6 +13,7 @@ import CreateTrip from '../Components/CreateTrip';
 import AgentSearch from '../Components/AgentSearch';
 import AgentProfile from '../Components/AgentProfile';
 import TripBookings from '../Components/TripBookings';
+import MessageHover from '../Components/MessageHover';
 import { bookingSummary, canEditBookings, dateRange, errorMessage, hasNoBookings, money, tabStatus, tripLength } from '../Components/tripHelpers';
 import { apiFetch, photoUrl } from '../api';
 
@@ -181,7 +182,9 @@ const Trips = (props) => {
                         </p>
                         <p className='my-trip-line'>
                             {trip.agent_id ?
-                                <><img className='my-trip-avatar' src={photoUrl(trip.photo)} alt=''/> {trip.username}</> :
+                                <MessageHover person={{ user_id: trip.agent_id, user_type: 'agent', username: trip.username }}>
+                                    <img className='my-trip-avatar' src={photoUrl(trip.photo)} alt=''/> {trip.username}
+                                </MessageHover> :
                                 <><FaUserTie/> <span className='my-trip-muted'>{trip.trip_status === 'UPDATING' ? 'No agent yet' : 'No agent'}</span></>}
                         </p>
                         <p className='my-trip-bookings'>{bookingSummary(trip) ?? 'No bookings yet'}</p>
@@ -218,15 +221,17 @@ const Trips = (props) => {
                 <div className='my-trip-stat my-trip-stat-wide'>
                     <span className='my-trip-stat-label'>Agent</span>
                     {trip.agent_id ?
-                    <div className='my-trip-person' role='button' tabIndex={0} title='See their profile'
-                         onClick={() => visitAgentProfile(trip.agent_id)} onKeyDown={(e) => { if(e.key === 'Enter') visitAgentProfile(trip.agent_id); }}>
-                        <img src={photoUrl(trip.photo)} alt=''/>
-                        <div>
-                            <span className='my-trip-stat-value my-trip-agent-name'>{trip.username}</span>
-                            {trip.experience_years !== undefined &&
-                                <span className='my-trip-stat-note'>{trip.experience_years} years · {money(trip.fee)} fee</span>}
+                    <MessageHover person={{ user_id: trip.agent_id, user_type: 'agent', username: trip.username }}>
+                        <div className='my-trip-person' role='button' tabIndex={0} title='See their profile'
+                             onClick={() => visitAgentProfile(trip.agent_id)} onKeyDown={(e) => { if(e.key === 'Enter') visitAgentProfile(trip.agent_id); }}>
+                            <img src={photoUrl(trip.photo)} alt=''/>
+                            <div>
+                                <span className='my-trip-stat-value my-trip-agent-name'>{trip.username}</span>
+                                {trip.experience_years !== undefined &&
+                                    <span className='my-trip-stat-note'>{trip.experience_years} years · {money(trip.fee)} fee</span>}
+                            </div>
                         </div>
-                    </div>
+                    </MessageHover>
                     : canPickAgent && showAgentSearch ?
                     <div className='trip-agent-picker'>
                         <AgentSearch profile={pickedAgent} setProfile={setPickedAgent}/>

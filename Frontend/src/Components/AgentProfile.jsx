@@ -5,6 +5,7 @@ import Rating from './Rating';
 import UserInfoContext from '../Context/UserInfoContext';
 import { useContext, useEffect, useState } from 'react';
 import { apiFetch } from '../api';
+import MessageHover from './MessageHover';
 
 const AgentProfile = (props) => {
     const {userInfo} = useContext(UserInfoContext);
@@ -65,7 +66,7 @@ const AgentProfile = (props) => {
                 <ImCross className='close' onClick={handleGoToCurrentPage} />
 
                 <div className='login-signup-container trip-container'>
-                    <h2>Agent {agent.username}</h2>
+                    <h2>Agent <MessageHover person={{ user_id: agentId, user_type: 'agent', username: agent.username }}>{agent.username}</MessageHover></h2>
                     <div className='category-data'>
                         <h3>Experience: {agent.experience_years} years</h3>
                         <h3>Fee: {agent.fee}</h3>
