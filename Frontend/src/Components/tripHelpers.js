@@ -87,10 +87,6 @@ export const tripLength = (trip) => {
     return nights === 0 ? 'Day trip' : `${nights} ${nights === 1 ? 'night' : 'nights'}`;
 }
 
-// Whether the trip's dates include every day from `from` to `to`
-export const tripCovers = (trip, from, to) =>
-    startOfDay(from) >= startOfDay(trip.departure_date) && startOfDay(to) <= startOfDay(trip.return_date);
-
 // The message from a failed API response, or a fallback
 export const errorMessage = async (response, fallback) => {
     try

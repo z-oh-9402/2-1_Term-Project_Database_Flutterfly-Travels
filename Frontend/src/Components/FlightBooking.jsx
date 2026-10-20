@@ -62,7 +62,7 @@ const FlightBooking = ({ flight, setShowConfirmationMessage, bookingDetails }) =
                 <p className='booking-hint'>To change the date, seats or class, close this and change them on the Flights page.</p>
 
                 <div className='popup-buttons'>
-                    <button className='custom-btn' onClick={() => setStep('trip')}>Next</button>
+                    <button className='my-trips-btn my-trips-btn-primary' onClick={() => setStep('trip')}>Next</button>
                 </div>
             </>
             :

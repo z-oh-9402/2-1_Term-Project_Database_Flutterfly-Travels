@@ -73,7 +73,7 @@ const PhotoUploader = ({height, fill, selectedFile, setSelectedFile}) => {
             <div style={divStyle} onMouseEnter={()=>handleImageHover(true)} onMouseLeave={()=>handleImageHover(false)}>
                 <div style={photoContainerStyle}>
                     <img 
-                        src={selectedFile ? URL.createObjectURL(selectedFile) : "default_profile_pic.jpeg"}
+                        src={selectedFile ? URL.createObjectURL(selectedFile) : "/default_profile_pic.jpeg"}
                         style={photoStyle}
                     />
                 </div>

@@ -60,24 +60,21 @@ const DestinationBooking = ({ destination, setShowConfirmationMessage }) => {
             {step === 'details' ?
             <>
                 <div className='message-title'>Visit {destination.name}</div>
-                <div className='booking-fields'>
-                    <label> Arriving on:
-                        <div style={{display: 'inline-block', marginLeft: '5px'}}>
-                            <DateField selected={arrivalDate} onChange={handleArrivalDateChange} minDate={today} inPopup/>
-                        </div>
+                <div className='booking-fields booking-fields-grid styled-form'>
+                    <label className='booking-field'>
+                        <span className='booking-field-label'>Arriving on</span>
+                        <DateField selected={arrivalDate} onChange={handleArrivalDateChange} minDate={today} inPopup/>
                     </label>
-
-                    <label> Leaving on:
-                        <div style={{display: 'inline-block', marginLeft: '5px'}}>
-                            <DateField selected={leavingDate} onChange={handleLeavingDateChange} minDate={arrivalDate} inPopup/>
-                        </div>
+                    <label className='booking-field'>
+                        <span className='booking-field-label'>Leaving on</span>
+                        <DateField selected={leavingDate} onChange={handleLeavingDateChange} minDate={arrivalDate} inPopup/>
                     </label>
                 </div>
                 <p className='booking-hint'>Visiting a destination is free; add its hotels and restaurants to the same trip from their pages.</p>
 
                 {error && <p className='trip-form-error'>{error}</p>}
                 <div className='popup-buttons'>
-                    <button className='custom-btn' onClick={() => setStep('trip')}>Next</button>
+                    <button className='my-trips-btn my-trips-btn-primary' onClick={() => setStep('trip')}>Next</button>
                 </div>
             </>
             :

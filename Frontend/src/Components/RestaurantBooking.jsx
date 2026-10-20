@@ -86,24 +86,26 @@ const RestaurantBooking = ({restaurant, setShowConfirmationMessage}) => {
             {step === 'details' ?
             <>
                 <div className='message-title'>Book {restaurant.name}</div>
-                <div className='booking-fields'>
-                    <label>Number of seats:
+                <div className='booking-fields booking-fields-grid styled-form'>
+                    <label className='booking-field'>
+                        <span className='booking-field-label'>Date</span>
+                        <DateField selected={bookingDate} onChange={handleBookingDateChange} minDate={today} inPopup/>
+                    </label>
+                    <label className='booking-field'>
+                        <span className='booking-field-label'>Seats</span>
                         <CountStepper value={numberOfSeats} setValue={setNumberOfSeats}/>
                     </label>
-
-                    <label> Booking Date:
-                        <div style={{display: 'inline-block', marginLeft: '5px'}}>
-                            <DateField selected={bookingDate} onChange={handleBookingDateChange} minDate={today} inPopup/>
-                        </div>
-                    </label>
-
-                    <label>Arrival Time: <span className='time-choice' onClick={() => showTimePicker('arrival')}>{formatTime(arrivalTime)}</span>
+                    {/* divs, not labels: a click inside the clock must not go back to the time box */}
+                    <div className='booking-field'>
+                        <span className='booking-field-label'>Arrival</span>
+                        <button type='button' className='time-choice' onClick={() => showTimePicker('arrival')}>{formatTime(arrivalTime)}</button>
                         <TimePicker time={arrivalTime} setTime={setArrivalTime} type='arrival'/>
-                    </label>
-
-                    <label>Departure Time: <span className='time-choice' onClick={() => showTimePicker('departure')}>{formatTime(departureTime)}</span>
+                    </div>
+                    <div className='booking-field'>
+                        <span className='booking-field-label'>Departure</span>
+                        <button type='button' className='time-choice' onClick={() => showTimePicker('departure')}>{formatTime(departureTime)}</button>
                         <TimePicker time={departureTime} setTime={setDepartureTime} type='departure'/>
-                    </label>
+                    </div>
                 </div>
 
                 <div className='booking-summary'>
@@ -113,7 +115,7 @@ const RestaurantBooking = ({restaurant, setShowConfirmationMessage}) => {
 
                 {error && <p className='trip-form-error'>{error}</p>}
                 <div className='popup-buttons'>
-                    <button className='custom-btn' onClick={goToNext}>Next</button>
+                    <button className='my-trips-btn my-trips-btn-primary' onClick={goToNext}>Next</button>
                 </div>
             </>
             :

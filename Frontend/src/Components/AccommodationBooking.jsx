@@ -66,21 +66,18 @@ const AccommodationBooking = ({ accommodation, setShowConfirmationMessage }) => 
             {step === 'details' ?
             <>
                 <div className='message-title'>Book {accommodation.name}</div>
-                <div className='booking-fields'>
-                    <label>Number of rooms:
+                <div className='booking-fields booking-fields-grid styled-form'>
+                    <label className='booking-field'>
+                        <span className='booking-field-label'>Check-in</span>
+                        <DateField selected={checkInDate} onChange={handleCheckInDateChange} minDate={today} inPopup/>
+                    </label>
+                    <label className='booking-field'>
+                        <span className='booking-field-label'>Check-out</span>
+                        <DateField selected={checkOutDate} onChange={handleCheckOutDateChange} minDate={addDays(checkInDate, 1)} inPopup/>
+                    </label>
+                    <label className='booking-field'>
+                        <span className='booking-field-label'>Rooms</span>
                         <CountStepper value={numberOfRooms} setValue={setNumberOfRooms}/>
-                    </label>
-
-                    <label> Check-in Date:
-                        <div style={{display: 'inline-block', marginLeft: '5px'}}>
-                            <DateField selected={checkInDate} onChange={handleCheckInDateChange} minDate={today} inPopup/>
-                        </div>
-                    </label>
-
-                    <label> Check-out Date:
-                        <div style={{display: 'inline-block', marginLeft: '5px'}}>
-                            <DateField selected={checkOutDate} onChange={handleCheckOutDateChange} minDate={addDays(checkInDate, 1)} inPopup/>
-                        </div>
                     </label>
                 </div>
 
@@ -91,7 +88,7 @@ const AccommodationBooking = ({ accommodation, setShowConfirmationMessage }) => 
 
                 {error && <p className='trip-form-error'>{error}</p>}
                 <div className='popup-buttons'>
-                    <button className='custom-btn' onClick={() => setStep('trip')}>Next</button>
+                    <button className='my-trips-btn my-trips-btn-primary' onClick={() => setStep('trip')}>Next</button>
                 </div>
             </>
             :

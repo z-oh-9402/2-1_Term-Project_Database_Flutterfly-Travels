@@ -106,6 +106,30 @@ router.get('/for-agent', requireSelfOrAdmin(req => req.query.agentId), async (re
     res.json(await attachTripItems(result));
 })
 
+// The trips a booking from `from` to `to` (MM/DD/YYYY) can go into, for "Add to a trip" in the booking popups:
+// the user's trips that are still open for bookings (the rule in bookingEditProblem) and whose dates cover the booking.
+router.get('/open-for-booking', requireRole('customer', 'agent'), async (req, res) => {
+    const { from, to } = req.query;
+    const isDate = (value) => /^\d{2}\/\d{2}\/\d{4}$/.test(String(value));
+    if(!isDate(from) || !isDate(to))
+    {
+        res.status(400).json({message: "Invalid booking dates"});
+        return;
+    }
+
+    // a customer sees their trips with the agent's details, an agent the trips they plan with the customer's
+    const isCustomer = req.user.role === 'customer';
+    const query = `SELECT T.*, ${PUBLIC_USER_COLUMNS}
+                   FROM Trip T LEFT JOIN USERS U ON U.USER_ID = ${isCustomer ? 'T.AGENT_ID' : 'T.CUSTOMER_ID'}
+                   WHERE ${isCustomer ? `T.CUSTOMER_ID = $1 AND T.TRIP_STATUS IN ('REQUESTING', 'UPDATING')`
+                                      : `T.AGENT_ID = $1 AND T.TRIP_STATUS = 'UPDATING'`}
+                     AND T.DEPARTURE_DATE <= TO_DATE($2, 'MM/DD/YYYY') AND T.RETURN_DATE >= TO_DATE($3, 'MM/DD/YYYY')
+                   ORDER BY T.DEPARTURE_DATE, T.TRIP_ID`;
+    const result = await database.query(query, [req.user.id, from, to]);
+
+    res.json(await attachTripItems(result));
+})
+
 // Completed trips of all customers, shown to customers as ideas in the "Suggested" tab of Trips.jsx.
 // The customer's identity (CUSTOMER_ID) is left out; only the agent's public username/id/photo is included.
 router.get('/fetch-complete-trips', requireRole('customer', 'admin'), async (req, res) => {
