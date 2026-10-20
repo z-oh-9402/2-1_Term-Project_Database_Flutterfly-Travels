@@ -83,3 +83,14 @@
 .title-img{
     height: 40px;
 }
+/* the chat icon and its unread count (the count uses .notification-badge from notification.css) */
+.chat-link{
+    position: relative;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.chat-link.active .chat-icon{
+    color: #45deec;
+}

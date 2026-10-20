@@ -15,7 +15,7 @@ import Notification from "./Notification";
 import { photoUrl } from "../api";
 
 const Header = (props)=>{
-    const {handleIsInLoginOrSignUpFromNavbar, setShowTrips, setShowWishlist, notifications, onNotificationsSeen} = props;
+    const {handleIsInLoginOrSignUpFromNavbar, setShowTrips, setShowWishlist, notifications, onNotificationsSeen, chatUnread} = props;
     const {userInfo, showDetailedNotification, setShowDetailedNotification} = useContext(UserInfoContext);
     const unreadCount = notifications.filter(notification => notification.notification_status === 'NOT SHOWED').length;
     const navigate = useNavigate();
@@ -69,7 +69,10 @@ const Header = (props)=>{
                         </div>
                         {(userInfo.user_type==='customer' || userInfo.user_type==='agent') &&
                             <>
-                                <BsChatDots className="header-icons chat-icon" onClick={()=>navigate('/chats')}/>
+                                <div className={`chat-link${isActive('/chats') ? ' active' : ''}`} title="Messages" onClick={()=>navigate('/chats')}>
+                                    <BsChatDots className="header-icons chat-icon"/>
+                                    {chatUnread > 0 && <span className="notification-badge">{chatUnread > 99 ? '99+' : chatUnread}</span>}
+                                </div>
                                 {userInfo.user_type==='customer' && <FaRegHeart className="header-icons wishlist" onClick={()=>setShowWishlist(true)}/>}
                             </>}
                         <Link to='user'>
@@ -94,7 +97,8 @@ Header.propTypes = {
     setShowTrips: PropTypes.func,
     setShowWishlist: PropTypes.func,
     notifications: PropTypes.array,
-    onNotificationsSeen: PropTypes.func
+    onNotificationsSeen: PropTypes.func,
+    chatUnread: PropTypes.number
 }
 
 export default Header;

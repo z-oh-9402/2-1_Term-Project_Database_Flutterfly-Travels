@@ -1,0 +1,534 @@
+/* The chat page (Pages/Chats.jsx): conversations on the left, the open one on the right, on the site's dark background */
+.chat-page{
+    box-sizing: border-box;
+    display: grid;
+    grid-template-columns: 340px minmax(0, 1fr);
+    gap: 18px;
+    height: calc(100vh - 140px);
+    min-height: 480px;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 10px 30px 24px;
+    color: #e6edf1;
+}
+
+/* ---- the list ---- */
+.chat-sidebar{
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    border: 1px solid rgba(189, 232, 245, 0.16);
+    border-radius: 14px;
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+.chat-sidebar h2{
+    margin: 0;
+    padding: 18px 18px 12px;
+    color: white;
+    font-size: 1.4rem;
+}
+
+.chat-search{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 14px 12px;
+    padding: 0 12px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.05);
+    color: #9aa4ad;
+}
+
+.chat-search:focus-within{
+    border-color: #45deec;
+}
+
+.chat-search input{
+    flex: 1;
+    min-width: 0;
+    height: 38px;
+    border: none;
+    background: none;
+    color: white;
+    font-size: 14px;
+    outline: none;
+    box-shadow: none;
+}
+
+.chat-search input::placeholder{
+    color: #7d8790;
+}
+
+.chat-search-clear{
+    display: inline-flex;
+    padding: 2px;
+    border: none;
+    background: none;
+    color: #9aa4ad;
+    cursor: pointer;
+}
+
+.chat-list{
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 0 8px 10px;
+}
+
+.chat-list-empty{
+    margin: 14px 10px;
+    color: #9aa4ad;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.chat-list-item{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    border: none;
+    border-radius: 10px;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.chat-list-item:hover{
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.chat-list-item.selected{
+    background-color: rgba(37, 175, 230, 0.16);
+}
+
+.chat-list-item img{
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.chat-list-text{
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.chat-list-top,
+.chat-list-bottom{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.chat-list-name{
+    flex: 1;
+    overflow: hidden;
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chat-list-time{
+    flex-shrink: 0;
+    color: #8b96a0;
+    font-size: 12px;
+}
+
+.chat-list-preview{
+    flex: 1;
+    overflow: hidden;
+    color: #9aa4ad;
+    font-size: 13px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chat-list-item.unread .chat-list-preview{
+    color: #e6edf1;
+    font-weight: 600;
+}
+
+.chat-unread{
+    flex-shrink: 0;
+    min-width: 18px;
+    padding: 0 6px;
+    border-radius: 9px;
+    background-color: #25afe6;
+    color: #06202c;
+    font-size: 11px;
+    font-weight: bold;
+    line-height: 18px;
+    text-align: center;
+}
+
+/* ---- the open conversation ---- */
+.chat-main{
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+    border: 1px solid rgba(189, 232, 245, 0.16);
+    border-radius: 14px;
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+.chat-placeholder{
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    padding: 20px;
+    color: #9aa4ad;
+    text-align: center;
+}
+
+.chat-placeholder svg{
+    color: #45deec;
+    font-size: 42px;
+}
+
+.chat-header{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.chat-header img{
+    width: 42px;
+    height: 42px;
+    border: 2px solid #25afe6;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.chat-header-name{
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.chat-header-sub{
+    margin-top: 2px;
+    color: #8b96a0;
+    font-size: 13px;
+}
+
+.chat-typing{
+    color: #45deec;
+}
+
+/* anchored to the bottom like a messaging app: it opens on the newest message, a short conversation sits at the
+   bottom, and older messages loaded at the top (or photos finishing loading) don't push the view around */
+.chat-messages{
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column-reverse;
+    overflow-y: auto;
+    padding: 16px 18px 8px;
+}
+
+.chat-messages-empty{
+    margin: 30px 0;
+    color: #9aa4ad;
+    text-align: center;
+}
+
+.chat-day{
+    margin: 14px 0 10px;
+    text-align: center;
+}
+
+.chat-day span{
+    color: #8b96a0;
+    font-size: 12px;
+}
+
+.chat-bubble-row{
+    display: flex;
+    margin-bottom: 6px;
+}
+
+.chat-bubble-row.mine{
+    justify-content: flex-end;
+}
+
+.chat-bubble{
+    position: relative;
+    max-width: min(520px, 75%);
+    padding: 8px 12px 6px;
+    border-radius: 14px 14px 14px 4px;
+    background-color: #2a3036;
+    color: #e6edf1;
+}
+
+.chat-bubble-row.mine .chat-bubble{
+    border-radius: 14px 14px 4px 14px;
+    background-color: #1a6f93;
+    color: white;
+}
+
+.chat-bubble p{
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.chat-bubble img{
+    display: block;
+    max-width: 100%;
+    max-height: 320px;
+    margin-bottom: 4px;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+.chat-bubble-time{
+    display: block;
+    margin-top: 2px;
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 11px;
+    text-align: right;
+}
+
+.chat-seen{
+    margin: -2px 4px 6px;
+    color: #8b96a0;
+    font-size: 12px;
+    text-align: right;
+}
+
+/* three dots while the other person types */
+.chat-bubble-typing{
+    display: flex;
+    gap: 4px;
+    padding: 12px 14px;
+}
+
+.chat-bubble-typing span{
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background-color: #9aa4ad;
+    animation: chat-typing-dot 1.2s infinite ease-in-out;
+}
+
+.chat-bubble-typing span:nth-child(2){ animation-delay: 0.15s; }
+.chat-bubble-typing span:nth-child(3){ animation-delay: 0.3s; }
+
+@keyframes chat-typing-dot{
+    0%, 60%, 100%{ opacity: 0.35; transform: translateY(0); }
+    30%{ opacity: 1; transform: translateY(-3px); }
+}
+
+/* ---- writing ---- */
+.chat-composer{
+    padding: 10px 14px 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.chat-composer-row{
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+}
+
+.chat-composer textarea{
+    flex: 1;
+    box-sizing: border-box;
+    max-height: 140px;
+    min-height: 40px;
+    padding: 9px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 20px;
+    background-color: rgba(255, 255, 255, 0.06);
+    color: white;
+    font-family: inherit;
+    font-size: 15px;
+    line-height: 1.4;
+    resize: none;
+    outline: none;
+    field-sizing: content;
+}
+
+.chat-composer textarea:focus{
+    border-color: #45deec;
+}
+
+.chat-icon-btn,
+.chat-send-btn{
+    flex-shrink: 0;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+}
+
+.chat-icon-btn{
+    background-color: rgba(255, 255, 255, 0.06);
+    color: #9aa4ad;
+}
+
+.chat-icon-btn:hover{
+    color: #45deec;
+}
+
+.chat-send-btn{
+    background-color: #1593c6;
+    color: white;
+}
+
+.chat-send-btn:disabled{
+    opacity: 0.4;
+    cursor: default;
+}
+
+.chat-photo-chip{
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 100%;
+    margin-bottom: 8px;
+    padding: 6px 8px;
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.06);
+    color: #c9d1d9;
+    font-size: 13px;
+}
+
+.chat-photo-chip img{
+    width: 44px;
+    height: 44px;
+    border-radius: 6px;
+    object-fit: cover;
+}
+
+.chat-photo-chip span{
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chat-photo-chip button{
+    display: inline-flex;
+    padding: 2px;
+    border: none;
+    background: none;
+    color: #9aa4ad;
+    cursor: pointer;
+}
+
+.chat-sending{
+    margin: 0 0 8px;
+    color: #9aa4ad;
+    font-size: 13px;
+}
+
+.chat-send-error{
+    margin: 0 0 8px;
+    color: #ff6b6f;
+    font-size: 13px;
+}
+
+.chat-read-only{
+    margin: 0;
+    padding: 14px 18px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    color: #9aa4ad;
+    font-size: 14px;
+    line-height: 1.5;
+    text-align: center;
+}
+
+@media (max-width: 900px){
+    .chat-page{
+        grid-template-columns: minmax(0, 1fr);
+        height: auto;
+    }
+
+    .chat-main{
+        min-height: 70vh;
+    }
+}
+
+/* "Send message" when hovering a person (Components/MessageHover.jsx). The pop-up starts right under the person,
+   with its spacing as padding, so moving the mouse onto it doesn't close it. */
+.message-hover{
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: inherit;
+    max-width: 100%;
+}
+
+.message-hover-pop{
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 30;
+    padding-top: 6px;
+}
+
+.message-hover-pop button{
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 12px;
+    border: 1px solid rgba(69, 222, 236, 0.4);
+    border-radius: 8px;
+    background-color: #14181c;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+    color: #e6edf1;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    animation: message-hover-in 0.12s ease-out;
+}
+
+.message-hover-pop button:hover,
+.message-hover-pop button:focus-visible{
+    border-color: #45deec;
+    color: white;
+    outline: none;
+}
+
+.message-hover-pop svg{
+    color: #45deec;
+}
+
+@keyframes message-hover-in{
+    from{ opacity: 0; transform: translateY(-3px); }
+    to{ opacity: 1; transform: translateY(0); }
+}
+
+/* at the top of a conversation: older messages load on scroll, or it's the very beginning */
+.chat-history-edge{
+    margin: 4px 0 10px;
+    color: #7d8790;
+    font-size: 12px;
+    text-align: center;
+}

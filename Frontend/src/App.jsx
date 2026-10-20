@@ -1,4 +1,4 @@
-import {Routes, Route, Outlet} from 'react-router-dom';
+import {Routes, Route, Outlet, useLocation} from 'react-router-dom';
 import {useCallback, useContext, useEffect, useRef, useState} from 'react';
 import UserInfoContext from './Context/UserInfoContext.jsx';
 
@@ -17,10 +17,12 @@ import Flights from './Pages/Flights.jsx';
 import RestaurantProfile from './Pages/RestaurantProfile.jsx';
 import Trips from './Pages/Trips.jsx';
 import Wishlist from './Components/Wishlist.jsx';
+import Chats from './Pages/Chats.jsx';
 import NotificationToasts from './Components/NotificationToasts.jsx';
 import { apiFetch, getToken } from './api';
 import { io } from 'socket.io-client';
 import { announceNotification } from './notifications';
+import { announceChat, setChatSocket } from './chat';
 
 function App() {
   const [isLoginOrSignUpPageLoaded,setIsLoginOrSignUpPageLoaded] = useState(false);
@@ -36,6 +38,17 @@ function App() {
   const dismissToast = useCallback((id) => setToasts(current => current.filter(toast => toast.id !== id)), []);
 
   const loggedInUserId = userInfo ? userInfo.user_id : null;
+
+  // a page change (e.g. "Send message" on a person in My Trips) closes the popups shown over the page
+  const {pathname} = useLocation();
+  useEffect(() => {
+    setShowTrips(false);
+    setShowWishlist(false);
+  }, [pathname]);
+  // admins take no part in chat
+  const canChat = userInfo !== null && userInfo.user_type !== 'admin';
+  // messages waiting unread, for the badge on the navbar's chat icon
+  const [chatUnread, setChatUnread] = useState(0);
 
   // The account saved in the browser at login goes stale (an agent approved by an admin, trips whose status changed),
   // so its details and trips are reloaded when the app opens and whenever a notification arrives
@@ -113,11 +126,45 @@ function App() {
       }
     };
 
+    const fetchChatUnread = async () => {
+      if(!canChat)
+      {
+        return;
+      }
+      const response = await apiFetch(`http://localhost:3000/chat/unread`, { method: "GET" });
+      if(isActive && response.ok)
+      {
+        setChatUnread((await response.json()).count);
+      }
+    };
+
     const socket = io('http://localhost:3000', { auth: { token: getToken() } });
+    setChatSocket(socket);
 
     // On every (re)connect load the full list, which also picks up anything created while disconnected
-    socket.on('connect', fetchNotifications);
-    socket.on('notifications-resync', fetchNotifications);
+    socket.on('connect', () => {
+      fetchNotifications();
+      fetchChatUnread();
+      announceChat('resync');
+    });
+    socket.on('notifications-resync', () => {
+      fetchNotifications();
+      fetchChatUnread();
+      announceChat('resync');
+    });
+    // chat: the open conversation and the conversation list update themselves (Pages/Chats.jsx)
+    socket.on('chat-message', (message) => {
+      announceChat('message', message);
+      if(message.sender_id !== loggedInUserId)
+      {
+        fetchChatUnread();
+      }
+    });
+    socket.on('chat-seen', (update) => {
+      announceChat('seen', update);
+      fetchChatUnread();
+    });
+    socket.on('chat-typing', (typing) => announceChat('typing', typing));
     socket.on('notification', (notification) => {
       setNotifications(prevNotifications => [
         notification,
@@ -147,9 +194,11 @@ function App() {
 
     return () => {
       isActive = false;
+      setChatSocket(null);
+      setChatUnread(0);
       socket.disconnect();
     };
-  }, [loggedInUserId]);
+  }, [loggedInUserId, canChat]);
 
   // Called when the user opens the notification list
   const markNotificationsSeen = useCallback(async () => {
@@ -217,7 +266,7 @@ function App() {
       {userInfo!==null && showTrips && <Trips setShowTrips={setShowTrips}/>}
       {userInfo!==null && showWishlist && <Wishlist setShowWishlist={setShowWishlist} isWishlist={true}/>}
       <NotificationToasts toasts={toasts} onDismiss={dismissToast} onOpen={() => { setToasts([]); setShowDetailedNotification(true); }}/>
-      <Header handleIsInLoginOrSignUpFromNavbar={handleIsInLoginOrSignUpFromNavbar} setShowTrips={setShowTrips} setShowWishlist={setShowWishlist} notifications={notifications} onNotificationsSeen={markNotificationsSeen}/>
+      <Header handleIsInLoginOrSignUpFromNavbar={handleIsInLoginOrSignUpFromNavbar} setShowTrips={setShowTrips} setShowWishlist={setShowWishlist} notifications={notifications} onNotificationsSeen={markNotificationsSeen} chatUnread={chatUnread}/>
 
       <br/><br/>
 
@@ -237,6 +286,8 @@ function App() {
         </Route>
         <Route path='flights' element={<Flights/>}/>
         {userInfo!==null && <Route path='user' element={<ProfileHomePage setLogOut={handleLogOut}/>} />}
+        {canChat && <Route path='chats' element={<Chats/>}/>}
+        {canChat && <Route path='chats/:username' element={<Chats/>}/>}
         <Route path='*' element={<NoMatch/>}/>
       </Routes>
     </>
