@@ -178,9 +178,9 @@ router.put('/update-agent', async (req, res) => {
         res.status(403).json({message: "Not allowed"});
         return;
     }
-    if(trip.trip_status !== 'REQUESTING')
+    if(!(trip.trip_status === 'REQUESTING' || (trip.trip_status === 'UPDATING' && trip.agent_id === null)))
     {
-        res.status(409).json({message: "The agent can only be changed before an agent accepts the trip"});
+        res.status(409).json({message: "The agent can only be chosen before an agent accepts the trip"});
         return;
     }
     if(!(await isApprovedAgent(agentId)))
@@ -189,8 +189,9 @@ router.put('/update-agent', async (req, res) => {
         return;
     }
 
+    // the trip waits for the agent to accept it
     const query = `UPDATE Trip
-                   SET AGENT_ID = $1
+                   SET AGENT_ID = $1, TRIP_STATUS = 'REQUESTING'
                    WHERE TRIP_ID = $2`;
     await database.query(query,[agentId, tripId]);
     res.status(200).json("Agent updated successfully");
@@ -231,8 +232,9 @@ router.put('/update-trip', async (req, res) => {
     let params;
     if(agentId===null)
     {
+        // declined: the customer keeps planning it without an agent, and can choose another one
         query = `UPDATE Trip
-                 SET AGENT_ID = NULL
+                 SET AGENT_ID = NULL, TRIP_STATUS = 'UPDATING'
                  WHERE TRIP_ID = $1`;
         params = [tripId];
     }
@@ -294,7 +296,7 @@ router.put('/update-trip-status', async (req, res) => {
 
     if(tripStatus==='PENDING')
     {
-        // The customer sends the trip their agent has built to the admin (Trips.jsx customerConfirm)
+        // The customer sends the trip their agent has built (or they built without one) to the admin (Trips.jsx sendForApproval)
         if(req.user.role !== 'admin' && trip.customer_id !== req.user.id)
         {
             res.status(403).json({message: "Not allowed"});
@@ -328,9 +330,10 @@ router.put('/admin-decision', requireRole('admin'), async (req, res) => {
         return;
     }
 
+    // only a trip that is waiting for review
     const query = `UPDATE Trip
              SET TRIP_STATUS = 'CONFIRMED'
-             WHERE TRIP_ID = $1`;
+             WHERE TRIP_ID = $1 AND TRIP_STATUS = 'PENDING'`;
 
     await database.query(query,[tripId]);
     res.status(200).json("Trip status updated successfully");
@@ -339,8 +342,9 @@ router.put('/admin-decision', requireRole('admin'), async (req, res) => {
 // A customer creates a trip for themself and requests an agent (CreateTrip.jsx)
 router.post('/', requireRole('customer'), async (req, res) => {
     const {agentId, name, departureDate, returnDate} = req.body;
+    const hasAgent = agentId !== undefined && agentId !== null;
 
-    if(agentId !== undefined && agentId !== null && !(await isApprovedAgent(agentId)))
+    if(hasAgent && !(await isApprovedAgent(agentId)))
     {
         res.status(400).json({message: "Invalid agent"});
         return;
@@ -357,12 +361,28 @@ router.post('/', requireRole('customer'), async (req, res) => {
         return;
     }
 
-    // A new trip always starts as a request with no cost, discount or rating, whatever the request body says
+    // A new trip starts with no cost, discount or rating, whatever the request body says. With an agent it is a request
+    // (REQUESTING) until they accept; without one it is being put together right away (UPDATING): the customer adds
+    // bookings, and either chooses an agent later (back to REQUESTING) or sends it straight to an admin.
     const query = `INSERT INTO Trip (CUSTOMER_ID, AGENT_ID, NAME, DEPARTURE_DATE, RETURN_DATE, TOTAL_COST, DISCOUNT, RATING, TRIP_STATUS)
-                   VALUES ($1, $2, $3, TO_DATE($4, 'MM/DD/YYYY'), TO_DATE($5, 'MM/DD/YYYY'), 0, 0, 0, 'REQUESTING')
+                   VALUES ($1, $2, $3, TO_DATE($4, 'MM/DD/YYYY'), TO_DATE($5, 'MM/DD/YYYY'), 0, 0, 0, $6)
                    RETURNING TRIP_ID`;
-    const params = [req.user.id, agentId ?? null, name, departureDate, returnDate];
-    const rows = await database.query(query,params);
+    const params = [req.user.id, hasAgent ? agentId : null, name, departureDate, returnDate, hasAgent ? 'REQUESTING' : 'UPDATING'];
+    let rows;
+    try
+    {
+        rows = await database.query(query,params);
+    }
+    catch(error)
+    {
+        // trip_customer_name_key: the same name was taken between the check above and this insert
+        if(error.code === '23505')
+        {
+            res.status(409).json({message: "You already have a trip with this name"});
+            return;
+        }
+        throw error;
+    }
 
     // the id lets a booking popup add its booking to the trip it just created
     res.status(200).json({tripId: rows[0].trip_id});
@@ -377,7 +397,7 @@ router.delete('/admin-decision', requireRole('admin'), async (req, res) => {
     }
 
     const query = `DELETE FROM Trip
-                   WHERE TRIP_ID = $1`;
+                   WHERE TRIP_ID = $1 AND TRIP_STATUS = 'PENDING'`;
 
     await database.query(query,[tripId]);
     res.status(200).json("Trip status updated successfully");

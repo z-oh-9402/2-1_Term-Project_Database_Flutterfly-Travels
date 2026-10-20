@@ -11,7 +11,7 @@ import '../Styles/my-trips.css';
 
 const shortDate = (date) => new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
-const statusLabels = { REQUESTING: 'Waiting for an agent', UPDATING: 'Agent accepted' };
+const statusLabel = (trip) => trip.trip_status === 'REQUESTING' ? 'Waiting for the agent to accept' : 'Agent accepted';
 
 // The last step of every booking popup: pick one of the user's open trips that cover the booking's dates
 // (or, for a customer, create one) and add the booking to it. addToTrip(tripId) sends the booking and returns the fetch response.
@@ -124,7 +124,7 @@ const AddToTrip = ({ itemName, from, to, isAlreadyIn, addToTrip, onBack, onClose
                                         {trip.user_id ?
                                             <><img className='my-trip-avatar' src={photoUrl(trip.photo)} alt=''/> {trip.username}</> :
                                             <><FaUserTie/> <span className='my-trip-muted'>No agent yet</span></>}
-                                        {isCustomer && <span className='my-trip-muted'>· {statusLabels[trip.trip_status]}</span>}
+                                        {isCustomer && trip.user_id && <span className='my-trip-muted'>· {statusLabel(trip)}</span>}
                                     </p>
                                 </div>
                                 {!alreadyIn &&

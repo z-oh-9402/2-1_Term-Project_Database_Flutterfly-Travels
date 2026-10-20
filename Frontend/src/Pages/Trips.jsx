@@ -18,8 +18,8 @@ import { apiFetch, photoUrl } from '../api';
 
 // The tabs of My Trips; "Suggested" holds other customers' completed trips, as ideas
 const categories = [
-    { name: 'Requesting', status: 'REQUESTING', empty: 'No trips waiting for an agent. Create a trip to start planning.' },
-    { name: 'Updating', status: 'UPDATING', empty: 'No trips being planned with an agent right now.' },
+    { name: 'Requesting', status: 'REQUESTING', empty: 'No trips waiting for an agent to accept.' },
+    { name: 'Updating', status: 'UPDATING', empty: 'No trips being planned right now.' },
     { name: 'Pending', status: 'PENDING', empty: 'No trips waiting for an admin.' },
     { name: 'Confirmed', status: 'CONFIRMED', empty: 'No confirmed trips yet.' },
     { name: 'Completed', status: 'COMPLETED', empty: 'No finished trips yet.' },
@@ -115,6 +115,8 @@ const Trips = (props) => {
         {
             setShowAgentSearch(false);
             setPickedAgent(undefined);
+            // the trip now waits for the agent to accept it
+            setCurrentCategory(categories.findIndex(category => category.status === 'REQUESTING'));
         }
     }
 
@@ -169,7 +171,7 @@ const Trips = (props) => {
                         <div className='my-trip-card-top'>
                             <h3>{trip.name}{trip.trip_status === 'DROPPED' && statusPill(trip)}</h3>
                             <span className='my-trip-cost'>{money(trip.total_cost)}</span>
-                            {trip.trip_status === 'REQUESTING' && !isSuggested &&
+                            {(trip.trip_status === 'REQUESTING' || (trip.trip_status === 'UPDATING' && !trip.agent_id)) && !isSuggested &&
                                 <button className='my-trip-delete' title='Delete trip' onClick={(e) => { e.stopPropagation(); deleteTrip(trip); }}>
                                     <RiDeleteBin5Line/>
                                 </button>}
@@ -180,7 +182,7 @@ const Trips = (props) => {
                         <p className='my-trip-line'>
                             {trip.agent_id ?
                                 <><img className='my-trip-avatar' src={photoUrl(trip.photo)} alt=''/> {trip.username}</> :
-                                <><FaUserTie/> <span className='my-trip-muted'>No agent yet</span></>}
+                                <><FaUserTie/> <span className='my-trip-muted'>{trip.trip_status === 'UPDATING' ? 'No agent yet' : 'No agent'}</span></>}
                         </p>
                         <p className='my-trip-bookings'>{bookingSummary(trip) ?? 'No bookings yet'}</p>
                     </div>
@@ -191,7 +193,7 @@ const Trips = (props) => {
 
     const tripPage = (trip) => {
         const canEdit = !isSuggested && canEditBookings(trip, userInfo);
-        const canPickAgent = !isSuggested && trip.trip_status === 'REQUESTING' && !trip.agent_id;
+        const canPickAgent = !isSuggested && !trip.agent_id && (trip.trip_status === 'UPDATING' || trip.trip_status === 'REQUESTING');
         return (
         <>
             <button className='my-trips-back' onClick={backToList}><IoArrowBack/> All trips</button>
@@ -237,7 +239,7 @@ const Trips = (props) => {
                     </div>
                     :
                     <div className='my-trip-no-agent'>
-                        <span className='my-trip-stat-note'>Not chosen yet</span>
+                        <span className='my-trip-stat-note'>{canPickAgent ? 'Not chosen yet. Choose one, or add bookings yourself and send the trip straight to an admin.' : 'None'}</span>
                         {canPickAgent &&
                             <button className='my-trips-btn my-trips-btn-primary' onClick={() => setShowAgentSearch(true)}>Choose an agent</button>}
                     </div>}
@@ -256,7 +258,7 @@ const Trips = (props) => {
 
             {!isSuggested && (trip.trip_status === 'UPDATING' || trip.trip_status === 'REQUESTING') &&
             <div className='my-trip-actions'>
-                {trip.trip_status === 'REQUESTING' &&
+                {(trip.trip_status === 'REQUESTING' || (trip.trip_status === 'UPDATING' && !trip.agent_id)) &&
                     <button className='my-trips-btn my-trips-btn-danger' onClick={() => deleteTrip(trip)}><RiDeleteBin5Line/> Delete trip</button>}
                 {trip.trip_status === 'UPDATING' &&
                     <button className='my-trips-btn my-trips-btn-primary' onClick={() => sendForApproval(trip)} disabled={hasNoBookings(trip)}

@@ -28,7 +28,10 @@ const CreateTrip = ({onCreated, onCancel, fromDate, toDate}) => {
     const defaultName = `Trip ${defaultNumber}`;
     const [agent, setAgent] = useState(undefined);
     const [isTripNameUnique, setIsTripNameUnique] = useState(true);
-    const [selectAnAgent, setSelectAnAgent] = useState(false);
+    // 'now' (pick one here: the trip waits for them to accept) or 'later' (the customer starts adding bookings, and can
+    // choose an agent from My Trips or send it straight to an admin)
+    const [agentChoice, setAgentChoice] = useState('later');
+    const selectAnAgent = agentChoice === 'now';
     const [error, setError] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
 
@@ -144,8 +147,8 @@ const CreateTrip = ({onCreated, onCancel, fromDate, toDate}) => {
         <div className='create-trip-field'>
             <span className='field-label'>Agent</span>
             <div className='create-trip-choices'>
-                <label><input type="radio" name="selectAnAgent" checked={selectAnAgent} onChange={()=>setSelectAnAgent(true)} />Choose one now</label>
-                <label><input type="radio" name="selectAnAgent" checked={!selectAnAgent} onChange={()=>setSelectAnAgent(false)} />Later, maybe</label>
+                <label><input type="radio" name="agentChoice" checked={agentChoice === 'now'} onChange={()=>setAgentChoice('now')} />Choose one now</label>
+                <label><input type="radio" name="agentChoice" checked={agentChoice === 'later'} onChange={()=>setAgentChoice('later')} />Later, maybe</label>
             </div>
             {selectAnAgent && <AgentSearch profile={agent} setProfile={setAgent}/>}
         </div>

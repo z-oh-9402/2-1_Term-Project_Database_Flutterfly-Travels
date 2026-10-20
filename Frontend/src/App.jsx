@@ -20,6 +20,7 @@ import Wishlist from './Components/Wishlist.jsx';
 import NotificationToasts from './Components/NotificationToasts.jsx';
 import { apiFetch, getToken } from './api';
 import { io } from 'socket.io-client';
+import { announceNotification } from './notifications';
 
 function App() {
   const [isLoginOrSignUpPageLoaded,setIsLoginOrSignUpPageLoaded] = useState(false);
@@ -130,6 +131,7 @@ function App() {
       }
       // whatever the notification is about (an approval, a trip update) may have changed the account
       refreshAccountRef.current();
+      announceNotification(notification);
     });
     // Marked as seen in another tab
     socket.on('notifications-seen', () => {

@@ -195,25 +195,47 @@ $$;
 
 
 --
--- Name: notification_add_for_booking_func(); Type: FUNCTION; Schema: public; Owner: -
+-- Name: notification_add_for_trip_item_func(); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE FUNCTION public.notification_add_for_booking_func() RETURNS trigger
+CREATE FUNCTION public.notification_add_for_trip_item_func() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
 DECLARE
-    aid INTEGER;
+    tid INTEGER;
+    item VARCHAR(255);
     cid INTEGER;
-    tname VARCHAR(100);
+    aid INTEGER;
+    tname VARCHAR(255);
+    customer_name VARCHAR(255);
 BEGIN
-    SELECT customer_id, agent_id, name INTO cid, aid, tname FROM trip WHERE trip_id = NEW.trip_id;
+    -- the trip and the name of what was added to it; a booking's own row (BOOKING) is inserted just before this one
+    IF TG_TABLE_NAME = 'trip_destination' THEN
+        tid := NEW.trip_id;
+        SELECT name INTO item FROM destination WHERE destination_id = NEW.destination_id;
+    ELSIF TG_TABLE_NAME = 'accommodation_booking' THEN
+        SELECT trip_id INTO tid FROM booking WHERE booking_id = NEW.accommodation_booking_id;
+        SELECT name INTO item FROM accommodation WHERE accommodation_id = NEW.accommodation_id;
+    ELSIF TG_TABLE_NAME = 'restaurant_booking' THEN
+        SELECT trip_id INTO tid FROM booking WHERE booking_id = NEW.restaurant_booking_id;
+        SELECT name INTO item FROM restaurant WHERE restaurant_id = NEW.restaurant_id;
+    ELSE
+        SELECT trip_id INTO tid FROM booking WHERE booking_id = NEW.flight_booking_id;
+        SELECT airline_name || ' flight' INTO item FROM flight WHERE flight_id = NEW.flight_id;
+    END IF;
 
+    SELECT T.customer_id, T.agent_id, T.name, C.username
+    INTO cid, aid, tname, customer_name
+    FROM trip T JOIN users C ON C.user_id = T.customer_id
+    WHERE T.trip_id = tid;
+
+    -- both hear about it; a customer's trip names are unique (trip_customer_name_key), so the trip name is enough for them,
+    -- while an agent also needs to know whose trip it is
     INSERT INTO notification (user_id, content, notification_status)
-    VALUES (cid, 'Booking into trip ''' || tname || ''' has been added successfully.', 'NOT SHOWED');
-
+    VALUES (cid, item || ' was added to trip ''' || tname || '''.', 'NOT SHOWED');
     IF aid IS NOT NULL THEN
         INSERT INTO notification (user_id, content, notification_status)
-        VALUES (aid, 'Booking into trip ''' || tname || ''' has been added successfully.', 'NOT SHOWED');
+        VALUES (aid, item || ' was added to trip ''' || tname || ''' of customer ' || customer_name || '.', 'NOT SHOWED');
     END IF;
 
     RETURN NULL;
@@ -236,14 +258,25 @@ BEGIN
             VALUES (NEW.agent_id, 'You received a new request.', 'NOT SHOWED');
         END IF;
 
-        INSERT INTO notification (user_id, content, notification_status)
-        VALUES (NEW.customer_id, 'Your request has been sent.', 'NOT SHOWED');
+        -- a trip the customer plans without an agent starts out ready for bookings (UPDATING)
+        IF NEW.trip_status = 'UPDATING' THEN
+            INSERT INTO notification (user_id, content, notification_status)
+            VALUES (NEW.customer_id, 'Your trip ''' || NEW.name || ''' has been created. Add bookings and send it for approval when it is ready.', 'NOT SHOWED');
+        ELSE
+            INSERT INTO notification (user_id, content, notification_status)
+            VALUES (NEW.customer_id, 'Your request has been sent.', 'NOT SHOWED');
+        END IF;
 
     ELSIF TG_OP = 'DELETE' THEN
         -- Skip it when the customer is the one being deleted (this row is going with them)
         IF EXISTS (SELECT 1 FROM users WHERE user_id = OLD.customer_id) THEN
             INSERT INTO notification (user_id, content, notification_status)
             VALUES (OLD.customer_id, 'Your trip ''' || OLD.name || ''' has been removed.', 'NOT SHOWED');
+        END IF;
+        -- the agent's list of trips changes too (skipped when the agent is the one being deleted)
+        IF OLD.agent_id IS NOT NULL AND EXISTS (SELECT 1 FROM users WHERE user_id = OLD.agent_id) THEN
+            INSERT INTO notification (user_id, content, notification_status)
+            VALUES (OLD.agent_id, 'The trip ''' || OLD.name || ''' has been removed.', 'NOT SHOWED');
         END IF;
 
     ELSE
@@ -260,24 +293,41 @@ BEGIN
                 INSERT INTO notification (user_id, content, notification_status)
                 VALUES (NEW.agent_id, 'The trip ''' || NEW.name || ''' was dropped: its return date passed before it was confirmed.', 'NOT SHOWED');
             END IF;
-        ELSIF NEW.agent_id IS NULL THEN
+        -- the agent declined the request; the trip goes back to being planned without an agent
+        ELSIF OLD.agent_id IS NOT NULL AND NEW.agent_id IS NULL THEN
             INSERT INTO notification (user_id, content, notification_status)
-            VALUES (NEW.customer_id, 'Your request for trip ''' || NEW.name || ''' has been cancelled.', 'NOT SHOWED');
+            VALUES (NEW.customer_id, 'Your request for trip ''' || NEW.name || ''' was declined. You can choose another agent from My Trips.', 'NOT SHOWED');
         ELSIF NEW.trip_status = 'UPDATING' THEN
             INSERT INTO notification (user_id, content, notification_status)
             VALUES (NEW.customer_id, 'Your request for trip ''' || NEW.name || ''' has been accepted.', 'NOT SHOWED');
         ELSIF NEW.trip_status = 'PENDING' THEN
             INSERT INTO notification (user_id, content, notification_status)
             VALUES (NEW.customer_id, 'Your trip ''' || NEW.name || ''' is waiting to be confirmed by admin.', 'NOT SHOWED');
+            IF NEW.agent_id IS NOT NULL THEN
+                INSERT INTO notification (user_id, content, notification_status)
+                VALUES (NEW.agent_id, 'The trip ''' || NEW.name || ''' was sent to an admin for approval.', 'NOT SHOWED');
+            END IF;
+            -- every admin can review it
+            INSERT INTO notification (user_id, content, notification_status)
+            SELECT user_id, 'The trip ''' || NEW.name || ''' is waiting for your review.', 'NOT SHOWED'
+            FROM users WHERE user_type = 'admin';
         ELSIF NEW.trip_status = 'CONFIRMED' THEN
             INSERT INTO notification (user_id, content, notification_status)
             VALUES (NEW.customer_id, 'Your trip ''' || NEW.name || ''' has been approved by admin.', 'NOT SHOWED');
+            IF NEW.agent_id IS NOT NULL THEN
+                INSERT INTO notification (user_id, content, notification_status)
+                VALUES (NEW.agent_id, 'The trip ''' || NEW.name || ''' has been approved by admin.', 'NOT SHOWED');
+            END IF;
         ELSIF NEW.trip_status = 'COMPLETED' THEN
             INSERT INTO notification (user_id, content, notification_status)
             VALUES (NEW.customer_id, 'Your trip ''' || NEW.name || ''' has been completed.', 'NOT SHOWED');
-        ELSE
+        ELSIF NEW.agent_id IS NOT NULL THEN
+            -- the customer chose an agent for a trip they started without one (it waits in REQUESTING)
             INSERT INTO notification (user_id, content, notification_status)
             VALUES (NEW.agent_id, 'You have received a new request.', 'NOT SHOWED');
+            INSERT INTO notification (user_id, content, notification_status)
+            SELECT NEW.customer_id, 'Your request for trip ''' || NEW.name || ''' was sent to ' || username || '.', 'NOT SHOWED'
+            FROM users WHERE user_id = NEW.agent_id;
         END IF;
     END IF;
     RETURN NULL;
@@ -293,7 +343,13 @@ CREATE FUNCTION public.notify_agent_signup_func() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
 BEGIN
-    IF NEW.acc_status = 'OK' THEN
+    -- a new sign-up waits for an admin to review it
+    IF TG_OP = 'INSERT' THEN
+        INSERT INTO notification (user_id, content, notification_status)
+        SELECT A.user_id, 'The travel agent ''' || U.username || ''' signed up and is waiting for your review.', 'NOT SHOWED'
+        FROM users A, users U
+        WHERE A.user_type = 'admin' AND U.user_id = NEW.agent_id;
+    ELSIF NEW.acc_status = 'OK' THEN
         INSERT INTO notification (user_id, content, notification_status, sender_id)
         VALUES (NEW.agent_id, 'Your registration request has been approved.', 'NOT SHOWED', 1);
     ELSIF NEW.acc_status = 'DECLINED' THEN
@@ -1954,6 +2010,13 @@ ALTER TABLE ONLY public.trip_destination
 ALTER TABLE ONLY public.trip
     ADD CONSTRAINT trip_pkey PRIMARY KEY (trip_id);
 
+--
+-- Name: trip trip_customer_name_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.trip
+    ADD CONSTRAINT trip_customer_name_key UNIQUE (customer_id, name);
+
 
 --
 -- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: -
@@ -2000,17 +2063,37 @@ CREATE TRIGGER flight_delete_trigger AFTER DELETE ON public.flight FOR EACH ROW 
 
 
 --
--- Name: booking notification_add_for_booking; Type: TRIGGER; Schema: public; Owner: -
---
-
-CREATE TRIGGER notification_add_for_booking AFTER INSERT ON public.booking FOR EACH ROW EXECUTE FUNCTION public.notification_add_for_booking_func();
-
-
---
 -- Name: trip notification_add_for_trip; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER notification_add_for_trip AFTER INSERT OR DELETE OR UPDATE ON public.trip FOR EACH ROW EXECUTE FUNCTION public.notification_add_for_trip_func();
+
+--
+-- Name: trip_destination notification_add_for_trip_destination; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER notification_add_for_trip_destination AFTER INSERT ON public.trip_destination FOR EACH ROW EXECUTE FUNCTION public.notification_add_for_trip_item_func();
+
+
+--
+-- Name: accommodation_booking notification_add_for_accommodation_booking; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER notification_add_for_accommodation_booking AFTER INSERT ON public.accommodation_booking FOR EACH ROW EXECUTE FUNCTION public.notification_add_for_trip_item_func();
+
+
+--
+-- Name: restaurant_booking notification_add_for_restaurant_booking; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER notification_add_for_restaurant_booking AFTER INSERT ON public.restaurant_booking FOR EACH ROW EXECUTE FUNCTION public.notification_add_for_trip_item_func();
+
+
+--
+-- Name: flight_booking notification_add_for_flight_booking; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER notification_add_for_flight_booking AFTER INSERT ON public.flight_booking FOR EACH ROW EXECUTE FUNCTION public.notification_add_for_trip_item_func();
 
 
 --
@@ -2024,7 +2107,7 @@ CREATE TRIGGER notification_created AFTER INSERT ON public.notification FOR EACH
 -- Name: agent notify_agent_signup; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER notify_agent_signup AFTER UPDATE OF acc_status ON public.agent FOR EACH ROW EXECUTE FUNCTION public.notify_agent_signup_func();
+CREATE TRIGGER notify_agent_signup AFTER INSERT OR UPDATE OF acc_status ON public.agent FOR EACH ROW EXECUTE FUNCTION public.notify_agent_signup_func();
 
 
 --
