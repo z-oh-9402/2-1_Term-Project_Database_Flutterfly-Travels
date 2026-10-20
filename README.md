@@ -4,12 +4,12 @@ A travel planning web app for Bangladesh, built as the CSE 216 (Database) term p
 
 Much of the app's logic lives in PostgreSQL: functions, a procedure and triggers keep costs, ratings, notifications and chat rules correct whatever the API is asked.
 
-![Trip planning in Flutterfly Travels](docs/screenshots/trip.png)
+![Trip planning in Flutterfly Travels](docs/social-preview.png)
 
 ## Features
 
 **Customers**
-- Browse 39 destinations, 29 places to stay, 33 restaurants and domestic flights, with filters for area, rating, type, facilities, price and time.
+- Browse destinations, places to stay, restaurants and domestic flights, with filters for area, rating, type, facilities, price and time.
 - Plan trips: add destinations, hotels, restaurants and flights. Only trips whose dates cover the booking are offered.
 - Request an agent when creating a trip or later, or plan it alone and send it straight to an admin.
 - Rate and review places and agents, and keep a wishlist.
