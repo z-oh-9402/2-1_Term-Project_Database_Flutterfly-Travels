@@ -350,11 +350,11 @@ BEGIN
         FROM users A, users U
         WHERE A.user_type = 'admin' AND U.user_id = NEW.agent_id;
     ELSIF NEW.acc_status = 'OK' THEN
-        INSERT INTO notification (user_id, content, notification_status, sender_id)
-        VALUES (NEW.agent_id, 'Your registration request has been approved.', 'NOT SHOWED', 1);
+        INSERT INTO notification (user_id, content, notification_status)
+        VALUES (NEW.agent_id, 'Your registration request has been approved.', 'NOT SHOWED');
     ELSIF NEW.acc_status = 'DECLINED' THEN
-        INSERT INTO notification (user_id, content, notification_status, sender_id)
-        VALUES (NEW.agent_id, 'Your registration request has been declined.', 'NOT SHOWED', 1);
+        INSERT INTO notification (user_id, content, notification_status)
+        VALUES (NEW.agent_id, 'Your registration request has been declined.', 'NOT SHOWED');
     END IF;
     RETURN NULL;
 END;
@@ -1168,7 +1168,6 @@ CREATE TABLE public.notification (
     content character varying(1000),
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     notification_status character varying(20),
-    sender_id integer,
     CONSTRAINT notification_notification_status_check CHECK (((notification_status)::text = ANY (ARRAY[('SHOWED'::character varying)::text, ('NOT SHOWED'::character varying)::text])))
 );
 
@@ -2293,14 +2292,6 @@ ALTER TABLE ONLY public.destination_wishlist
 
 ALTER TABLE ONLY public.district
     ADD CONSTRAINT district_division_id_fkey FOREIGN KEY (division_id) REFERENCES public.division(division_id) ON DELETE CASCADE;
-
-
---
--- Name: notification fk_sender; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.notification
-    ADD CONSTRAINT fk_sender FOREIGN KEY (sender_id) REFERENCES public.users(user_id) ON DELETE CASCADE;
 
 
 --
