@@ -1,6 +1,6 @@
 # Database design
 
-Flutterfly Travels runs on PostgreSQL, and much of its behaviour lives in the database: 30 tables, 23 functions, 1 procedure and 20 triggers, all defined in [`Backend/database/schema.sql`](../Backend/database/schema.sql). The sample data is in [`Backend/database/seed.sql`](../Backend/database/seed.sql).
+Flutterfly Travels runs on PostgreSQL, and much of its behaviour lives in the database: 30 tables, 24 functions, 1 procedure and 21 triggers, all defined in [`Backend/database/schema.sql`](../Backend/database/schema.sql). The sample data is in [`Backend/database/seed.sql`](../Backend/database/seed.sql).
 
 [`ERD.pdf`](../ERD.pdf) is the conceptual diagram the project started from. The diagram below is generated from the current schema, and shows every table with its keys and a few defining columns.
 
@@ -273,7 +273,7 @@ stateDiagram-v2
 | `get_conversation_id(starter, other)` | The two people's conversation, created on the first message if `can_message` allows it. |
 | `fetch_filtered_flights(from, to, class, style, OUT cursor)` *(procedure)* | Returns a cursor of flights between two airports for a seat class and one-way or round trip. A NULL airport or class means any. |
 
-The other 16 functions are trigger functions, listed below.
+The other 18 functions are trigger functions, listed below.
 
 ## Triggers
 
@@ -286,6 +286,7 @@ The other 16 functions are trigger functions, listed below.
 | `trip` | `notification_add_for_trip` | Notifies the customer, the agent and the admins as a trip is created, accepted, declined, sent for approval, approved, completed, dropped or removed. |
 | `trip_destination`, `accommodation_booking`, `restaurant_booking`, `flight_booking` | `notification_add_for_*` | Tells the customer ("Sayeman Beach Resort was added to trip 'Cox's Bazar getaway'") and the agent ("… of customer nusrat") what was added to a trip. |
 | `*_wishlist` | `update_*_wishlist` | Confirms additions to and removals from the customer's wishlist. |
+| `rating` | `notification_add_for_agent_feedback` | Tells an agent when a customer rates or reviews them ("nusrat rated you 4/5 and wrote: …"). It runs when the transaction commits, so a rating and the review saved with it make one notification. |
 | `agent` | `notify_agent_signup` | Tells every admin about a new agent sign-up, and the agent when they are approved or declined. |
 | `message` | `check_message_allowed` | Refuses a message its sender may not send (`can_message`), whatever the API was asked. |
 | `message` | `message_created` | Moves the conversation to the top of both people's lists, and announces the message with `pg_notify`. |

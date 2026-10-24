@@ -1,6 +1,6 @@
 # Flutterfly Travels
 
-A travel planning web app for Bangladesh, built as the CSE 216 (Database) term project at BUET. Customers explore destinations, hotels, restaurants and flights, put them together into trips with a travel agent (or on their own), and chat with agents and other travellers. Agents plan the trips they are asked to, and admins approve new agents and finished trips.
+A travel planning web app for Bangladesh, built as the CSE 216 (Database) term project at BUET. Customers explore destinations, hotels, restaurants and flights, put them together into trips with a travel agent (or on their own), and chat with agents and other travellers. Agents plan the trips they are asked to, and admins approve new agents and trips that are ready to go.
 
 Much of the app's logic lives in PostgreSQL: functions, a procedure and triggers keep costs, ratings, notifications and chat rules correct whatever the API is asked.
 
@@ -12,10 +12,13 @@ Much of the app's logic lives in PostgreSQL: functions, a procedure and triggers
 - Browse destinations, places to stay, restaurants and domestic flights, with filters for area, rating, type, facilities, price and time.
 - Plan trips: add destinations, hotels, restaurants and flights. Only trips whose dates cover the booking are offered.
 - Request an agent when creating a trip or later, or plan it alone and send it straight to an admin.
-- Rate and review places and agents, and keep a wishlist.
+- Open an agent's profile to see their experience, fee, rating and reviews.
+- Rate and review places, and the agents who have taken their trips, and keep a wishlist.
+- Look through other customers' completed trips for ideas.
 
 **Travel agents**
 - Accept or decline requests, then build each trip with its customer.
+- See their reviews, and get notified of every new rating or review.
 - Approval by an admin before they can be chosen.
 
 **Admins**
@@ -48,15 +51,17 @@ Much of the app's logic lives in PostgreSQL: functions, a procedure and triggers
 
 ## Getting started
 
-You need Node.js 20 or newer and PostgreSQL 16 or newer. `schema.sql` was dumped by `pg_dump` 18, and its `\restrict` lines need a recent `psql`.
+You need Node.js 20.19+ or 22.12+ (for Vite 7) and PostgreSQL 16 or newer. `schema.sql` was dumped by `pg_dump` 18, and its `\restrict` lines need a recent `psql`.
 
 **1. Create the database**
 
 ```bash
 sudo -u postgres createdb flutterfly_travels
-sudo -u postgres psql -d flutterfly_travels -f Backend/database/schema.sql
-sudo -u postgres psql -d flutterfly_travels -f Backend/database/seed.sql
+sudo -u postgres psql -d flutterfly_travels < Backend/database/schema.sql
+sudo -u postgres psql -d flutterfly_travels < Backend/database/seed.sql
 ```
+
+The files are passed with `<`, so your own shell reads them. With `-f`, the `postgres` user would have to read them, and it usually can't open files in your home folder.
 
 **2. Configure the backend**
 
@@ -68,7 +73,11 @@ Then fill in `Backend/.env`:
 
 - `DB_PASSWORD`: the password of the `postgres` role. If it has none yet, set one with `sudo -u postgres psql -c "\password postgres"`.
 - `JWT_SECRET`: a long random string, for example from `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"`.
-- `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`: from your Supabase project (Project Settings > API). The backend uses them to store profile and chat photos in a public bucket named `users`. The service role key bypasses Supabase's access rules, so keep it in this file only. `Backend/.env` is git-ignored.
+- `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` and `SUPABASE_BUCKET`: for the photos users upload (profile and chat photos), which go to your own Supabase Storage. Create a free project at [supabase.com](https://supabase.com), then under Storage create a bucket and mark it Public. Put its name in `SUPABASE_BUCKET`, and copy the project URL and the service role key from Project Settings > API. The service role key bypasses Supabase's access rules, so keep it in this file only. `Backend/.env` is git-ignored.
+
+  Supabase is only needed for uploads. Without it, everything else works, but signing up or chatting with a photo fails.
+
+Keep `PORT = 3000`: the frontend calls the API at `http://localhost:3000`.
 
 **3. Run it**
 
@@ -78,6 +87,8 @@ In two terminals:
 cd Backend && npm install && npm start      # API on http://localhost:3000
 cd Frontend && npm install && npm run dev   # App on http://localhost:5000
 ```
+
+On macOS, port 5000 may be taken by AirPlay Receiver. Turn it off in System Settings > General > AirDrop & Handoff, or change `server.port` in `Frontend/vite.config.js`.
 
 **4. Create accounts**
 
@@ -107,13 +118,13 @@ Logging in returns a JWT (valid for a day by default), which the app sends with 
 
 ### Images
 
-The home page photos ship with the frontend, in `Frontend/public/homepage/`. All other images are served from public Supabase Storage buckets: `destinations`, `accomodations`, `restaurants` and `flights` hold the places' photos (referenced from their `image*` columns), and `users` holds profile and chat photos uploaded through the backend.
+The home page photos ship with the frontend, in `Frontend/public/homepage/`. The places' photos are served from the authors' public Supabase Storage buckets (`destinations`, `accomodations`, `restaurants` and `flights`), and the sample data links to them from its `image*` columns, so they show up with no setup. Profile and chat photos that users upload go to the bucket set in `Backend/.env`, through the backend.
 
 ## Project structure
 
 ```
 Backend/
-  index.js            Express app (port from .env, default 3000)
+  index.js            Express app (port from .env)
   auth.js             JWT checks: logged in, role, trip participant
   database.js         PostgreSQL connection pool (query, transaction)
   realtime.js         socket.io server: live notifications, chat messages and typing
