@@ -2601,6 +2601,57 @@ $$;
 CREATE TRIGGER message_created AFTER INSERT ON public.message FOR EACH ROW EXECUTE FUNCTION public.message_created_func();
 
 
+-- Tells an agent when a customer rates or reviews them. The rating and the review are saved in one transaction
+-- (POST /agent/review-rating), so the trigger waits for the commit (DEFERRABLE INITIALLY DEFERRED) and sends a single
+-- notification with both: the review saved with the rating has the same created_at, the transaction's start time.
+CREATE FUNCTION public.notification_add_for_agent_feedback_func() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    reviewer VARCHAR;
+    new_review VARCHAR;
+    content VARCHAR;
+BEGIN
+    SELECT review INTO new_review
+    FROM review
+    WHERE item_type = 'agent' AND item_id = NEW.item_id AND customer_id = NEW.customer_id AND created_at = CURRENT_TIMESTAMP
+    ORDER BY review_id DESC
+    LIMIT 1;
+
+    -- the same rating again with nothing written is not news
+    IF TG_OP = 'UPDATE' AND OLD.rating = NEW.rating AND new_review IS NULL THEN
+        RETURN NULL;
+    END IF;
+
+    SELECT username INTO reviewer FROM users WHERE user_id = NEW.customer_id;
+
+    IF TG_OP = 'UPDATE' AND OLD.rating <> NEW.rating THEN
+        content := reviewer || ' changed their rating of you from ' || OLD.rating || '/5 to ' || NEW.rating || '/5';
+    ELSIF TG_OP = 'UPDATE' THEN
+        content := reviewer || ' wrote you a review (' || NEW.rating || '/5)';
+    ELSE
+        content := reviewer || ' rated you ' || NEW.rating || '/5';
+    END IF;
+
+    -- a long review is cut short; the whole of it is on the agent's profile
+    IF new_review IS NOT NULL THEN
+        content := content || CASE WHEN TG_OP = 'UPDATE' AND OLD.rating = NEW.rating THEN ': "' ELSE ' and wrote: "' END
+                   || CASE WHEN length(new_review) > 150 THEN left(new_review, 150) || '…' ELSE new_review END || '"';
+    ELSE
+        content := content || '.';
+    END IF;
+
+    INSERT INTO notification (user_id, content, notification_status)
+    VALUES (NEW.item_id, content, 'NOT SHOWED');
+    RETURN NULL;
+END;
+$$;
+
+CREATE CONSTRAINT TRIGGER notification_add_for_agent_feedback AFTER INSERT OR UPDATE ON public.rating
+    DEFERRABLE INITIALLY DEFERRED
+    FOR EACH ROW WHEN ((new.item_type)::text = 'agent'::text) EXECUTE FUNCTION public.notification_add_for_agent_feedback_func();
+
+
 --
 -- PostgreSQL database dump complete
 --
