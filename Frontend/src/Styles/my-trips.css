@@ -219,6 +219,23 @@
     object-fit: cover;
 }
 
+/* the agent's username on a trip card */
+.my-trip-line .person-link-name{
+    font-weight: bold;
+}
+
+.my-trip-person-note{
+    display: block;
+    color: #5b6b76;
+    font-size: 12px;
+}
+
+.my-trip-people-row{
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
 .my-trip-muted{
     color: #6b7a85;
 }
@@ -326,6 +343,10 @@
     grid-column: 1 / -1;
 }
 
+.my-trip-stat.my-trip-person-stat{
+    grid-column: span 1;
+}
+
 .my-trip-stat-label{
     margin-bottom: 2px;
     color: #6b7a85;
@@ -340,19 +361,12 @@
     font-weight: bold;
 }
 
-.my-trip-stat-note{
-    display: block;
-    color: #5b6b76;
-    font-size: 13px;
-}
-
 .my-trip-person{
     display: flex;
     align-items: center;
     gap: 12px;
     align-self: flex-start;
     border-radius: 8px;
-    cursor: pointer;
 }
 
 .my-trip-person img{
@@ -362,11 +376,6 @@
     border: 2px solid #25afe6;
     border-radius: 50%;
     object-fit: cover;
-}
-
-.my-trip-person:hover .my-trip-agent-name{
-    color: #0b7fae;
-    text-decoration: underline;
 }
 
 .my-trip-no-agent{

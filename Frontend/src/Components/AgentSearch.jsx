@@ -61,7 +61,7 @@ const AgentSearch = (props) => {
                 </div>
                 <div className='agent-picked-info'>
                     <div className='agent-picked-name'>
-                        <MessageHover person={{ user_id: profile.user_id, user_type: 'agent', username: profile.username }}>{profile.username}</MessageHover>
+                        <MessageHover person={{ user_id: profile.user_id, user_type: 'agent', username: profile.username }}><span className='person-link-name'>{profile.username}</span></MessageHover>
                     </div>
                     {fullName && <div className='agent-picked-fullname'>{fullName}</div>}
                     <div className='agent-picked-stats'>

@@ -131,14 +131,20 @@ router.get('/open-for-booking', requireRole('customer', 'agent'), async (req, re
 })
 
 // Completed trips of all customers, shown to customers as ideas in the "Suggested" tab of Trips.jsx.
-// The customer's identity (CUSTOMER_ID) is left out; only the agent's public username/id/photo is included.
-router.get('/fetch-complete-trips', requireRole('customer', 'admin'), async (req, res) => {
+// Only public customer and agent details are included; passwords and other private fields stay out of the response.
+router.post('/fetch-suggested-trips', requireRole('customer', 'admin'), async (req, res) => {
     const query = `SELECT T.TRIP_ID, T.AGENT_ID, T.NAME, T.DEPARTURE_DATE, T.RETURN_DATE, T.TOTAL_COST, T.DISCOUNT, T.RATING, T.TRIP_STATUS,
-                          U.USERNAME, U.USER_ID, U.PHOTO
-                   FROM Trip T LEFT JOIN USERS U ON T.AGENT_ID=U.USER_ID
-                   WHERE T.TRIP_STATUS = 'COMPLETED'
+                          A.USERNAME, A.USER_ID, A.PHOTO,
+                          AG.EXPERIENCE_YEARS, AG.FEE,
+                          C.USER_ID AS CUSTOMER_ID, C.USERNAME AS CUSTOMER_USERNAME, C.PHOTO AS CUSTOMER_PHOTO
+                   FROM Trip T
+                   JOIN CUSTOMER CU ON CU.CUSTOMER_ID = T.CUSTOMER_ID
+                   JOIN USERS C ON C.USER_ID = T.CUSTOMER_ID
+                   LEFT JOIN USERS A ON T.AGENT_ID=A.USER_ID
+                   LEFT JOIN AGENT AG ON AG.AGENT_ID=A.USER_ID
+                   WHERE T.TRIP_STATUS = 'COMPLETED' AND T.CUSTOMER_ID <> $1
                    ORDER BY T.RATING`;
-    const result = await database.query(query,[]);
+    const result = await database.query(query, [req.user.id]);
 
     res.json(await attachTripItems(result));
 })

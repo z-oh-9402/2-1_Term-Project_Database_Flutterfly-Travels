@@ -4,7 +4,7 @@
     display: grid;
     grid-template-columns: 340px minmax(0, 1fr);
     gap: 18px;
-    height: calc(100vh - 140px);
+    height: calc(100vh - 96px);
     min-height: 480px;
     max-width: 1400px;
     margin: 0 auto;
@@ -489,7 +489,37 @@
     top: 100%;
     left: 0;
     z-index: 30;
+    display: flex;
+    gap: 6px;
     padding-top: 6px;
+}
+
+/* Messageable names and agent profiles look like links when their hover actions are available. */
+.message-hover.has-profile,
+.message-hover.has-message{
+    border-radius: 6px;
+}
+
+.message-hover.has-profile:focus-visible,
+.message-hover.has-message:focus-visible{
+    outline: 2px solid #45deec;
+    outline-offset: 2px;
+}
+
+.message-hover.has-profile:hover .person-link-name,
+.message-hover.has-profile:focus-visible .person-link-name,
+.message-hover.has-message:hover .person-link-name,
+.message-hover.has-message:focus-visible .person-link-name{
+    color: #0b7fae;
+    text-decoration: underline;
+}
+
+/* on the dark chat page */
+.chat-header .message-hover.has-profile:hover .person-link-name,
+.chat-header .message-hover.has-profile:focus-visible .person-link-name,
+.chat-header .message-hover.has-message:hover .person-link-name,
+.chat-header .message-hover.has-message:focus-visible .person-link-name{
+    color: #45deec;
 }
 
 .message-hover-pop button{

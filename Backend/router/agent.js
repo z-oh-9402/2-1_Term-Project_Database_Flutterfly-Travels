@@ -36,7 +36,7 @@ router.get("/review-rating/:agentId",async(req,res)=>{
 
     const query = 
     `
-        SELECT RE.REVIEW, RA.RATING, TO_CHAR(RE.CREATED_AT, 'DD Mon, YYYY - HH12:MI:SS AM') AS CREATED_AT, U.USERNAME
+        SELECT RE.REVIEW_ID, RE.REVIEW, RA.RATING, TO_CHAR(RE.CREATED_AT, 'DD Mon YYYY') AS CREATED_AT, U.USERNAME, U.PHOTO
         FROM REVIEW RE JOIN RATING RA ON RE.ITEM_ID=RA.ITEM_ID AND RE.ITEM_TYPE=RA.ITEM_TYPE AND RE.CUSTOMER_ID=RA.CUSTOMER_ID JOIN USERS U ON U.USER_ID=RE.CUSTOMER_ID
         WHERE RE.ITEM_ID=$1 AND RE.ITEM_TYPE='agent'
         ORDER BY RE.CREATED_AT DESC
@@ -111,6 +111,21 @@ router.post("/review-rating/:id", requireAuth, requireRole('customer'), async(re
     const review = req.body.review;
     const rating = req.body.rating;
     const customerId = req.user.id;
+
+    // Only customers the agent has worked with (a trip of theirs the agent accepted) can rate or review them
+    const worked = await database.query(
+        `SELECT 1 FROM TRIP WHERE CUSTOMER_ID=$1 AND AGENT_ID=$2 AND TRIP_STATUS <> 'REQUESTING' LIMIT 1`,
+        [customerId, id]);
+    if(worked.length===0)
+    {
+        res.status(403).json({ message: "You can review an agent once they have taken one of your trips" });
+        return;
+    }
+    if(!rating)
+    {
+        res.status(400).json({ message: "Please choose a rating" });
+        return;
+    }
 
     // Rating and review are saved together or not at all
     await database.transaction(async (client) => {

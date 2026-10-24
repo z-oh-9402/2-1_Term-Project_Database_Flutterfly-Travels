@@ -41,16 +41,20 @@ const Trips = (props) => {
     const [createTrip, setCreateTrip] = useState(false);
     const [showAgentSearch, setShowAgentSearch] = useState(false);
     const [pickedAgent, setPickedAgent] = useState(undefined);
-    const [visitingAgent, setVisitingAgent] = useState(undefined);
+    const [visitingAgentId, setVisitingAgentId] = useState(null);
     const [error, setError] = useState(null);
 
     useEffect(() => {
+        if (!userInfo?.user_id) {
+            return;
+        }
+
         let ignore = false;
-        apiFetch(`http://localhost:3000/trip/fetch-complete-trips`, { method: 'GET' })
+        apiFetch(`http://localhost:3000/trip/fetch-suggested-trips`, { method: 'POST' })
             .then(response => response.ok ? response.json() : [])
             .then(trips => { if(!ignore) setSuggestedTrips(trips); });
         return () => { ignore = true; };
-    }, []);
+    }, [userInfo?.user_id]);
 
     const isSuggested = categories[currentCategory].status === undefined;
     const ownTrips = userInfo.trips ?? [];
@@ -62,6 +66,7 @@ const Trips = (props) => {
         setError(null);
         setShowAgentSearch(false);
         setPickedAgent(undefined);
+        setVisitingAgentId(null);
         setVisitingTripId(trip.trip_id);
     }
 
@@ -121,18 +126,13 @@ const Trips = (props) => {
         }
     }
 
-    const visitAgentProfile = async (agentId) => {
-        const response = await apiFetch(`http://localhost:3000/agent/fetch/${agentId}`, { method: 'GET' });
-        if(response.ok)
-        {
-            setVisitingAgent(await response.json());
-        }
+    // the agent's profile opens in place of the trip (or the list of trips), with a way back to it
+    const visitAgentProfile = (agentId) => {
+        setVisitingAgentId(agentId);
     }
 
-    if(visitingAgent)
-    {
-        return <AgentProfile agent={visitingAgent} setShowAgentProfile={() => setVisitingAgent(undefined)}/>;
-    }
+    // the chat opens on the page behind, so the popup closes
+    const closeForChat = () => setShowTrips(false);
 
     const backToList = () => {
         setVisitingTripId(null);
@@ -180,13 +180,27 @@ const Trips = (props) => {
                         <p className='my-trip-line'>
                             <FaRegCalendarAlt/> {dateRange(trip)} <span className='my-trip-muted'>· {tripLength(trip)}</span>
                         </p>
-                        <p className='my-trip-line'>
-                            {trip.agent_id ?
-                                <MessageHover person={{ user_id: trip.agent_id, user_type: 'agent', username: trip.username }}>
-                                    <img className='my-trip-avatar' src={photoUrl(trip.photo)} alt=''/> {trip.username}
-                                </MessageHover> :
-                                <><FaUserTie/> <span className='my-trip-muted'>{trip.trip_status === 'UPDATING' ? 'No agent yet' : 'No agent'}</span></>}
-                        </p>
+                        <div className={isSuggested ? 'my-trip-people-row' : undefined}>
+                            {isSuggested && trip.customer_username &&
+                                <p className='my-trip-line'>
+                                    <MessageHover person={{ user_id: trip.customer_id, user_type: 'customer', username: trip.customer_username }}
+                                                  onOpen={closeForChat}>
+                                        <img className='my-trip-avatar' src={photoUrl(trip.customer_photo)} alt=''/>
+                                        <span className='my-trip-muted'>Customer</span>
+                                        <span className='person-link-name'>{trip.customer_username}</span>
+                                    </MessageHover>
+                                </p>}
+                            <p className='my-trip-line'>
+                                {trip.agent_id ?
+                                    <MessageHover person={{ user_id: trip.agent_id, user_type: 'agent', username: trip.username }} showMessage={false}
+                                                  onViewProfile={() => visitAgentProfile(trip.agent_id)}>
+                                        <img className='my-trip-avatar' src={photoUrl(trip.photo)} alt=''/>
+                                        <span className='my-trip-muted'>Agent</span>
+                                        <span className='person-link-name'>{trip.username}</span>
+                                    </MessageHover> :
+                                    <><FaUserTie/> <span className='my-trip-muted'>{trip.trip_status === 'UPDATING' ? 'No agent yet' : 'No agent'}</span></>}
+                            </p>
+                        </div>
                         <p className='my-trip-bookings'>{bookingSummary(trip) ?? 'No bookings yet'}</p>
                     </div>
                 )}
@@ -218,17 +232,30 @@ const Trips = (props) => {
                         {Number(trip.discount) !== 0 ? `${trip.discount}% discount` : bookingSummary(trip) ?? 'Nothing booked yet'}
                     </span>
                 </div>
-                <div className='my-trip-stat my-trip-stat-wide'>
+                {isSuggested && trip.customer_username &&
+                    <div className='my-trip-stat my-trip-stat-wide my-trip-person-stat'>
+                        <span className='my-trip-stat-label'>Customer</span>
+                        <MessageHover person={{ user_id: trip.customer_id, user_type: 'customer', username: trip.customer_username }}
+                                      onOpen={closeForChat}>
+                            <div className='my-trip-person'>
+                                <img src={photoUrl(trip.customer_photo)} alt=''/>
+                                <div>
+                                    <span className='my-trip-stat-value person-link-name'>{trip.customer_username}</span>
+                                </div>
+                            </div>
+                        </MessageHover>
+                    </div>}
+                <div className={`my-trip-stat my-trip-stat-wide${isSuggested ? ' my-trip-person-stat' : ''}`}>
                     <span className='my-trip-stat-label'>Agent</span>
                     {trip.agent_id ?
-                    <MessageHover person={{ user_id: trip.agent_id, user_type: 'agent', username: trip.username }}>
-                        <div className='my-trip-person' role='button' tabIndex={0} title='See their profile'
-                             onClick={() => visitAgentProfile(trip.agent_id)} onKeyDown={(e) => { if(e.key === 'Enter') visitAgentProfile(trip.agent_id); }}>
+                    <MessageHover person={{ user_id: trip.agent_id, user_type: 'agent', username: trip.username }} showMessage={false}
+                                  onViewProfile={() => visitAgentProfile(trip.agent_id)}>
+                        <div className='my-trip-person'>
                             <img src={photoUrl(trip.photo)} alt=''/>
                             <div>
-                                <span className='my-trip-stat-value my-trip-agent-name'>{trip.username}</span>
+                                <span className='my-trip-stat-value person-link-name'>{trip.username}</span>
                                 {trip.experience_years !== undefined &&
-                                    <span className='my-trip-stat-note'>{trip.experience_years} years · {money(trip.fee)} fee</span>}
+                                    <span className='my-trip-stat-note'>{trip.experience_years} years · {money(trip.fee)} {!isSuggested && "fee"}</span>}
                             </div>
                         </div>
                     </MessageHover>
@@ -286,7 +313,11 @@ const Trips = (props) => {
                         onCancel={() => setCreateTrip(false)}/>
                     :
                     <div className='my-trips'>
-                        {visitingTrip === null ? tripList() : tripPage(visitingTrip)}
+                        {/* back leads to where the profile was opened from: the trip, or this tab's list of trips */}
+                        {visitingAgentId !== null ?
+                            <AgentProfile agentId={visitingAgentId} backLabel={visitingTrip ? visitingTrip.name : `${categories[currentCategory].name} trips`}
+                                          onBack={() => setVisitingAgentId(null)} onOpenChat={closeForChat}/>
+                        : visitingTrip === null ? tripList() : tripPage(visitingTrip)}
                     </div>}
                 </div>
             </div>

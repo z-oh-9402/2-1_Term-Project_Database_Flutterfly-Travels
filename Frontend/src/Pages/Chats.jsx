@@ -7,6 +7,7 @@ import UserInfoContext from '../Context/UserInfoContext';
 import { apiFetch, photoUrl } from '../api';
 import { onChat, sendTyping } from '../chat';
 import { errorMessage, formatTime } from '../Components/tripHelpers';
+import MessageHover from '../Components/MessageHover';
 import '../Styles/chat.css';
 
 const TYPING_SHOWN_MS = 3500;
@@ -386,7 +387,10 @@ const Chats = () => {
                 <header className='chat-header'>
                     <img src={photoUrl(chat.user.photo)} alt=''/>
                     <div>
-                        <div className='chat-header-name'>{displayName(chat.user)}</div>
+                        {/* an agent's name opens their profile; "Send message" is left out, this is the chat */}
+                        <div className='chat-header-name'>
+                            <MessageHover person={chat.user} showMessage={false}><span className='person-link-name'>{displayName(chat.user)}</span></MessageHover>
+                        </div>
                         <div className='chat-header-sub'>
                             {otherTyping ? <span className='chat-typing'>typing…</span> : <>@{chat.user.username} · {roleName(chat.user)}</>}
                         </div>

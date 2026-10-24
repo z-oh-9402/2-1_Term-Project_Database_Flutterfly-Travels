@@ -1,0 +1,168 @@
+/* An agent's profile inside My Trips (AgentProfile.jsx); the cards and buttons come from my-trips.css */
+.agent-profile{
+    color: #1d2a33;
+    text-align: left;
+}
+
+.agent-profile-head{
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+.agent-profile-photo{
+    flex-shrink: 0;
+    width: 64px;
+    height: 64px;
+    border: 2px solid #25afe6;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.agent-profile-name{
+    flex: 1;
+    min-width: 0;
+}
+
+.agent-profile-name h2{
+    margin: 0 0 2px;
+    font-size: 1.6rem;
+    overflow-wrap: anywhere;
+}
+
+.agent-profile-message svg{
+    color: #1e9e57;
+    font-size: 16px;
+}
+
+/* experience, fee and rating side by side */
+.agent-profile-stats{
+    grid-template-columns: repeat(3, 1fr);
+}
+
+/* five butterflies and the number fit the narrow card (scoped under .agent-profile to win over item-bar.css's sizes) */
+.agent-profile .agent-profile-stats .rating{
+    width: 14px;
+    height: 14px;
+    margin-left: 1px;
+}
+
+.agent-profile-stats .rating-container > span:first-child{
+    margin-right: 3px;
+}
+
+/* the feedback form */
+.agent-feedback{
+    margin-bottom: 18px;
+    padding: 14px 16px;
+    border: 1px solid rgba(29, 42, 51, 0.12);
+    border-radius: 12px;
+    background-color: rgba(255, 255, 255, 0.75);
+}
+
+.agent-feedback-stars{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.agent-profile .agent-feedback-stars .rating{
+    width: 24px;
+    height: 24px;
+    margin-left: 0;
+    margin-right: 4px;
+    transition: transform 0.1s ease-in-out;
+}
+
+.agent-profile .agent-feedback-stars .rating:hover{
+    transform: scale(1.15);
+}
+
+.agent-feedback-text{
+    display: block;
+    width: 100%;
+    min-height: 80px;
+    margin: 12px 0 8px;
+    padding: 10px 12px;
+    box-sizing: border-box;
+    border: 1px solid rgba(29, 42, 51, 0.2);
+    border-radius: 8px;
+    background-color: white;
+    color: #1d2a33;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    resize: vertical;
+}
+
+.agent-feedback-text:focus{
+    border-color: #25afe6;
+    box-shadow: 0 0 0 3px rgba(37, 175, 230, 0.2);
+    outline: none;
+}
+
+.agent-feedback-footer{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.agent-feedback-note{
+    color: #5b6b76;
+    font-size: 13px;
+}
+
+.agent-feedback-note.error{
+    color: #c62828;
+}
+
+/* the reviews */
+.agent-reviews{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.agent-review{
+    padding: 12px 14px;
+    border: 1px solid rgba(29, 42, 51, 0.12);
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.75);
+}
+
+.agent-review-top{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.agent-review-author{
+    font-weight: bold;
+}
+
+.agent-reviews .agent-review-top .rating{
+    width: 14px;
+    height: 14px;
+    margin-left: 1px;
+}
+
+/* the number in front of the butterflies is left out here; the butterflies say it */
+.agent-review-top .rating-container > span:first-child{
+    display: none;
+}
+
+.agent-review-date{
+    margin-left: auto;
+    color: #6b7a85;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.agent-review p{
+    margin: 8px 0 0;
+    color: #3d4c56;
+    font-size: 14px;
+    line-height: 1.5;
+    white-space: pre-line;
+}
