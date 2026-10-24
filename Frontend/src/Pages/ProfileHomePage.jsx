@@ -9,6 +9,7 @@ import UserInfoContext from '../Context/UserInfoContext';
 import CategorizedDestination from '../Components/CategorizedDestination';
 import AgentTrip from '../Components/AgentTrip';
 import AdminTasks from '../Components/AdminTasks';
+import OwnAgentReviews from '../Components/OwnAgentReviews';
 import useFillWindow from '../Components/useFillWindow';
 import { FaSuitcase, FaUser, FaUserShield } from 'react-icons/fa';
 import PhotoUploader from "../Components/PhotoUploader";
@@ -184,10 +185,13 @@ const ProfileHomePage = ({setLogOut}) => {
     const profileColumnRef = useRef(null);
     useLayoutEffect(() => { window.scrollTo(0, 0); }, []);
 
-    // opening or closing the edit form starts the profile column from its top
+    // an agent's reviews take the profile column's place (with the photo above them) until they go back
+    const [showReviews, setShowReviews] = useState(false);
+
+    // opening or closing the edit form or the reviews starts the profile column from its top
     useEffect(() => {
         profileColumnRef.current?.scrollTo(0, 0);
-    }, [isBeingUpdated]);
+    }, [isBeingUpdated, showReviews]);
 
     const goToUpdate = () => {
         resetRules();
@@ -323,7 +327,9 @@ const ProfileHomePage = ({setLogOut}) => {
         <div className='profile-page' ref={pageRef} style={fillStyle}>
             {showDeleteConfirmation && <DeleteConfirmation goBack={()=>setShowDeleteConfirmation(false)} shouldDelete={()=>handleLogOutOrDeleteAccount(true)}/>}
             <div className='profile-container' ref={profileColumnRef}>
-                {!isBeingUpdated ?
+                {showReviews && isApprovedAgent && !isBeingUpdated ?
+                <OwnAgentReviews agentId={user.user_id} photo={user.photo} onBack={() => setShowReviews(false)}/>
+                : !isBeingUpdated ?
                 <div className="profile-card">
                     <div className="profile-pic larger-profile-pic profile-card-pic"><img src={photoUrl(user.photo)}/></div>
                     <h2 className="profile-name">{user.first_name} {user.last_name}</h2>
@@ -360,6 +366,7 @@ const ProfileHomePage = ({setLogOut}) => {
                             <div className="profile-detail">
                                 <dt>Rating</dt>
                                 <dd><Rating rating={parseFloat(user.rating)} isChanging={false} setRating={null} count={Number(user.rating_count)}/></dd>
+                                <button type="button" className="profile-reviews-link" onClick={() => setShowReviews(true)}>Show reviews</button>
                             </div>}
                         </>}
                     </dl>

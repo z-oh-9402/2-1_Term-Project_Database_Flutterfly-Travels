@@ -239,3 +239,82 @@
 .profile-form-actions .btn-primary{
     flex: 1;
 }
+
+/* An agent's reviews (OwnAgentReviews.jsx), in place of the profile card: the photo, then the review cards from
+   agent-profile.css on the dark page */
+.profile-reviews-link{
+    margin-top: 6px;
+    padding: 0;
+    border: none;
+    background: none;
+    color: #45deec;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.profile-reviews-link:hover{
+    text-decoration: underline;
+}
+
+.profile-reviews-back{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    align-self: flex-start;
+    margin-bottom: 18px;
+    padding: 0;
+    border: none;
+    background: none;
+    color: #45deec;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.profile-reviews-back:hover{
+    text-decoration: underline;
+}
+
+.profile-reviews .profile-reviews-title{
+    align-self: stretch;
+    margin: 28px 0 12px;
+    padding-top: 22px;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    text-align: left;
+}
+
+.profile-reviews .agent-reviews{
+    align-self: stretch;
+    text-align: left;
+}
+
+.profile-reviews .agent-review{
+    border-color: rgba(189, 232, 245, 0.18);
+    background-color: rgba(255, 255, 255, 0.04);
+    color: white;
+}
+
+/* the column is narrow: the date goes under the name instead of squeezing beside it */
+.profile-reviews .agent-review-top{
+    flex-wrap: wrap;
+    row-gap: 2px;
+}
+
+.profile-reviews .agent-review-date{
+    flex-basis: 100%;
+    margin-left: 28px;
+    color: #8b96a0;
+}
+
+.profile-reviews .agent-review p{
+    color: #c9d1d9;
+}
+
+.profile-reviews-empty{
+    align-self: stretch;
+    margin: 0;
+    color: #9aa4ad;
+    font-size: 14px;
+    line-height: 1.5;
+    text-align: left;
+}
